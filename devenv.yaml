@@ -1,0 +1,8 @@
+inputs:
+  nixpkgs:
+    url: github:cachix/devenv-nixpkgs/rolling
+allow_unfree: true
+imports:
+  - ./tools/_nixenv/001-workspace
+  - ./tools/_nixenv/002-git-hooks
+  - ./tools/_nixenv/003-go-toolchain
