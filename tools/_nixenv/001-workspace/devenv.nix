@@ -114,6 +114,7 @@
               [*.md]
               trim_trailing_whitespace = false
             '';
+            copyMode = "seed";
           };
         };
 
