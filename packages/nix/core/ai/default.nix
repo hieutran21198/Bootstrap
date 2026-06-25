@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, config, ... }:
 {
   imports = [
     ./agents/default.nix
@@ -100,5 +100,10 @@
       modules own knowledge, and the agent prompt is assembled at evaluation
       time from whatever modules are enabled.
     '';
+  };
+  config = {
+    files."CLAUDE.md" = lib.mkIf config.core.ai.claude.enable {
+      text = "@AGENTS.md";
+    };
   };
 }

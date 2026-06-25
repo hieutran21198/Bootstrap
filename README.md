@@ -120,9 +120,10 @@ lint-go                             # verify clean across all modules
 
 The workspace ships two AI agents rendered from a declarative `core.ai.tools` registry. Every module contributes tool permissions and named prompt sections (`inputs`, `responsibilities`, `toolGuidelines`, `outputFormat`); agents assemble their final prompt by consuming the registry through two filters — `consumedContributions` (agent's appetite) and `targetAgents` (contribution's audience).
 
-| Agent                                                              | Role                                                                                                                                                         | Rendered at                     |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
-| [explorer](packages/nix/core/ai/agents/explorer/default.nix)       | Read-only research — gathers context and evidence across the codebase, the internet, available CLIs, MCP servers, and registered toolchains.                 | `.claude/agents/explorer.md`    |
+| Agent                                                        | Role                                                                                                                                         | Rendered at                  |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| [explorer](packages/nix/core/ai/agents/explorer/default.nix) | Read-only research — gathers context and evidence across the codebase, the internet, available CLIs, MCP servers, and registered toolchains. | `.claude/agents/explorer.md` |
+
 | [spec-writer](packages/nix/core/ai/agents/spec-writer/default.nix) | Synthesis — turns Explorer findings + user design intent into one spec under [`docs/specs/`](docs/specs/) following the track's `TEMPLATE.md` and lifecycle. | `.claude/agents/spec-writer.md` |
 
 Toggle per agent via `core.ai.agents.<name>.enable` in [`devenv.nix`](devenv.nix); toggle the claude / opencode renderer via `core.ai.{claude,opencode}.enable`. The registry schema, section keys, order bands, and contribution anti-patterns are documented in [packages/nix/AGENTS.md](packages/nix/AGENTS.md).
