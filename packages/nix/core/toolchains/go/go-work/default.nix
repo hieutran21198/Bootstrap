@@ -35,7 +35,7 @@
         '';
       };
       scripts = {
-        go-work-lint = {
+        lint-go = {
           exec = ''
             set -o pipefail
             cd "$WORKSPACE_ROOT" || exit 1
