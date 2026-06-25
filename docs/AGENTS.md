@@ -1,43 +1,41 @@
 # docs/
 
 ## OVERVIEW
-
-Four documentation tracks, each with a distinct lifecycle. Only `adrs/` is populated.
+Four documentation tracks, each with distinct lifecycle. `adrs/` and `conventions/` populated; `specs/` and `glossary/` scaffold.
 
 ## STRUCTURE
-
 ```
 docs/
 ├── adrs/          # decisions (append-only, numbered)
 ├── specs/         # feature/system designs (scaffold)
-├── conventions/   # workspace-wide rules (scaffold)
+├── conventions/   # workspace-wide rules
+│   └── go/        # Go-specific conventions + templates
 └── glossary/      # canonical terms (scaffold)
 ```
 
 ## WHERE TO LOOK
-
-| Need                                         | Location                                                     |
-| -------------------------------------------- | ------------------------------------------------------------ |
-| Why we chose X over Y                        | [adrs/](adrs/)                                               |
-| How a feature is designed                    | `specs/` (write a new `.md`; no template yet)                |
-| Workspace-wide rules                         | `conventions/` (currently empty; root AGENTS.md is canonical)|
-| Domain term definitions                      | `glossary/`                                                  |
-| ADR format                                   | [adrs/TEMPLATE.md](adrs/TEMPLATE.md)                         |
-| ADR policy                                   | [adrs/README.md](adrs/README.md)                             |
+| Need | Location |
+|------|----------|
+| Why we chose X over Y | `adrs/` |
+| ADR format | [adrs/TEMPLATE.md](adrs/TEMPLATE.md) |
+| ADR authoring policy | [adrs/README.md](adrs/README.md) |
+| Workspace-wide rules | `conventions/` |
+| Convention format | [conventions/TEMPLATE.md](conventions/TEMPLATE.md) |
+| Convention authoring policy | [conventions/README.md](conventions/README.md) |
+| Go package governance | [conventions/go/](conventions/go/) |
 
 ## CONVENTIONS
 
-### ADRs (enforced)
+### ADRs
+Filename: `NNNN-kebab-case-title.md`. Title is short, decisive, and reads as a result ("use-go-workspaces", not "should-we-use-go-workspaces"). One decision per ADR. Required sections in order: Context, Decision, Consequences, Alternatives considered, References. Status transitions: `Proposed` → `Accepted` → `Superseded by ADR-NNNN` or `Deprecated`.
 
-- **Filename**: `NNNN-kebab-case-title.md` (4-digit zero-padded sequence).
-- **Title style**: short, decisive, **result-phrased**. `use-go-workspaces` ✓ — `should-we-use-go-workspaces` ✗.
-- **One decision per ADR**. Splitting into two ADRs > merging concerns.
-- **Required sections** (in this order): Status header, Context, Decision (imperative voice), Consequences (Positive / Negative / Neutral), Alternatives considered, References.
-- **Status lifecycle**: `Proposed` → `Accepted` → `Superseded by ADR-NNNN` | `Deprecated`.
+### Conventions
+Filename: `<topic>/<rule>.md`, no numbering. Front matter fields: `Scope`, `Status`, `Decided by`, `Last reviewed`. One rule per file. Required sections: **Rule** (one-sentence imperative), **Rationale**, **Apply**, **Examples** (Good / Bad), **Enforcement**. Living document; edit in place and bump `Last reviewed` for clarifications. Material changes need a new ADR.
 
 ## ANTI-PATTERNS
-
-- **Do not edit an accepted ADR's body** to reverse the decision. Write a new ADR with a higher number, mark the old one `Superseded by ADR-NNNN`. ADRs are **append-only**.
-- **Do not write design discussion** in ADRs — that belongs in `specs/`. ADRs record the outcome.
-- **Do not skip status transitions** — every ADR must end in a terminal state if no longer active (`Superseded by ...` or `Deprecated`).
-- **Do not list every possible option** in *Alternatives considered* — only the ones seriously weighed.
+- Editing the body of an accepted ADR; supersede it instead.
+- Putting design discussion or specs inside an ADR.
+- Skipping status transitions.
+- Listing every imaginable option in Alternatives; include only those seriously weighed.
+- Numbering convention filenames; numbering belongs to ADRs.
+- Adding rationale inside the Rule section; keep the Rule to a single imperative sentence.

@@ -1,42 +1,36 @@
 # tools/
 
 ## OVERVIEW
-
-Workspace-wide tooling. Dual nature: a Go module (`bootstrap/tools`) **and** the home of Nix devenv modules under `_nixenv/`. Most subdirs are scaffolds.
+Workspace-wide tooling. Go module `bootstrap/tools`. Nix devenv modules have **moved** to `packages/nix/core/` -- look there for shell, linting, and git-hook configuration.
 
 ## STRUCTURE
-
 ```
 tools/
-├── _nixenv/        # numbered devenv modules           → see _nixenv/AGENTS.md
-├── ai/             # agent prompts/presets/evals       (scaffold)
-├── generators/     # code/doc generators (Go binaries)
-│   └── better-tree/  # tree + .info description inliner
-├── scripts/        # dev helper scripts                (scaffold)
-├── validators/     # workspace/docs/arch validators    (scaffold)
+├── ai/             # agent prompts / presets / evals (scaffold)
+├── generators/
+│   └── ws-tree/    # directory listing tool that injects .info metadata (Go binary)
+├── scripts/        # dev helper scripts (scaffold)
+├── validators/     # workspace / arch validators (scaffold)
 └── go.mod          # bootstrap/tools
 ```
 
 ## WHERE TO LOOK
-
-| Adding...                          | Goes in...                                                        |
-| ---------------------------------- | ----------------------------------------------------------------- |
-| Nix devenv module                  | [`_nixenv/`](_nixenv/) (read its AGENTS.md first)                 |
-| New CLI generator                  | `generators/<name>/` (package `main`, follow better-tree pattern) |
-| One-off dev shell helper           | `scripts/<name>`                                                  |
-| Workspace structure validator      | `validators/<name>/`                                              |
-| Prompt / eval / agent helper       | `ai/`                                                             |
+| Adding... | Goes in... |
+|-----------|-----------|
+| New CLI generator | `generators/<name>/` (package main; follow ws-tree pattern) |
+| One-off dev shell helper | `scripts/<name>` |
+| Workspace structure validator | `validators/<name>/` |
+| Prompt / eval / agent helper | `ai/` |
+| Nix devenv module (lint, hooks, Go toolchain) | Nix core modules under `packages/nix/` -- consult the sibling AGENTS guide |
 
 ## CONVENTIONS
-
-- **Go generators**: each is its own `package main` under `generators/<name>/`. Compiled and wrapped into the dev shell as a Nix package — see how `better-tree` is built in [`_nixenv/001-workspace/devenv.nix`](_nixenv/001-workspace/devenv.nix).
-- **External binary dependencies** (e.g. `tree` for `better-tree`): inject via `wrapProgram ... --prefix PATH` in the Nix derivation, not via `exec.LookPath` discovery from the user's `$PATH`.
-- **Args parsing**: better-tree uses a small switch over `os.Args[1:]` — no `flag`/`cobra` for tiny CLIs. Match that style for similar-sized tools.
-- **Env-var contract for tools**: prefer typed input via JSON-in-env-var (e.g. `WORKSPACE_TREE_DESCRIPTIONS`) over many flags, when the caller is another devenv script.
+- Generators: each is its own `package main` under `generators/<name>/`; compiled + injected into dev shell as a Nix package -- see `ws-tree` in `packages/nix/core/workspace/default.nix`
+- External binary deps: inject via `wrapProgram ... --prefix PATH` in the Nix derivation, NOT via `exec.LookPath` discovery
+- Args parsing: small switch over `os.Args[1:]` for tiny CLIs; no `flag`/`cobra` unless complex
+- Env-var contracts for tool-to-script communication: JSON-in-env-var (e.g. `WORKSPACE_TREE_DESCRIPTIONS`), not many flags
 
 ## ANTI-PATTERNS
-
-- **Do not** ship a generator that depends on an external binary without wrapping it via Nix. The whole point is reproducibility.
-- **Do not** add a generator to `services/portal` or `apps/`. Workspace-meta tools live here.
-- **Do not** put Nix module logic outside `_nixenv/` — they would not be picked up by `devenv.yaml` imports.
-- **Do not** add Go dependencies to `tools/go.mod` that drag in heavy frameworks; keep generators stdlib-leaning.
+- Do not ship a generator that depends on an external binary without wrapping it via Nix
+- Do not put a generator under `services/portal/` or `apps/`
+- Do not put Nix module logic in tools/ -- it belongs in `packages/nix/core/`
+- Do not add heavy frameworks to `tools/go.mod`; keep generators stdlib-leaning
