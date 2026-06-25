@@ -1,4 +1,4 @@
-// better-tree
+// ws-tree
 package main
 
 import (
@@ -33,7 +33,7 @@ func main() {
 
 	descriptions, err := loadDescriptions()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "better-tree: failed to load descriptions: %v\n", err)
+		fmt.Fprintf(os.Stderr, "ws-tree: failed to load descriptions: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -46,7 +46,7 @@ func main() {
 
 	output, err := runTree(treeArgs)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "better-tree: %v\n", err)
+		fmt.Fprintf(os.Stderr, "ws-tree: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -71,13 +71,13 @@ func parseArgs(args []string) options {
 
 		case arg == "--comment-column":
 			if i+1 >= len(args) {
-				fmt.Fprintln(os.Stderr, "better-tree: --comment-column requires a number")
+				fmt.Fprintln(os.Stderr, "ws-tree: --comment-column requires a number")
 				os.Exit(2)
 			}
 
-			column, err := strconv.Atoi(args[i+1])
+			column, err := strconv.Atoi(args[i+1]) //nolint:gosec // bounds checked five lines above; gosec G602 cannot follow the flow
 			if err != nil || column < 1 {
-				fmt.Fprintln(os.Stderr, "better-tree: invalid --comment-column")
+				fmt.Fprintln(os.Stderr, "ws-tree: invalid --comment-column")
 				os.Exit(2)
 			}
 
@@ -89,7 +89,7 @@ func parseArgs(args []string) options {
 
 			column, err := strconv.Atoi(raw)
 			if err != nil || column < 1 {
-				fmt.Fprintln(os.Stderr, "better-tree: invalid --comment-column")
+				fmt.Fprintln(os.Stderr, "ws-tree: invalid --comment-column")
 				os.Exit(2)
 			}
 
@@ -118,7 +118,7 @@ func loadDescriptions() (map[string]string, error) {
 }
 
 func runTree(args []string) (string, error) {
-	cmd := exec.Command("tree", args...)
+	cmd := exec.Command("tree", args...) //nolint:gosec // intentional: ws-tree wraps the `tree` binary supplied by Nix wrapProgram --prefix PATH
 
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
@@ -181,7 +181,7 @@ func patchTreeOutput(output string, descriptions map[string]string) []patchedLin
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Fprintf(os.Stderr, "better-tree: failed to scan tree output: %v\n", err)
+		fmt.Fprintf(os.Stderr, "ws-tree: failed to scan tree output: %v\n", err)
 	}
 
 	return lines
