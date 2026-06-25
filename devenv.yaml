@@ -1,8 +1,20 @@
 inputs:
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
+  go-overlay:
+    url: github:purpleclay/go-overlay
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
+  git-hooks:
+    url: github:cachix/git-hooks.nix
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
 allow_unfree: true
 imports:
-  - ./tools/_nixenv/001-workspace
-  - ./tools/_nixenv/002-git-hooks
-  - ./tools/_nixenv/003-go-toolchain
+  - ./packages/nix
+secretspec:
+  enable: true
+  provider: protonpass
+  profile: development
