@@ -7,6 +7,9 @@
   core = {
     ai = {
       agents = {
+        coder = {
+          enable = true;
+        };
         explorer = {
           enable = true;
         };
