@@ -1,0 +1,42 @@
+// Package {{ .PackageName }} {{ .PackagePurpose }}.
+package {{ .PackageName }}
+
+import (
+	"context"
+	"fmt"
+)
+
+// Config holds all configuration for {{ .TargetName }}.
+//
+// All fields are passed by value into New and treated as immutable inside the
+// package. Zero values must be valid (defaults applied in New) unless a field
+// is fundamentally required for the package to function.
+type Config struct {
+	// TODO: add the knobs this package exposes.
+}
+
+// {{ .TargetName }} is {{ .TargetPurpose }}.
+type {{ .TargetName }} struct {
+	// TODO: add fields. Store either `cfg Config` (the whole value, frozen) or
+	// only the specific fields the package consumes (clients, handles, mutexes,
+	// extracted knobs, ...). Do not expose them; keep cfg internal.
+}
+
+// New constructs a {{ .TargetName }} from cfg.
+//
+// ctx is honored for any I/O performed during construction (DNS, dial, ping,
+// open file, etc.). Errors are wrapped as
+//
+//	fmt.Errorf("{{ .PackageName }}: <op>: %w", err)
+//
+// so callers can attribute failures to this package.
+func New(ctx context.Context, cfg Config) (*{{ .TargetName }}, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, fmt.Errorf("{{ .PackageName }}: new: %w", err)
+	}
+
+	// TODO: validate cfg, perform construction I/O if any, populate the target.
+	_ = cfg
+
+	return &{{ .TargetName }}{}, nil
+}

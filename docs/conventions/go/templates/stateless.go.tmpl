@@ -1,0 +1,24 @@
+// Package {{ .PackageName }} {{ .PackagePurpose }}.
+//
+// This is a stateless package: its API is pure functions and types, not a
+// constructable target. See ../single-responsibility.md for the category
+// description, and ../README.md for sibling stateful packages.
+package {{ .PackageName }}
+
+// TODO: declare the package's types, interfaces, and functions here.
+//
+// Common stateless shapes:
+//
+//   1. A capability interface + concrete implementations:
+//        type Loader interface { Load(ctx context.Context) (T, error) }
+//        func FileLoader(path string) Loader { ... }
+//        func OSLoader() Loader { ... }
+//
+//   2. A small set of pure transforming functions:
+//        func Parse(input string) (Result, error) { ... }
+//        func Format(r Result) string { ... }
+//
+//   3. A generic entrypoint that composes the above:
+//        func Apply[T any](loaders ...Loader) (T, error) { ... }
+//
+// See packages/go/env/ for a worked example combining shapes 1 and 3.

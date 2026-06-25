@@ -45,3 +45,7 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 ```
 
 ## Index
+
+| #    | Title                                                                              | Status   |
+| ---- | ---------------------------------------------------------------------------------- | -------- |
+| 0001 | [Single responsibility for Go packages](0001-single-responsibility-go-packages.md) | Accepted |
