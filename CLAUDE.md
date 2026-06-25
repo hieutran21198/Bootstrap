@@ -1,1 +1,0 @@
-/nix/store/v50rm2ggxj297sc3jq2pvk306mpi821b-CLAUDE.md
