@@ -49,3 +49,8 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | #    | Title                                                                              | Status   |
 | ---- | ---------------------------------------------------------------------------------- | -------- |
 | 0001 | [Single responsibility for Go packages](0001-single-responsibility-go-packages.md) | Accepted |
+| 0002 | [Workspace-wide Go code style rules](0002-go-code-style.md)                        | Accepted |
+| 0003 | [DDD + CQRS + Hexagonal architecture for services](0003-service-architecture.md)   | Accepted |
+| 0004 | [Typed aggregate IDs with UUIDv7](0004-typed-aggregate-ids-uuidv7.md)              | Accepted |
+| 0005 | [Collection-style repositories](0005-collection-style-repositories.md)             | Accepted |
+| 0006 | [Zitadel as the identity and auth provider](0006-zitadel-identity-auth.md)        | Proposed |
