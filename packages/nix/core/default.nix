@@ -1,8 +1,8 @@
 { pkgs, ... }:
 {
   imports = [
+    ./utils/default.nix
     ./ai/default.nix
-    ./docs/default.nix
     ./git/default.nix
     ./secrets/default.nix
     ./services/default.nix

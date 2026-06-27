@@ -76,29 +76,6 @@
             };
           };
         };
-
-        ai.tools.go = {
-          permissions = [
-            "Bash(go:*)"
-            "Bash(go-info:*)"
-            "Bash(lint-go:*)"
-            "Bash(gopls:*)"
-            "Bash(golangci-lint:*)"
-            "Bash(dlv:*)"
-          ];
-          sections = {
-            toolGuidelines = ''
-              ### Go toolchain
-
-              - `go-info` — toolchain version + env summary and `go.work` module list.
-              - `lint-go` — runs `golangci-lint` across every `go.work` module. Pass `--fix` only when an explicit fix is asked for.
-              - `golangci-lint run ./...` works inside any module for finer-grained linting.
-              - `gopls` — Go language server for symbol info, references, and definitions when language-server access is available.
-            '';
-          };
-          order = 50;
-        };
       };
-
     };
 }

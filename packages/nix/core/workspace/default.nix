@@ -140,28 +140,5 @@
       enterShell = ''
         ${config.scripts.ws-info.exec}
       '';
-
-      core.ai.tools.workspace = {
-        permissions = [
-          "Bash(ws-info:*)"
-          "Bash(ws-tree:*)"
-        ];
-        sections = {
-          inputs = ''
-            ### Workspace context
-
-            - The workspace root, name, and mandatory folder set are declared in `devenv.nix` — treat that file as the authoritative layout map.
-            - Run `ws-info` for the workspace overview (root, name, layout, available commands); it auto-runs on shell entry.
-            - Run `ws-tree` for the directory tree annotated with inline `.info` descriptions; `ws-tree --tabular --doc-only` renders a compact docs-only map suitable for quoting.
-          '';
-          toolGuidelines = ''
-            ### Workspace tools
-
-            - `ws-info` — workspace overview: root, name, layout, available commands. Auto-runs on shell entry.
-            - `ws-tree` — directory tree with inline `.info` descriptions. `ws-tree --tabular --doc-only` renders a compact docs-only map.
-          '';
-        };
-        order = 10;
-      };
     };
 }

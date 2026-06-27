@@ -2,51 +2,59 @@
 
 ## OVERVIEW
 
-Nix devenv modules for the workspace. `core/` provides mandatory tooling; `extra/` provides optional add-ons. Imported by root `devenv.yaml`.
+Nix devenv modules for the workspace. `core/` = mandatory tooling; `extra/` = opt-in add-ons (not imported by `core`). A consumer wires them in via its `devenv.yaml` `imports: [ <path>/packages/nix ]`, which loads `packages/nix/devenv.nix` → `core/default.nix` + `extra/default.nix`. Every module gates on an `enable` flag set in the consuming `devenv.nix`. Both the root and each service (e.g. `services/portal/`) import this same tree.
 
 ## STRUCTURE
 
 ```
 packages/nix/
-├── core/                     # mandatory workspace tooling
-│   ├── ai/                   # AI registry + agent renderers + claude/opencode aliases
-│   │   ├── default.nix       # core.ai.tools registry schema + claude/opencode aliases
-│   │   └── agents/
-│   │       ├── explorer/     # research agent: gathers context + evidence (consumes the full registry)
-│   │       └── spec-writer/  # synthesis agent: Explorer findings + user context → one spec (consumes a tight whitelist)
-│   ├── docs/                 # documentation tracks (adrs / specs / conventions / glossary / findings / debt) + AI contributions
-│   ├── workspace/            # enterShell scripts, mandatoryFolders enforcement, AI contributions for layout
-│   ├── git/                  # pre-commit hooks, secret scanners, AI contributions for git tooling
-│   ├── secrets/              # secret scanning config
+├── devenv.nix                  # imports core/ + extra/
+├── devenv.yaml                 # nixpkgs input pin (standalone eval)
+├── core/                       # mandatory — core/default.nix imports every module below
+│   ├── utils/                  # option-builder helpers exposed as core.utils
+│   ├── ai/                     # core.ai.claude alias (→ claude.code) + CLAUDE.md→@AGENTS.md
+│   │   └── opencode/           # core.ai.opencode: enable + profile (max|slim)
+│   │       ├── agents/         # abstract agent defs: model / fallbacks / variant / skills / mcps
+│   │       └── profiles/
+│   │           ├── max/        # oh-my-openagent plugin preset (sisyphus, oracle, prometheus, …)
+│   │           └── slim/       # oh-my-opencode-slim plugin preset (orchestrator, oracle, council, …)
+│   ├── git/                    # pre-commit hooks
+│   ├── secrets/                # secret-scanning config
+│   ├── services/postgres/      # core.services.postgres: admin/writer/reader roles, POSTGRES_* env, pg-info
+│   ├── workspace/              # core.workspace: name/treeInfos/editorConfig; generates .info + .editorconfig; ws-info/ws-tree
 │   └── toolchains/
-│       ├── go/               # Go toolchain, golangci-lint, go-work, AI contributions for Go tooling
-│       │   ├── go-work/      # go.work generation
-│       │   └── golangci-lint/ # linter config generation
-│       ├── markdown/         # markdown linting
-│       ├── aws/              # AWS CLI + AI contributions for cloud-side tooling
-│       └── terraform/        # Terraform toolchain (optional core)
-└── extra/                    # opt-in extensions
-    └── dev-container/        # devcontainer support
+│       ├── go/                 # Go toolchain
+│       │   ├── go-work/        # go.work generation (core.toolchains.go.go-work.mods)
+│       │   └── golangci-lint/  # .golangci.yml generation
+│       ├── markdown/           # markdownlint
+│       ├── aws/                # AWS CLI + aws-vault
+│       └── terraform/          # Terraform toolchain
+└── extra/                      # opt-in — NOT imported by core
+    └── dev-container/          # devcontainer support
 ```
 
 ## CONVENTIONS
 
-- **Import in `devenv.yaml`**: modules are imported via `packages/nix/core/devenv.yaml`; each submodule exports options via `options.<name>.*`
-- **Module ordering**: use descriptive directory names; no numeric prefix (that was the `_nixenv` convention — retired)
-- **Generated artifacts**: `workspace/default.nix` generates `.editorconfig`, `.info`; `toolchains/go/golangci-lint/default.nix` generates `.golangci.yml` — these are gitignored symlinks into Nix store; do not hand-edit
-- **`extra/` modules**: not imported by default; add to root `devenv.yaml` manually when needed
-- **AI tools registry — schema**: `core/ai/default.nix` declares `core.ai.tools` and the `core.ai.claude` / `core.ai.opencode` aliases. Every module contributes `{ permissions; sections; targetAgents; order; }` from inside its own `lib.mkIf cfg.enable { ... }` when relevant. `sections` is `attrsOf lines` keyed by free-form names — contributions populate the keys they have something to say about, and agents declare which keys they consume.
-- **AI tools registry — section keys consumed by agents**: both `explorer` and `spec-writer` consume `inputs` (what the agent can read and where), `responsibilities` (what to write back), `toolGuidelines` (per-tool usage rules), `outputFormat` (file naming and structure). The agent's prompt frame owns role / methodology / discipline / generic output shape; all workspace-specific knowledge (folder layout, doc tracks, templates, per-track naming) lives in the contributing module's `sections.<key>`.
-- **AI tools registry — two filtering dimensions**: every agent's `applicable` set is filtered twice. (1) `consumedContributions` on the agent (`null` = all, list = whitelist by contribution name) declares the agent's appetite — Explorer leaves it `null` to consume everything; Spec Writer narrows to `[ "workspace" "docs" "docs-specs" ]` so it excludes git/go/aws/findings/debt by name. (2) `targetAgents` on each contribution (`[]` = universal, list = restrict to those agents) declares the contribution's audience — used by per-write-target docs entries (`docs-findings` and `docs-debt` target explorer; `docs-specs` targets spec-writer). A contribution applies when **both** filters pass.
-- **AI tools registry — docs splits per write-target**: `core/docs/default.nix` emits four contributions: `docs` (universal: track listing in `inputs`, generic `TEMPLATE.md` + `README.md` rule in `outputFormat`, heavy-evidence pattern), `docs-findings` (explorer-only responsibilities), `docs-debt` (explorer-only responsibilities), `docs-specs` (spec-writer-only responsibilities). Each write-target lives in a separate registry entry with `targetAgents` set to the agent whose role owns that writing responsibility. Per-track filename and lifecycle rules belong in the track's `README.md`, not in the contribution.
-- **AI tools registry — order bands**: `0-29` foundation (workspace=10, docs=15, docs-findings=16, docs-debt=17, docs-specs=18, git=20), `30-69` languages and standard toolchains (go=50), `70-99` specialised / cloud-side toolchains (aws=80), `100+` ad-hoc additions. Lower numbers render first inside each section.
+- **Enable gating**: each module declares `options.<name>.enable` (possibly nested) and wraps its `config` in `lib.mkIf cfg.enable`. Consumers flip flags under `core.* = { ... }` in their `devenv.nix`. Root enables `ai`, `git`, `toolchains.{go,markdown,aws}`, `workspace`; portal additionally enables `services.postgres`.
+- **Option helpers**: build options through `config.core.utils.*` (`makeStrOption`, `makeIntOption`, `makeEnumOption`, `makeListOption`, `makeAttrsOption`, `makePackageOption`, `failWhen`) instead of raw `lib.mkOption`. `core.utils` is read-only, defined in `utils/default.nix`, consumed e.g. by `ai/opencode/agents/default.nix`.
+- **Module dir naming**: descriptive names, no numeric prefix (the `tools/_nixenv/` numbering convention is retired).
+- **Generated artifacts** — gitignored Nix-store symlinks, never hand-edit; regenerate on `direnv reload`:
+  - `workspace/default.nix` → `.info` (from `core.workspace.treeInfos`) + `.editorconfig` (from `core.workspace.editorConfig` + base defaults)
+  - `toolchains/go/golangci-lint/default.nix` → `.golangci.yml`
+  - `toolchains/go/go-work/default.nix` → `go.work` (from `core.toolchains.go.go-work.mods`)
+  - `ai/default.nix` → `.claude/settings.json` + `CLAUDE.md` (`@AGENTS.md`); the chosen opencode profile writes `.opencode/<plugin>.json`
+- **AI system (opencode + claude)**: `core.ai.opencode.profile` is an enum — `"max"` (plugin `oh-my-openagent`) or `"slim"` (plugin `oh-my-opencode-slim`). `core.ai.opencode.agents.<name>` defines *abstract* agents (`model`, `fallbacks`, `variant`, `skills`, `mcps`): `orchestrator`, `orchestrator-minion`, `looker`, `architecturer`, `researcher`, `codeExplorer`, `designer`, `worker`. Each profile (`profiles/<p>/default.nix`) maps those abstract agents onto the plugin's named roles. `core.ai.claude` is an alias for devenv's `claude.code`; when enabled it writes `.claude/settings.json` (agent-teams env) and `CLAUDE.md → @AGENTS.md`. To add/retune an agent: edit `agents/default.nix`, then wire it into each `profiles/<profile>/default.nix` preset.
+- **Postgres service**: `core.services.postgres` provisions devenv Postgres with idempotent `admin`/`writer`/`reader` login roles, exposes *structural* `POSTGRES_*` env vars (host/port/database/user/password — no DSN opinion), and registers a `pg-info` command via `core.workspace.toolchainCommandInfos`. Passwords come from `secretspec` in the consumer (see `services/portal/devenv.nix`).
+- **`extra/` opt-in**: not imported by `core`; enable by importing in the consuming `devenv.yaml`/`devenv.nix` and flipping its flag (root: `extra.dev-container.enable`).
 
 ## ANTI-PATTERNS
 
-- ✗ Place Nix module logic outside `packages/nix/core/` or `packages/nix/extra/`
-- ✗ Hand-edit generated artifacts (`.golangci.yml`, `.editorconfig`, `.info`) — Nix regenerates them on `direnv reload`
-- ✗ Use numeric prefixes for module dirs (`_nixenv` pattern is retired)
-- ✗ Import `extra/` modules from `core/` — `extra/` is opt-in, not forced
-- ✗ Embed any workspace-specific knowledge in agent files under `core/ai/agents/`. The agent owns _role_ (identity, methodology, discipline, generic output shape); the workspace owns _knowledge_ (folder paths like `docs/findings/`, doc track names, file templates like `TEMPLATE.md`, naming conventions like `YYYY-MM-DD`-kebab-case, evidence-layout patterns like `<filename>.assets/`, specific tool names, `optionalString awsEnabled "..."`-style conditionals). Knowledge belongs in the owning module via `core.ai.tools.<name>.sections.<key>`. If you find yourself adding a path, a tool name, or a convention to an agent file, stop — find the module that owns it and contribute from there. Agents are renderers; the registry is the source of truth.
-- ✗ Wrap an entire `attrsOf X` attribute in `lib.mkIf` when assigning through an alias — e.g. `core.ai.claude.agents = lib.mkIf cond { explorer = "..."; }`. The module merger stores the raw `mkIf` wrapper (`_type`/`condition`/`content`) instead of unpacking it, and the downstream consumer sees a broken value. Instead, push `mkIf` down to the leaf: `core.ai.claude.agents.explorer = lib.mkIf cond "...";`.
-- ✗ Guess the upstream `agents` schema. `claude.agents` (devenv `src/modules/integrations/claude.nix`) takes a **submodule** with `{ description; proactive; tools; model; prompt; permissionMode; }`. `opencode.agents` (devenv `src/modules/integrations/opencode.nix`) takes **`lines`** (markdown with YAML frontmatter). They are _not_ the same; do not render one format and assume both consumers accept it. When adding a new agent, read the actual upstream module file in `/nix/store/<hash>-source/src/modules/integrations/` first. The _native_ Claude Code v2.1.187 agent schema (built-ins, frontmatter fields, the tools/skills two-gate model, and the gaps in these renderers) is documented in [docs/findings/2026-06-26-claude-code-agent-configuration.md](../../docs/findings/2026-06-26-claude-code-agent-configuration.md) — but the devenv integration submodule is a layer above it, so confirm which native fields it actually forwards before relying on them.
+- ✗ Place Nix module logic outside `core/` or `extra/`.
+- ✗ Hand-edit generated artifacts (`.golangci.yml`, `.editorconfig`, `.info`, `go.work`, `.claude/*`, `CLAUDE.md`, `.opencode/*.json`) — Nix owns them.
+- ✗ Reference a `core.docs` option or a `workspace.mandatoryFolders` option — **neither exists**. Folder descriptions come from `core.workspace.treeInfos` (descriptions only, no `.gitkeep` seeding); docs are plain markdown under root `docs/` and `services/<name>/docs/`, not a Nix module.
+- ✗ Use numeric prefixes for module dirs (`_nixenv` pattern retired).
+- ✗ Import `extra/` modules from `core/` — `extra/` is opt-in, not forced.
+- ✗ Set `core.ai.opencode.profile` to anything but `"max"` or `"slim"` (enum; e.g. `"slim-go-openai"` fails evaluation).
+- ✗ Build module options with raw `lib.mkOption` when a `core.utils.make*` helper fits — keep option shapes uniform.
+- ✗ Wrap an entire `attrsOf X` attribute in `lib.mkIf` when assigning through an alias (e.g. `core.ai.claude.agents = lib.mkIf cond { … }`). The merger stores the raw `mkIf` wrapper and the consumer breaks. Push `mkIf` to the leaf: `core.ai.claude.agents.foo = lib.mkIf cond "…";`.
+- ✗ Guess the upstream `claude.code` / `opencode` devenv submodule schema. Read the actual module under `/nix/store/<hash>-source/src/modules/integrations/` first; the native Claude Code agent schema (built-ins, frontmatter, tools/skills gating) is documented in [docs/findings/2026-06-26-claude-code-agent-configuration.md](../../docs/findings/2026-06-26-claude-code-agent-configuration.md).

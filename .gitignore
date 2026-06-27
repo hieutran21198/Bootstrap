@@ -35,3 +35,6 @@ go.work
 
 ## Local docker-compose env (deploy/local/.env holds ZITADEL_MASTERKEY + secrets)
 deploy/local/.env
+
+# environment variables
+.env*

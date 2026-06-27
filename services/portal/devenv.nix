@@ -46,7 +46,7 @@
       };
       opencode = {
         enable = true;
-        profile = "slim-go-openai";
+        profile = "slim";
       };
     };
     services = {
@@ -58,7 +58,7 @@
           enable = true;
           database = "portal";
           port = builtins.fromJSON secrets.POSTGRES_PORT;
-          roles = builtins.trace "${builtins.toJSON secrets}" {
+          roles = {
             admin.password = secrets.POSTGRES_ADMIN_PASSWORD;
             writer.password = secrets.POSTGRES_WRITER_PASSWORD;
             reader.password = secrets.POSTGRES_READER_PASSWORD;
@@ -71,6 +71,13 @@
       wsInfoDeepLevel = 4;
       treeInfos = {
         "README.md" = "Look at me first!";
+
+        # docs (service-scoped; workspace-wide docs live in repo-root docs/)
+        "docs" = "Portal service documentation — service-scoped ADRs, specs, findings, debt";
+        "docs/adrs" = "Portal-only architecture decisions";
+        "docs/specs" = "Portal feature and subsystem designs";
+        "docs/findings" = "Portal investigation records";
+        "docs/debt" = "Portal technical debt register";
 
         # command
         "cmd" = "Service binaries";
@@ -102,24 +109,16 @@
         "internal/domain/staff" = "Staff aggregate — entity, value objects (email, role), ports";
 
         # infra
-        "internal/infra" = "Driven Infrastructure adapters — postgres, zitadel";
+        "internal/infra" = "Driven infrastructure adapters — postgres (zitadel planned, ADR-0006)";
         ## infra postgres
         "internal/infra/postgres" = "Postgres adapters — migrations, repos, UoW, read store";
         "internal/infra/postgres/migrations" = "Database migration SQL files (goose)";
         "internal/infra/postgres/repo" = "Writer / Reader implementations (one file per aggregate)";
         "internal/infra/postgres/uow" = "UnitOfWork implementation";
         "internal/infra/postgres/readstore" = "Read-side store implementations (query models)";
-        ## infra zitadel
-        "internal/infra/zitadel" = "Zitadel auth integration";
       };
     };
-    docs = {
-      enable = true;
-    };
     git = {
-      enable = true;
-    };
-    secrets = {
       enable = true;
     };
     toolchains = {

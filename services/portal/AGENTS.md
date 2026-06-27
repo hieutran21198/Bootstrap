@@ -11,13 +11,18 @@ The architectural conventions this service implements are documented workspace-w
 
 The sections below are portal-specific decisions on top of those conventions.
 
+Portal-only documentation (service ADRs, specs, findings, debt) lives in [docs/](docs/) — see [docs/README.md](docs/README.md) for the global-vs-service split. Workspace-wide standards stay in the repo-root [docs/](../../docs/).
+
 ## STRUCTURE
 
 ```
 services/portal/
-├── cmd/http/
-│   ├── command/     # HTTP entrypoint binary — write side
-│   └── query/       # HTTP entrypoint binary — read side
+├── docs/            # service-scoped docs: adrs / specs / findings / debt (see docs/README.md)
+├── cmd/
+│   ├── http/
+│   │   ├── command/ # write-side HTTP binary (planned — dir only)
+│   │   └── query/   # read-side HTTP binary (planned — dir only)
+│   └── migrate/     # migration CLI (up/down/status) — main.go (exists)
 ├── config/          # service config loader (use packages/go/env)
 └── internal/
     ├── app/
@@ -26,12 +31,13 @@ services/portal/
     ├── delivery/http/
     │   ├── command/ # HTTP handlers → app/command
     │   └── query/   # HTTP handlers → app/query
-    ├── domain/<aggregate>/   # pure domain, one package per aggregate
-    └── infra/
-        ├── postgres/
-        │   ├── repo/  # Writer / Reader implementations (one file per aggregate)
-        │   └── uow/   # UnitOfWork implementation
-        └── zitadel/   # Zitadel auth integration
+    ├── domain/<aggregate>/   # pure domain, one package per aggregate (organization, staff)
+    └── infra/postgres/
+        ├── migrations/  # goose SQL migrations
+        ├── repo/        # Writer / Reader implementations (one file per aggregate)
+        ├── readstore/   # read-side query-model stores
+        └── uow/         # UnitOfWork implementation
+# infra/zitadel/ — planned (ADR-0006, Proposed); not yet created
 ```
 
 ## WHERE TO LOOK
@@ -46,9 +52,13 @@ services/portal/
 | Domain value object                       | `internal/domain/<aggregate>/<name>.go`                                             |
 | Domain port (Writer/Reader/NotFoundError) | `internal/domain/<aggregate>/port.go`                                               |
 | Postgres repo                             | `internal/infra/postgres/repo/<aggregate>.go`                                       |
+| Read model / query-side store             | `internal/infra/postgres/readstore/<name>.go`                                       |
 | Transaction boundary                      | `internal/infra/postgres/uow/`                                                      |
-| Service binary entrypoint                 | `cmd/http/{command,query}/main.go`                                                  |
+| Database migration (SQL)                  | `internal/infra/postgres/migrations/` (scaffold via `migrate-new <name>`)            |
+| Migration CLI                             | `cmd/migrate/` (run with `migrate-up` / `migrate-down` / `migrate-status`)           |
+| Service binary entrypoint                 | `cmd/migrate/main.go` (exists); `cmd/http/{command,query}/main.go` (planned)         |
 | Service configuration                     | `config/` (use `bootstrap/packages/go/env`)                                         |
+| Portal-specific doc                       | `docs/` (adrs/specs/findings/debt) — see [docs/README.md](docs/README.md)           |
 
 ## CONVENTIONS
 

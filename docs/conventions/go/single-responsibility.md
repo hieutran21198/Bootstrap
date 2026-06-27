@@ -19,7 +19,7 @@ packages/go/server/echox/       # Echo HTTP server with timeouts + slog  (statef
 packages/go/gormx/              # GORM wrapper                            (stateful)
 packages/go/gormx/postgres/     # Postgres dialector                      (stateless)
 packages/go/gormx/sqlite/       # SQLite dialector                        (stateless)
-tools/generators/better-tree/   # tree(1) wrapper                          (CLI tool)
+tools/generators/ws-tree/       # tree(1) wrapper                          (CLI tool)
 ```
 
 Each name is one noun, one responsibility.

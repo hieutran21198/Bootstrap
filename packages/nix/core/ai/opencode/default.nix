@@ -1,16 +1,18 @@
 { lib, config, ... }: {
-  imports = [ ./profiles/default.nix ];
+  imports = [
+    ./agents/default.nix
+    ./profiles/default.nix
+  ];
   options.core.ai.opencode = {
+    enable = lib.mkEnableOption "Enable opencode";
     profile = lib.mkOption {
       type =
         with lib.types;
         (enum [
-          "full"
-          "openai"
-          "slim-go"
-          "slim-go-openai"
+          "max"
+          "slim"
         ]);
-      default = "full";
+      default = "slim";
       description = "Which opencode profile to use.";
     };
     slimPresets = lib.mkOption {
@@ -18,7 +20,10 @@
       default = { };
     };
   };
-  config = {
+  config = lib.mkIf config.core.ai.opencode.enable {
+    opencode = {
+      enable = true;
+    };
     env = {
       OPENCODE_CONFIG_DIR = config.core.workspace.root + "/.opencode";
       OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS = true;

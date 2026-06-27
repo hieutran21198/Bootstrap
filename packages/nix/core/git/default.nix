@@ -15,22 +15,6 @@
     lib.mkIf opts.enable {
       packages = with pkgs; [ git ];
 
-      core.ai.tools.git = {
-        permissions = [
-          "Bash(git:*)"
-        ];
-        sections = {
-          toolGuidelines = ''
-            ### Git
-
-            - Read-only `git` is fine for evidence: `git log`, `git diff`, `git blame`, `git show`, `git status`.
-            - **Never** commit, push, branch, reset, or rewrite history — you are an investigator, not a committer.
-            - Cite commits as short SHA + subject line (`a1b2c3d "Fix foo handling"`).
-          '';
-        };
-        order = 20;
-      };
-
       git-hooks = lib.mkIf (config.git.root == config.core.workspace.root) {
         hooks = {
           # Conventional Commits gate (commit-msg stage)

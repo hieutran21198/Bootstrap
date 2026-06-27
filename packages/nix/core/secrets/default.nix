@@ -13,6 +13,10 @@
       opts = config.core.secrets;
     in
     lib.mkIf opts.enable {
-      packages = with pkgs; [ secretspec ];
+      # secretspec = {
+      #   enable = true;
+      #   profile = "local";
+      #   provider = "protonpass://Project-Bootstrap";
+      # };
     };
 }

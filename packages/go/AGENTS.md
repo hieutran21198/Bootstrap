@@ -7,14 +7,16 @@ Shared Go library module (`bootstrap/packages/go`). SRP-stateful governance per 
 ```
 packages/go/
 ├── env/                # env-var loaders + typed parser (pre-governance, function-based)
-├── gormx/              # gorm v2 wrapper
-│   ├── postgres/       # postgres dialector (gorm.io/driver/postgres)
-│   └── sqlite/         # sqlite dialector (pure Go, no CGO)
-└── server/echox/       # echo v4 server with middleware + HTTP timeouts
+├── gormx/              # gorm v2 wrapper (SRP-stateful)
+│   ├── postgres/       # postgres dialector (gorm.io/driver/postgres) — SRP-stateless
+│   └── sqlite/         # sqlite dialector (pure Go, no CGO) — SRP-stateless
+├── idgen/              # typed UUIDv7 ID generator (SRP-stateless; generic NewFor[T] / Validate[T])
+├── migrate/            # goose migration runner (SRP-stateful)
+└── server/echox/       # echo v4 server with middleware + HTTP timeouts (SRP-stateful)
 ```
 
 ## GOVERNANCE — the shape SRP-stateful packages take
-The contract below comes from [ADR-0001](../../docs/adrs/0001-single-responsibility-go-packages.md) and the canonical template [`stateful.go.tmpl`](../../docs/conventions/go/templates/stateful.go.tmpl). Packages that own state (servers, clients, connections, caches) follow this shape. When uncertain whether a package belongs here, classify it first with [`creating-new-package.md`](../../docs/conventions/go/creating-new-package.md).
+The contract below comes from [ADR-0001](../../docs/adrs/0001-single-responsibility-go-packages.md) and the canonical template [`stateful.go.tmpl`](../../docs/conventions/go/templates/stateful.go.tmpl). Packages that own state (servers, clients, connections, caches) follow this shape. Stateless packages — pure functions over input (`idgen`, the gormx dialectors) — use the sibling [`stateless.go.tmpl`](../../docs/conventions/go/templates/stateless.go.tmpl) instead; see [`single-responsibility.md` § Stateful vs stateless](../../docs/conventions/go/single-responsibility.md). When uncertain whether a package belongs here, classify it first with [`creating-new-package.md`](../../docs/conventions/go/creating-new-package.md).
 
 A stateful package exposes **three elements and nothing more**:
 
@@ -55,6 +57,7 @@ func New(ctx context.Context, cfg Config) (*Target, error) {
 - ✗ Vanity import domains. Module path is `bootstrap/packages/go/<segment>/<name>`.
 
 ## NOTES
+- **Two SRP sub-shapes** (see [`single-responsibility.md`](../../docs/conventions/go/single-responsibility.md)): *stateful* = `Config` / target / `New` (above) — `gormx`, `migrate`, `echox`; *stateless* = pure funcs + types with no constructable target — `idgen` (`NewFor[T]` / `Validate[T]`), the gormx dialectors. Classify with [`creating-new-package.md`](../../docs/conventions/go/creating-new-package.md) before adding code.
 - `env/` predates governance; it uses a function-based design. No exception granted to new packages.
-- `gormx` and `echox` are the first SRP-stateful examples in this module.
+- `idgen` (typed aggregate IDs, [ADR-0004](../../docs/adrs/0004-typed-aggregate-ids-uuidv7.md)) is the canonical stateless example; `migrate` wraps `pressly/goose` behind the stateful shape.
 - New packages go here without moving `go.mod`. Run `go mod tidy` from this directory after adding dependencies.

@@ -16,4 +16,4 @@ imports:
 secretspec:
   enable: true
   profile: local
-  provider: protonpass://SecretSpec-Bootstrap
+  provider: dotenv://.env.local

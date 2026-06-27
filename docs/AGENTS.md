@@ -1,7 +1,9 @@
 # docs/
 
 ## OVERVIEW
-Six documentation tracks, each with distinct lifecycle and its own `TEMPLATE.md` + `README.md`. `adrs/` and `conventions/` carry content; `specs/`, `glossary/`, `findings/`, and `debt/` are infrastructured but empty.
+Workspace-wide (**global**) documentation — standards and records shared across services, the shared Go/Nix packages, and deployment. Six tracks, each with a distinct lifecycle and its own `TEMPLATE.md` + `README.md`. `adrs/`, `conventions/`, and `findings/` carry content; `specs/`, `glossary/`, and `debt/` are infrastructured but empty.
+
+**Two-tier model.** This tree is global. Service-only docs live under `services/<name>/docs/` (e.g. [../services/portal/docs/](../services/portal/docs/)), which mirrors the `adrs / specs / findings / debt` tracks but defers all format + lifecycle authority to here. Rule of thumb: if another service would inherit it, it's global (here); if it dies with one service, it's service-local. `conventions/` and `glossary/` are global-only — never redefine a term or rule in a service tree; link to it.
 
 ## STRUCTURE
 ```
@@ -37,6 +39,7 @@ docs/
 | What debt we still owe | `debt/` |
 | Debt entry format | [debt/TEMPLATE.md](debt/TEMPLATE.md) |
 | Debt authoring policy & escalation rules | [debt/README.md](debt/README.md) |
+| Service-only docs (e.g. portal) | [../services/portal/docs/](../services/portal/docs/) |
 
 ## CONVENTIONS
 
