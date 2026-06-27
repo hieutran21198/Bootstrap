@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"strings"
 
@@ -62,9 +63,7 @@ func Parse[T any](ctx context.Context, dst *T, loaders ...Loader) error {
 		if err != nil {
 			return fmt.Errorf("env: Parse: loader failed: %w", err)
 		}
-		for k, v := range m {
-			merged[k] = v
-		}
+		maps.Copy(merged, m)
 	}
 	if err := caarlosenv.ParseWithOptions(dst, caarlosenv.Options{
 		Environment: merged,
