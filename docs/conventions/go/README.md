@@ -9,10 +9,12 @@ Workspace-wide rules for Go code. Each rule below is a standalone file; this REA
 
 ## Index
 
-| #    | Document                                                          | One-liner                                                                |
-| ---- | ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| 1    | [Creating a new Go package](creating-new-package.md)              | Pre-creation decision tree: classify, then template or hand-roll.        |
-| 2    | [Single-responsibility category](single-responsibility.md)        | What counts as SRP. Points at the templates that produce the shape.      |
+| #   | Document                                                   | One-liner                                                                             |
+| --- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1   | [Creating a new Go package](creating-new-package.md)       | Pre-creation decision tree: classify, then template or hand-roll.                     |
+| 2   | [Single-responsibility category](single-responsibility.md) | What counts as SRP. Points at the templates that produce the shape.                   |
+| 3   | [Code style](code-style.md)                                | File naming, doc comments, error handling, import grouping, interface placement.      |
+| 4   | [Service architecture](service-architecture.md)            | DDD aggregates, CQRS ports, UoW pattern, postgres repo shape (scoped to `services/`). |
 
 Templates referenced by document 1: [`templates/`](templates/) (`stateful.go.tmpl`, `stateless.go.tmpl`).
 
