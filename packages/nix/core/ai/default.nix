@@ -2,10 +2,12 @@
 {
   imports = [
     ./agents/default.nix
+    ./opencode/default.nix
     (lib.mkAliasOptionModule [ "core" "ai" "claude" ] [ "claude" "code" ])
-    (lib.mkAliasOptionModule [ "core" "ai" "opencode" ] [ "opencode" ])
-  ];
 
+    (lib.mkAliasOptionModule [ "core" "ai" "opencode" "enable" ] [ "opencode" "enable" ])
+    (lib.mkAliasOptionModule [ "core" "ai" "opencode" "agents" ] [ "opencode" "agents" ])
+  ];
   options.core.ai.tools = lib.mkOption {
     type = lib.types.attrsOf (
       lib.types.submodule {
@@ -102,8 +104,18 @@
     '';
   };
   config = {
-    files."CLAUDE.md" = lib.mkIf config.core.ai.claude.enable {
-      text = "@AGENTS.md";
+    core.ai.claude = {
+      settingsPath = config.core.workspace.root + "/.claude/settings.json";
+    };
+    files = {
+      ".claude/settings.json".json = lib.mkIf config.core.ai.claude.enable {
+        env = {
+          CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+        };
+      };
+      "CLAUDE.md" = lib.mkIf config.core.ai.claude.enable {
+        text = "@AGENTS.md";
+      };
     };
   };
 }

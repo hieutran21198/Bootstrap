@@ -7,23 +7,35 @@
   core = {
     ai = {
       agents = {
+        # DEPRECATED 2026-06-25. Migrating orchestration to Claude Code
+        # Agent Teams (https://code.claude.com/docs/en/agent-teams). The
+        # built-ins shipped in v2.1.187 cover Explore / Plan / general
+        # purpose; the spec-synthesis role lives in the team lead or a
+        # spawned teammate. Modules retained; flip to `true` only for a
+        # specific legacy workflow that has not yet been ported.
         coder = {
-          enable = true;
+          enable = false;
         };
         explorer = {
-          enable = true;
+          enable = false;
         };
         spec-writer = {
-          enable = true;
+          enable = false;
         };
       };
       claude = {
         enable = true;
       };
+      opencode = {
+        enable = true;
+        profile = "slim-go-openai";
+      };
+
     };
     workspace = {
       enable = true;
       name = "Bootstrap";
+      wsInfoDeepLevel = 2;
       treeInfos = {
         "README.md" = "Look at me first!";
 
@@ -38,6 +50,7 @@
         "packages" = "Public shared packages for the workspace";
 
         "services" = "Backend deployable services";
+        "services/portal" = "Portal backend";
         "apps" = "User-facing applications by platform";
 
         "deploy" = "Deployment and infrastructure definitions";

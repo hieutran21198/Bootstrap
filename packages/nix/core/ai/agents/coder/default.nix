@@ -1,3 +1,13 @@
+# DEPRECATED 2026-06-25. Claude Code v2.1.187 ships built-in agents
+# (claude-code-guide · haiku, claude · inherit, Explore · haiku,
+# general-purpose · inherit, Plan · inherit, statusline-setup · sonnet)
+# and the workspace is migrating orchestration to Agent Teams:
+#   https://code.claude.com/docs/en/agent-teams
+# The coder role is replaced by `general-purpose · inherit` or by a
+# teammate spawned via Agent Teams. Disabled in devenv.nix; module
+# retained so historical evaluation traces and old links keep resolving
+# — re-enable only for a specific legacy workflow that has not yet
+# been ported.
 {
   config,
   lib,
@@ -119,7 +129,7 @@
 
       renderTools = items: lib.concatMapStringsSep "\n" (item: "  - ${item}") items;
 
-      description = "Implementation agent that turns the Spec Writer's spec and the orchestrator's implementation intent into working code that compiles, lints, and tests clean inside the workspace. Implements; never re-decides settled design; never gathers new evidence — escalates gaps to the orchestrator.";
+      description = "[DEPRECATED — superseded by built-in `general-purpose · inherit` or a teammate spawned via Agent Teams (https://code.claude.com/docs/en/agent-teams)] Implementation agent that turns the Spec Writer's spec and the orchestrator's implementation intent into working code that compiles, lints, and tests clean inside the workspace. Implements; never re-decides settled design; never gathers new evidence — escalates gaps to the orchestrator.";
 
       toolGuidelinesBody =
         if sectionBodies.toolGuidelines != "" then

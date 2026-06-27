@@ -1,3 +1,13 @@
+# DEPRECATED 2026-06-25. Claude Code v2.1.187 ships built-in agents
+# (claude-code-guide · haiku, claude · inherit, Explore · haiku,
+# general-purpose · inherit, Plan · inherit, statusline-setup · sonnet)
+# and the workspace is migrating orchestration to Agent Teams:
+#   https://code.claude.com/docs/en/agent-teams
+# The spec-synthesis role has no direct built-in replacement; under
+# Agent Teams it lives in the team lead's session or in a teammate
+# spawned for synthesis. Disabled in devenv.nix; module retained so
+# historical evaluation traces and old links keep resolving — re-enable
+# only for a specific legacy workflow that has not yet been ported.
 {
   config,
   lib,
@@ -115,7 +125,7 @@
 
       renderTools = items: lib.concatMapStringsSep "\n" (item: "  - ${item}") items;
 
-      description = "Synthesis agent that turns the Explorer's findings and the user's design intent into one spec under the workspace's spec track. Synthesizes; never researches, never implements. Cites Explorer evidence or quotes user statements; marks gaps as assumptions or open questions.";
+      description = "[DEPRECATED — no direct built-in replacement; migrate orchestration to Agent Teams (https://code.claude.com/docs/en/agent-teams), synthesizing in the team lead or a spawned teammate] Synthesis agent that turns the Explorer's findings and the user's design intent into one spec under the workspace's spec track. Synthesizes; never researches, never implements. Cites Explorer evidence or quotes user statements; marks gaps as assumptions or open questions.";
 
       toolGuidelinesBody =
         if sectionBodies.toolGuidelines != "" then

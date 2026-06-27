@@ -28,6 +28,10 @@
       default = { };
       description = "Tree information for the workspace, including folder structure and metadata.";
     };
+    wsInfoDeepLevel = lib.mkOption {
+      type = lib.types.int;
+      default = 99;
+    };
     toolchainCommandInfos = lib.mkOption {
       type =
         with lib.types;
@@ -110,13 +114,15 @@
         ws-info.exec = ''
           cat <<EOF
           ---
-          root_dir: ${opts.root}
+          root_workspace_dir: ${config.git.root}
+          in_root_workspace: ${if (config.git.root == opts.root) then "true" else "false"}
+          workspace_dir: ${opts.root}
           name: ${opts.name}
           ---
           Welcome to development environment of ${opts.name}!
           ---
           # Workspace Layout
-          $(${lib.getExe wsTreePkg} --info -L 99 --gitignore --tabular --doc-only)
+          $(${lib.getExe wsTreePkg} --info -L ${toString opts.wsInfoDeepLevel} --gitignore --tabular --doc-only)
           ---
           # Workspace Commands
           devenv up                       # deploys the workspace and starts all services.

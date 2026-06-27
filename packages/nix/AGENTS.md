@@ -1,9 +1,11 @@
 # packages/nix/
 
 ## OVERVIEW
+
 Nix devenv modules for the workspace. `core/` provides mandatory tooling; `extra/` provides optional add-ons. Imported by root `devenv.yaml`.
 
 ## STRUCTURE
+
 ```
 packages/nix/
 ├── core/                     # mandatory workspace tooling
@@ -28,6 +30,7 @@ packages/nix/
 ```
 
 ## CONVENTIONS
+
 - **Import in `devenv.yaml`**: modules are imported via `packages/nix/core/devenv.yaml`; each submodule exports options via `options.<name>.*`
 - **Module ordering**: use descriptive directory names; no numeric prefix (that was the `_nixenv` convention — retired)
 - **Generated artifacts**: `workspace/default.nix` generates `.editorconfig`, `.info`; `toolchains/go/golangci-lint/default.nix` generates `.golangci.yml` — these are gitignored symlinks into Nix store; do not hand-edit
@@ -39,10 +42,11 @@ packages/nix/
 - **AI tools registry — order bands**: `0-29` foundation (workspace=10, docs=15, docs-findings=16, docs-debt=17, docs-specs=18, git=20), `30-69` languages and standard toolchains (go=50), `70-99` specialised / cloud-side toolchains (aws=80), `100+` ad-hoc additions. Lower numbers render first inside each section.
 
 ## ANTI-PATTERNS
+
 - ✗ Place Nix module logic outside `packages/nix/core/` or `packages/nix/extra/`
 - ✗ Hand-edit generated artifacts (`.golangci.yml`, `.editorconfig`, `.info`) — Nix regenerates them on `direnv reload`
 - ✗ Use numeric prefixes for module dirs (`_nixenv` pattern is retired)
 - ✗ Import `extra/` modules from `core/` — `extra/` is opt-in, not forced
-- ✗ Embed any workspace-specific knowledge in agent files under `core/ai/agents/`. The agent owns *role* (identity, methodology, discipline, generic output shape); the workspace owns *knowledge* (folder paths like `docs/findings/`, doc track names, file templates like `TEMPLATE.md`, naming conventions like `YYYY-MM-DD`-kebab-case, evidence-layout patterns like `<filename>.assets/`, specific tool names, `optionalString awsEnabled "..."`-style conditionals). Knowledge belongs in the owning module via `core.ai.tools.<name>.sections.<key>`. If you find yourself adding a path, a tool name, or a convention to an agent file, stop — find the module that owns it and contribute from there. Agents are renderers; the registry is the source of truth.
+- ✗ Embed any workspace-specific knowledge in agent files under `core/ai/agents/`. The agent owns _role_ (identity, methodology, discipline, generic output shape); the workspace owns _knowledge_ (folder paths like `docs/findings/`, doc track names, file templates like `TEMPLATE.md`, naming conventions like `YYYY-MM-DD`-kebab-case, evidence-layout patterns like `<filename>.assets/`, specific tool names, `optionalString awsEnabled "..."`-style conditionals). Knowledge belongs in the owning module via `core.ai.tools.<name>.sections.<key>`. If you find yourself adding a path, a tool name, or a convention to an agent file, stop — find the module that owns it and contribute from there. Agents are renderers; the registry is the source of truth.
 - ✗ Wrap an entire `attrsOf X` attribute in `lib.mkIf` when assigning through an alias — e.g. `core.ai.claude.agents = lib.mkIf cond { explorer = "..."; }`. The module merger stores the raw `mkIf` wrapper (`_type`/`condition`/`content`) instead of unpacking it, and the downstream consumer sees a broken value. Instead, push `mkIf` down to the leaf: `core.ai.claude.agents.explorer = lib.mkIf cond "...";`.
-- ✗ Guess the upstream `agents` schema. `claude.agents` (devenv `src/modules/integrations/claude.nix`) takes a **submodule** with `{ description; proactive; tools; model; prompt; permissionMode; }`. `opencode.agents` (devenv `src/modules/integrations/opencode.nix`) takes **`lines`** (markdown with YAML frontmatter). They are *not* the same; do not render one format and assume both consumers accept it. When adding a new agent, read the actual upstream module file in `/nix/store/<hash>-source/src/modules/integrations/` first.
+- ✗ Guess the upstream `agents` schema. `claude.agents` (devenv `src/modules/integrations/claude.nix`) takes a **submodule** with `{ description; proactive; tools; model; prompt; permissionMode; }`. `opencode.agents` (devenv `src/modules/integrations/opencode.nix`) takes **`lines`** (markdown with YAML frontmatter). They are _not_ the same; do not render one format and assume both consumers accept it. When adding a new agent, read the actual upstream module file in `/nix/store/<hash>-source/src/modules/integrations/` first. The _native_ Claude Code v2.1.187 agent schema (built-ins, frontmatter fields, the tools/skills two-gate model, and the gaps in these renderers) is documented in [docs/findings/2026-06-26-claude-code-agent-configuration.md](../../docs/findings/2026-06-26-claude-code-agent-configuration.md) — but the devenv integration submodule is a layer above it, so confirm which native fields it actually forwards before relying on them.

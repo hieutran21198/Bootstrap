@@ -1,3 +1,12 @@
+# DEPRECATED 2026-06-25. Claude Code v2.1.187 ships built-in agents
+# (claude-code-guide · haiku, claude · inherit, Explore · haiku,
+# general-purpose · inherit, Plan · inherit, statusline-setup · sonnet)
+# and the workspace is migrating orchestration to Agent Teams:
+#   https://code.claude.com/docs/en/agent-teams
+# The explorer role is superseded by the built-in `Explore · haiku`.
+# Disabled in devenv.nix; module retained so historical evaluation
+# traces and old links keep resolving — re-enable only for a specific
+# legacy workflow that has not yet been ported.
 {
   config,
   lib,
@@ -115,7 +124,7 @@
 
       renderTools = items: lib.concatMapStringsSep "\n" (item: "  - ${item}") items;
 
-      description = "Research agent that gathers task context and evidence across the codebase, the internet, available tools, MCP servers, and registered toolchains. Read-only: investigates and reports; never decides, never implements.";
+      description = "[DEPRECATED — superseded by built-in `Explore · haiku`; migrate orchestration to Agent Teams (https://code.claude.com/docs/en/agent-teams)] Research agent that gathers task context and evidence across the codebase, the internet, available tools, MCP servers, and registered toolchains. Read-only: investigates and reports; never decides, never implements.";
 
       toolGuidelinesBody =
         if sectionBodies.toolGuidelines != "" then

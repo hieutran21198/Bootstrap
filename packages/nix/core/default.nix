@@ -5,6 +5,7 @@
     ./docs/default.nix
     ./git/default.nix
     ./secrets/default.nix
+    ./services/default.nix
     ./workspace/default.nix
     ./toolchains/default.nix
   ];
