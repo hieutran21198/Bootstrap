@@ -1,14 +1,14 @@
 # Findings
 
-Findings are the **written record of an investigation** — debugging post-mortems, performance analyses, library evaluations, security verifications, reproducibility checks. They answer *what we found when we looked*, with enough evidence that the next contributor hitting the same symptom can skip the discovery work.
+Findings are the **written record of an investigation** — debugging post-mortems, performance analyses, library evaluations, security verifications, reproducibility checks. They answer _what we found when we looked_, with enough evidence that the next contributor hitting the same symptom can skip the discovery work.
 
-| Track                            | Question it answers              | Lifecycle             |
-| -------------------------------- | -------------------------------- | --------------------- |
-| [adrs/](../adrs/)                | *Why did we choose this?*        | Append-only, dated    |
-| [conventions/](../conventions/)  | *What is the rule, right now?*   | Living, edit-in-place |
-| [specs/](../specs/)              | *How is this built?*             | Living per spec       |
-| [glossary/](../glossary/)        | *What does this term mean here?* | Living, edit-in-place |
-| findings/                        | *What did we find?*              | Append-only, dated    |
+| Track                           | Question it answers              | Lifecycle             |
+| ------------------------------- | -------------------------------- | --------------------- |
+| [adrs/](../adrs/)               | _Why did we choose this?_        | Append-only, dated    |
+| [conventions/](../conventions/) | _What is the rule, right now?_   | Living, edit-in-place |
+| [specs/](../specs/)             | _How is this built?_             | Living per spec       |
+| [glossary/](../glossary/)       | _What does this term mean here?_ | Living, edit-in-place |
+| findings/                       | _What did we find?_              | Append-only, dated    |
 
 A finding is the **single source of truth for what happened during an investigation** — never re-edited once `Resolved`, only superseded by a newer finding. ADRs cite findings; commit messages cite findings; the next bug report's first place to look is `docs/findings/`.
 
@@ -16,7 +16,7 @@ A finding is the **single source of truth for what happened during an investigat
 
 [TEMPLATE.md](TEMPLATE.md) is the skeleton for **one finding**: front matter (`Status`, `Authors`, `Investigated`, `Tracks`), then the sections — **Symptom / Reproduction / Hypotheses considered / Investigation / Root cause / Resolution / References**.
 
-The shape borrows from the [Google SRE blameless-postmortem tradition](https://sre.google/sre-book/postmortem-culture/) (Symptom → Investigation → Root cause → Resolution), generalised so it fits non-incident work: a library evaluation has no "symptom" in the operator sense, but `Symptom` becomes *the question we set out to answer*, and the rest of the structure carries.
+The shape borrows from the [Google SRE blameless-postmortem tradition](https://sre.google/sre-book/postmortem-culture/) (Symptom → Investigation → Root cause → Resolution), generalised so it fits non-incident work: a library evaluation has no "symptom" in the operator sense, but `Symptom` becomes _the question we set out to answer_, and the rest of the structure carries.
 
 ## Layout
 
@@ -48,8 +48,8 @@ docs/findings/YYYY-MM-DD-<title>.md             # top-level finding
 docs/findings/<area>/YYYY-MM-DD-<title>.md      # grouped under an area
 ```
 
-- **Date prefix** — `YYYY-MM-DD` of the day the investigation began, not the day the symptom first appeared. Findings are reached by *when we investigated*, not by sequence.
-- **Title in kebab-case**, describing *what was investigated* — `portal-token-leak`, not `bug-12345-investigation`. Read the filename, know the topic.
+- **Date prefix** — `YYYY-MM-DD` of the day the investigation began, not the day the symptom first appeared. Findings are reached by _when we investigated_, not by sequence.
+- **Title in kebab-case**, describing _what was investigated_ — `portal-token-leak`, not `bug-12345-investigation`. Read the filename, know the topic.
 - **No numbering** — the date sorts. Numbering belongs to ADRs.
 - **One investigation per file** — atomic, linkable, standalone. Multiple symptoms with one root cause is one finding; one symptom branching into multiple causes is still one finding.
 
@@ -63,7 +63,7 @@ Findings are **append-only**. `Status` transitions:
 
 Once a finding is `Resolved`, the body is **never re-edited** except for typos. If new evidence contradicts the root cause, write a new finding that supersedes this one — the original stays as the historical record of what was believed at the time.
 
-A finding **may produce** an ADR, a spec, or a new convention. The finding's *Resolution* / *References* points forward at those artifacts; the artifact's *References* points back at the finding that motivated it.
+A finding **may produce** an ADR, a spec, or a new convention. The finding's _Resolution_ / _References_ points forward at those artifacts; the artifact's _References_ points back at the finding that motivated it.
 
 ## Writing a new finding
 
@@ -81,7 +81,6 @@ Heavy evidence (profiles, traces, raw logs) goes under `${DATE}-${TITLE}.assets/
 
 ## Index
 
-_No findings yet._
-
-| Date | Finding | Status | Tracks |
-| ---- | ------- | ------ | ------ |
+| Date       | Finding                                                                          | Status   | Tracks |
+| ---------- | -------------------------------------------------------------------------------- | -------- | ------ |
+| 2026-06-26 | [claude-code-agent-configuration](2026-06-26-claude-code-agent-configuration.md) | Resolved | —      |
