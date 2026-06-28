@@ -17,13 +17,107 @@
   margin: 0;
 }
 
+.heroButtons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.75rem;
+}
+
+.buttonPrimary,
+.buttonSecondary {
+  display: inline-block;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.buttonPrimary {
+  background: var(--ifm-color-primary);
+  color: var(--ifm-button-color, #fff);
+}
+
+.buttonPrimary:hover {
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+.buttonSecondary {
+  background: transparent;
+  color: var(--ifm-color-primary);
+  border: 1px solid var(--ifm-color-primary);
+}
+
+.buttonSecondary:hover {
+  text-decoration: none;
+  background: var(--ifm-color-emphasis-100);
+}
+
+.section {
+  max-width: 880px;
+  margin: 2.5rem auto;
+  padding: 0 1rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem;
+}
+
+.lead {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--ifm-color-emphasis-800);
+  margin: 0;
+}
+
+.sectionLead {
+  font-size: 1rem;
+  color: var(--ifm-color-emphasis-700);
+  margin: 0 0 1rem;
+}
+
+.codeBlock {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.links {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.linkChip {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 999px;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--ifm-color-primary);
+  transition: border-color 0.15s ease;
+}
+
+.linkChip:hover {
+  text-decoration: none;
+  border-color: var(--ifm-color-primary);
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.25rem;
-  max-width: 880px;
-  margin: 2.5rem auto;
-  padding: 0 1rem;
 }
 
 .card {
