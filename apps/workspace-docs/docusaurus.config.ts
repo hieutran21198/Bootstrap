@@ -1,7 +1,25 @@
+import path from 'node:path';
 import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import type {Options as DocsOptions} from '@docusaurus/plugin-content-docs';
+
+import remarkRepoLinks from './plugins/remark-repo-links.mjs';
+
+// apps/workspace-docs -> repo root is two levels up.
+const repoRoot = path.resolve(__dirname, '../..');
+const githubBaseUrl = 'https://github.com/hieutran21198/Bootstrap';
+
+const docRoots = [
+  // The workspace docs tree has no root index page; AGENTS.md is its landing.
+  {dir: path.join(repoRoot, 'docs'), route: '/docs', indexRoute: '/docs/AGENTS'},
+  {dir: path.join(repoRoot, 'services/portal/docs'), route: '/portal'},
+];
+
+const repoLinksPlugin = [
+  remarkRepoLinks,
+  {repoRoot, githubBaseUrl, branch: 'main', docRoots},
+] as const;
 
 const config: Config = {
   title: 'Bootstrap Workspace Docs',
@@ -52,6 +70,7 @@ const config: Config = {
         sidebarPath: './sidebarsWorkspace.ts',
         include: ['**/*.md', '**/*.mdx'],
         exclude: ['**/_*.{js,jsx,ts,tsx,md,mdx}', '**/_*/**', '**/.*/**'],
+        remarkPlugins: [repoLinksPlugin],
       } satisfies DocsOptions,
     ],
     [
@@ -63,6 +82,7 @@ const config: Config = {
         sidebarPath: './sidebarsPortal.ts',
         include: ['**/*.md', '**/*.mdx'],
         exclude: ['**/_*.{js,jsx,ts,tsx,md,mdx}', '**/_*/**', '**/.*/**'],
+        remarkPlugins: [repoLinksPlugin],
       } satisfies DocsOptions,
     ],
   ],
