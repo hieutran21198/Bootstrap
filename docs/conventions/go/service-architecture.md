@@ -2,8 +2,8 @@
 
 > **Scope**: every service module under `services/*/internal/`. Does **not** apply to `packages/go/` (see [single-responsibility.md](single-responsibility.md)) or `tools/`.
 > **Status**: Active
-> **Decided by**: [ADR-0003](../../adrs/0003-service-architecture.md) (architecture), [ADR-0004](../../adrs/0004-typed-aggregate-ids-uuidv7.md) (typed IDs + UUIDv7)
-> **Last reviewed**: 2026-06-26
+> **Decided by**: [ADR-0003](../../adrs/0003-service-architecture.md) (architecture), [ADR-0004](../../adrs/0004-typed-aggregate-ids-uuidv7.md) (typed IDs + UUIDv7), [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md) (tenant-scoped UoW + RLS)
+> **Last reviewed**: 2026-06-28
 
 DDD + CQRS + Hexagonal patterns adapted from [ThreeDotsLabs Wild Workouts](https://github.com/ThreeDotsLabs/wild-workouts-go-ddd-example) to this workspace's naming. The portal service is the canonical example; any new service should follow the same shape unless an explicit ADR diverges.
 
@@ -248,7 +248,7 @@ type Reader interface {
 
 - **CQRS at the port level.** Never mix mutations and queries in one interface.
 - **All ID parameters in ports are typed `ID`**, not raw string. The repo adapter casts `string(id)` only when crossing the SQL boundary.
-- **Each writer method has one clear mission.** `Create` inserts. `Update` overwrites an existing row keyed on the aggregate's ID. No callback parameters; no upserts. Read-modify-write atomicity is the caller's job, scoped via `command.UnitOfWork.DoTransaction`.
+- **Each writer method has one clear mission.** `Create` inserts. `Update` overwrites an existing row keyed on the aggregate's ID. No callback parameters; no upserts. Read-modify-write atomicity is the caller's job, scoped via `command.UnitOfWork.DoOrganizationTransaction`.
 - **`Update` returns `NotFoundError`** when no row matches `o.ID()`. The aggregate handed in is the result of a previous load + in-memory mutation; the repo does not load, mutate, or re-validate.
 - **File is named `port.go`** — not `repository.go`, not `repo.go`. One per domain package.
 - **Implicit satisfaction.** Adapters never `implements` anything; Go's structural typing connects them. Compile-time `var _ X.Writer = (*XWriter)(nil)` is used in adapter files to catch drift.
@@ -293,16 +293,30 @@ func (h HireStaffHandler) Handle(ctx context.Context, cmd HireStaff) error {
 }
 ```
 
-Read-modify-write handlers acquire transactional scope through the UoW; the closure does the load, the in-memory mutation, and the persist explicitly:
+All writes — single-aggregate or read-modify-write — acquire scope through `DoOrganizationTransaction`. The handler passes the tenant `organization.ID`; the closure does the load, the in-memory mutation, and the persist explicitly. The org id binds Row-Level Security for the whole transaction (see [Unit of Work](#unit-of-work)):
 
 ```go
 // services/portal/internal/app/command/rename_organization.go (sketch)
 func (h RenameOrganizationHandler) Handle(ctx context.Context, cmd RenameOrganization) error {
-    return h.uow.DoTransaction(ctx, func(ctx context.Context, utx command.TransactionalUnitOfWork) error {
-        org, err := utx.Organizations().ByID(ctx, organization.ID(cmd.ID))  // Reader, same tx
+    orgID := organization.ID(cmd.ID)
+    return h.uow.DoOrganizationTransaction(ctx, orgID, func(ctx context.Context, utx command.TransactionalUnitOfWork) error {
+        org, err := utx.Organizations().ByID(ctx, orgID)  // Reader, same RLS-bound tx
         if err != nil { return err }
         if err := org.Rename(cmd.NewName); err != nil { return err }
         return utx.Organizations().Update(ctx, org)
+    })
+}
+```
+
+A single-aggregate write is the same shape — there is no separate auto-commit call:
+
+```go
+// services/portal/internal/app/command/hire_staff.go (sketch)
+func (h HireStaffHandler) Handle(ctx context.Context, cmd HireStaff) error {
+    // ... build the staff aggregate (see Command handlers above) ...
+    orgID := organization.ID(cmd.OrganizationID)
+    return h.uow.DoOrganizationTransaction(ctx, orgID, func(ctx context.Context, utx command.TransactionalUnitOfWork) error {
+        return utx.Staffs().Create(ctx, s)
     })
 }
 ```
@@ -312,20 +326,26 @@ func (h RenameOrganizationHandler) Handle(ctx context.Context, cmd RenameOrganiz
 - **Command structs**: public fields, no methods. Plain data. IDs in command structs are `string` — they arrive from HTTP/JSON which is untyped.
 - **Cast to typed `ID` at the boundary** when calling into domain factories: `staff.ID(cmd.StaffID)`.
 - **Handlers** depend on `UnitOfWork` (or the narrower `TransactionalUnitOfWork`). NEVER on `*gorm.DB`, `*sql.Tx`, or concrete repo types.
-- **Read-modify-write happens inside `DoTransaction`.** The handler — not the repo — loads via the Reader, mutates the aggregate in memory using domain methods, and calls `Writer.Update`. Atomicity is the UoW's responsibility.
+- **Every write runs inside `DoOrganizationTransaction`.** The handler passes the tenant `organization.ID` and — inside the closure — loads via the Reader, mutates the aggregate in memory using domain methods, and calls `Writer.Create` / `Writer.Update`. Atomicity and tenant scoping are the UoW's responsibility.
+- **The org id is the tenant boundary.** It is validated and bound to the connection (RLS) before any statement runs; never derive it from inside the aggregate being written — it comes from the authenticated request.
 - **One file per use case**: `<verb>_<aggregate>.go` (e.g., `hire_staff.go`, `rename_organization.go`).
 
 ### Unit of Work
 
 The write-side persistence port. Interface in `app/command/port.go`, postgres implementation in `infra/postgres/uow/uow.go`.
 
+This workspace is **multi-tenant**: every write MUST be scoped to an organization so [Row-Level Security](../../adrs/0008-tenant-scoped-unit-of-work-rls.md) can enforce isolation at the database. The port reflects that — a single, tenant-scoped entry point and no org-less auto-commit path.
+
 ```go
 // services/portal/internal/app/command/port.go
 type UnitOfWork interface {
-    DoTransaction(ctx context.Context, handler func(ctx context.Context, utx TransactionalUnitOfWork) error) error
-    TransactionalUnitOfWork  // interface embedding
+    DoOrganizationTransaction(ctx context.Context, id organization.ID, handler TransactionalUnitOfWorkHandler) error
 }
 
+// TransactionalUnitOfWorkHandler runs inside the open, RLS-bound transaction.
+type TransactionalUnitOfWorkHandler func(ctx context.Context, utx TransactionalUnitOfWork) error
+
+// TransactionalUnitOfWork is the accessor surface inside the transaction.
 type TransactionalUnitOfWork interface {
     Organizations() organization.Writer
     Staffs() staff.Writer
@@ -333,17 +353,18 @@ type TransactionalUnitOfWork interface {
 }
 ```
 
-#### Two modes, one accessor surface
+#### One tenant-scoped entry point
 
-| Mode               | Code                                                                                    | Behavior                                                  |
-| ------------------ | --------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Auto-commit        | `uow.Organizations().Save(ctx, o)`                                                        | One writer call = one auto-committed statement            |
-| Atomic multi-write | `uow.DoTransaction(ctx, func(ctx, utx) error { utx.Organizations().Save(...); ... })` | All writers inside the closure share one transaction      |
+| Call                                                                          | Behavior                                                                                       |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `uow.DoOrganizationTransaction(ctx, orgID, func(ctx, utx) error { ... })`      | Validates `orgID`, binds RLS (`set_config('app.organization_id', …, true)`), runs the closure in one transaction; every writer reached through `utx` is filtered to `orgID` |
+
+There is intentionally **no auto-commit / org-less write path**. A single-aggregate write is just a one-line closure (see [Command handlers](#command-handlers)). For a service that is genuinely **not** multi-tenant and needs no RLS, the org-less `DoTransaction` variant is documented in [Unit of Work implementation](#unit-of-work-implementation) and kept commented out in `uow.go`.
 
 #### Handler dependency choice
 
-- Depend on **`UnitOfWork`** if either mode is acceptable.
-- Depend on **`TransactionalUnitOfWork`** if the handler MUST run inside a transaction. The narrower type is a compile-time invariant — there's no way to call `DoTransaction` from it.
+- Depend on **`UnitOfWork`** to start a tenant-scoped transaction.
+- Depend on **`TransactionalUnitOfWork`** if the handler MUST run *inside* an already-open transaction (e.g., a sub-step composed by another handler). The narrower type is a compile-time invariant — it has no way to open a new transaction or escape the tenant scope.
 
 ---
 
@@ -429,14 +450,20 @@ func rowToOrganization(row organizationRow) (*organization.Organization, error) 
 - **Row struct is package-internal** (lowercase). Row fields are raw string for IDs — typed `ID` is a domain concept.
 - **Cast string ↔ ID at the SQL boundary** (`string(id)` for queries, `domain.ID(row.ID)` for hydration). This is the documented type-transition point.
 - **NEVER put GORM tags on aggregate types.** Domain stays tag-free.
-- **No internal transactions in the repo.** `Create` and `Update` issue a single statement each. Atomicity is composed by the caller via `UnitOfWork.DoTransaction`; the `*gorm.DB` the writer receives is either the root DB (auto-commit) or a tx-scoped DB supplied by `DoTransaction`.
+- **No internal transactions in the repo.** `Create` and `Update` issue a single statement each. Atomicity and tenant scoping are composed by the caller via `UnitOfWork.DoOrganizationTransaction`; the `*gorm.DB` the writer receives is the tx-scoped, RLS-bound DB supplied by that method.
 - **`Update` uses `Select("*").Updates(&row)`** so zero values (e.g., `Deactivated=false`) are written. Detect the not-found case via `RowsAffected == 0` and return `domain.NotFoundError`.
 - **Return `domain.NotFoundError` exactly** when no row matches, with the typed `ID` field populated. Callers use `errors.As`.
 - **Compile-time `var _ X.Writer = (*XWriter)(nil)`** lives at the bottom of the file. If the interface changes, this line breaks the build.
 
 ### Unit of Work implementation
 
-Dual-mode via interface composition + struct embedding.
+Two-struct pattern (inner `txUnitOfWork` + outer `UnitOfWork`), with the
+transaction starter binding the tenant before the handler runs.
+
+#### Variant A — multi-tenant (default, RLS-scoped)
+
+This is the portal's shape. `DoOrganizationTransaction` validates the id, binds
+the org GUC for RLS, then hands a fresh tx-scoped wrapper to the closure.
 
 ```go
 // services/portal/internal/infra/postgres/uow/uow.go
@@ -453,13 +480,33 @@ var _ command.TransactionalUnitOfWork = (*txUnitOfWork)(nil)
 
 type UnitOfWork struct {
     db *gorm.DB
-    *txUnitOfWork           // embed → root-db auto-commit accessors
+    *txUnitOfWork           // embed only to satisfy the accessor surface at construction
 }
 
-func (u *UnitOfWork) DoTransaction(ctx context.Context, handler func(ctx context.Context, utx command.TransactionalUnitOfWork) error) error {
+var ErrOrganizationRLSCannotBeBound = errors.New("organization RLS scope cannot be bound")
+
+func (u *UnitOfWork) DoOrganizationTransaction(ctx context.Context, id organization.ID, handler command.TransactionalUnitOfWorkHandler) error {
     return u.db.Transaction(func(tx *gorm.DB) error {
-        return handler(ctx, newTxUnitOfWork(tx))  // fresh wrapper bound to tx
+        if err := idgen.Validate(id); err != nil {       // reject malformed / empty tenant id
+            return organization.ErrEmptyID
+        }
+        if err := bindOrganizationRLS(ctx, tx, id); err != nil {
+            return err
+        }
+        return handler(ctx, newTxUnitOfWork(tx))          // fresh wrapper bound to the RLS-bound tx
     })
+}
+
+// bindOrganizationRLS sets the tenant GUC transaction-locally (is_local=true),
+// so it reverts on COMMIT/ROLLBACK and a pooled connection never leaks one
+// request's org to the next.
+func bindOrganizationRLS(ctx context.Context, tx *gorm.DB, id organization.ID) error {
+    if err := tx.WithContext(ctx).Exec(
+        `select set_config('app.organization_id', ?, true)`, id.String(),
+    ).Error; err != nil {
+        return fmt.Errorf("%w: %v", ErrOrganizationRLSCannotBeBound, err)
+    }
+    return nil
 }
 
 var _ command.UnitOfWork = (*UnitOfWork)(nil)
@@ -469,10 +516,26 @@ func New(db *gorm.DB) *UnitOfWork {
 }
 ```
 
+#### Variant B — non-multi-tenant (no RLS)
+
+Only for a service that has no tenant boundary. Drop the org id and the RLS
+bind; the port becomes `DoTransaction(ctx, handler)`. Keep this commented out
+in `uow.go` unless the service is genuinely single-tenant.
+
+```go
+// Port:  DoTransaction(ctx context.Context, handler TransactionalUnitOfWorkHandler) error
+func (u *UnitOfWork) DoTransaction(ctx context.Context, handler command.TransactionalUnitOfWorkHandler) error {
+    return u.db.Transaction(func(tx *gorm.DB) error {
+        return handler(ctx, newTxUnitOfWork(tx))
+    })
+}
+```
+
 #### Rules
 
-- **Two-struct pattern**: inner `txUnitOfWork` (one db, accessor methods) + outer `UnitOfWork` (root db + embedded inner).
-- **`DoTransaction` creates a fresh inner wrapper** bound to the gorm tx-scoped db. This is the trick that makes transactional mode safe.
+- **Two-struct pattern**: inner `txUnitOfWork` (one db, accessor methods) + outer `UnitOfWork` (root db + embedded inner). The embedded inner exists only to satisfy the accessor surface at construction; handlers receive a tx-scoped wrapper from the transaction callback, never the root-db one.
+- **The transaction starter creates a fresh inner wrapper** bound to the gorm tx-scoped db. This is the trick that makes transactional mode safe.
+- **Multi-tenant default**: bind RLS (`set_config('app.organization_id', …, true)`) as the FIRST statement, after validating the id. The GUC name must match the table policies — see the `rls-patterns` skill (`packages/nix/core/ai/skills/db-rls-patterns/`).
 - **Compile-time `var _ command.UnitOfWork = (*UnitOfWork)(nil)`** and `var _ command.TransactionalUnitOfWork = (*txUnitOfWork)(nil)`.
 
 ---
@@ -486,7 +549,8 @@ func New(db *gorm.DB) *UnitOfWork {
 - ✗ **Mixing mutations and queries in one Repository interface.** Breaks CQRS at the port level.
 - ✗ **Cross-aggregate direct pointer references** (e.g., `Staff.organization *Organization`). Use UUID strings.
 - ✗ **File `<entity>_repo.go` in `package repo`.** Stutter — see [code-style.md § 1](code-style.md#1-file-naming--no-package-name-stutter).
-- ✗ **Read-modify-write outside `UnitOfWork.DoTransaction`** when atomicity matters. The handler — not the repo — composes the load + mutate + Update inside the closure; the repo issues single statements.
+- ✗ **Read-modify-write outside `UnitOfWork.DoOrganizationTransaction`** when atomicity matters. The handler — not the repo — composes the load + mutate + Update inside the closure; the repo issues single statements.
+- ✗ **An org-less write path in a multi-tenant service.** Every write goes through `DoOrganizationTransaction` so RLS is bound; the bare `DoTransaction` variant is for non-multi-tenant services only — see [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md).
 - ✗ **Callback-style repository methods** (`Update(ctx, id, func(*T) (*T, error)) error`). Each Writer method has one clear mission: `Create` inserts, `Update` overwrites. Read-modify-write composition is the caller's job — see [ADR-0005](../../adrs/0005-collection-style-repositories.md).
 - ✗ **Generic `Save` upsert** that silently inserts when the row is missing. `Create` and `Update` are distinct missions; mixing them masks bugs (an `Update` against a deleted row should fail loudly, not silently re-create).
 - ✗ **Returning `*gorm.DB` or `*sql.Tx`** from app-layer code. Transaction handles never leak into `app/`.

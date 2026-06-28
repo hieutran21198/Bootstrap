@@ -15,36 +15,43 @@ import (
 	"context"
 )
 
-// UnitOfWork is the write-side persistence port command handlers
-// depend on. It composes [TransactionalUnitOfWork] (the accessor
-// surface) with DoTransaction (the transaction starter), so a single
-// dependency exposes both modes to a handler:
-//
-//   - Single-aggregate writes use the embedded [TransactionalUnitOfWork]
-//     accessors directly (e.g. uow.Organizations().Save(ctx, o)); the
-//     implementation runs them in auto-commit mode.
-//   - Atomic multi-aggregate writes call DoTransaction; the closure
-//     receives a [TransactionalUnitOfWork] bound to an open transaction
-//     and every writer resolved through it commits or rolls back
-//     together.
-//
-// Handlers that MUST run inside an open transaction should depend on
-// [TransactionalUnitOfWork] directly instead — see that type's docs.
-type UnitOfWork interface {
-	DoTransaction(ctx context.Context, handler func(ctx context.Context, utx TransactionalUnitOfWork) error) error
-	TransactionalUnitOfWork
-}
-
 // TransactionalUnitOfWork is the accessor surface a command handler
 // sees inside an open transaction. Each method returns a per-aggregate
 // Writer bound to the current transaction; mutations made through
 // these writers commit or roll back as one unit.
 //
-// Depending on this narrower interface instead of [UnitOfWork] is a
-// type-level statement that the handler MUST run inside a
-// DoTransaction closure — it has no way to start a fresh transaction
-// or escape into auto-commit mode.
+// The transaction is always tenant-scoped: it is opened by
+// [UnitOfWork.DoOrganizationTransaction], which binds the organization
+// to the connection (Row-Level Security) before the handler runs. Every
+// writer reached through this surface is therefore constrained to that
+// one organization's rows.
 type TransactionalUnitOfWork interface {
 	Organizations() organization.Writer
 	Staffs() staff.Writer
+}
+
+// TransactionalUnitOfWorkHandler is the closure a command handler passes
+// to [UnitOfWork.DoOrganizationTransaction]. It runs inside the open,
+// tenant-scoped transaction and reaches every Writer through utx; the
+// whole closure commits or rolls back as one unit.
+type TransactionalUnitOfWorkHandler func(ctx context.Context, utx TransactionalUnitOfWork) error
+
+// UnitOfWork is the write-side persistence port command handlers depend
+// on. It exposes a single, tenant-scoped entry point:
+//
+//   - DoOrganizationTransaction(ctx, id, handler) opens a transaction,
+//     validates id, binds the organization to the connection via
+//     Row-Level Security (set_config('app.organization_id', …, true)),
+//     and hands the caller a [TransactionalUnitOfWork] bound to that
+//     transaction. Every writer resolved through it is automatically
+//     filtered to the bound organization; the closure commits or rolls
+//     back as one unit.
+//
+// There is intentionally no org-less / auto-commit write path: in a
+// multi-tenant system every write MUST be scoped to an organization so
+// RLS can enforce isolation. The id is validated as a UUIDv7
+// (see idgen.Validate) before any statement runs; an invalid or empty
+// id aborts the transaction.
+type UnitOfWork interface {
+	DoOrganizationTransaction(ctx context.Context, id organization.ID, handler TransactionalUnitOfWorkHandler) error
 }

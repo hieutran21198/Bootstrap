@@ -19,8 +19,8 @@
           statements = {
             whenInvocation = [
               "Creating or modifying API routes that access the database"
-              "Writing new/raw SQL scripts"
-              "Working with user data, payments, subscriptions, or enrollments"
+              "Adding an org-scoped table or aggregate (carries organization_id, like portal staff)"
+              "Writing goose migrations, repos, or the UnitOfWork transaction path"
             ];
           };
         };

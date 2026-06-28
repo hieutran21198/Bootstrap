@@ -80,13 +80,15 @@ services/portal/
 
 - Per-aggregate `port.go` contains `NotFoundError`, `Writer` (mutations only), and `Reader` (queries only).
 - CQRS is enforced at the port level — Writer and Reader never share methods.
-- `Writer.Create(ctx, *T)` inserts a new aggregate; `Writer.Update(ctx, *T)` overwrites an existing row keyed on `T.ID()` and returns `NotFoundError` when no row matches. No callback parameters. Read-modify-write atomicity is composed by the caller via `UnitOfWork.DoTransaction` — see [ADR-0005](../../docs/adrs/0005-collection-style-repositories.md).
+- `Writer.Create(ctx, *T)` inserts a new aggregate; `Writer.Update(ctx, *T)` overwrites an existing row keyed on `T.ID()` and returns `NotFoundError` when no row matches. No callback parameters. Read-modify-write atomicity is composed by the caller via `UnitOfWork.DoOrganizationTransaction` — see [ADR-0005](../../docs/adrs/0005-collection-style-repositories.md).
 
 ### Unit of Work
 
-- Interface lives in `internal/app/command/port.go` (`UnitOfWork` + narrower `TransactionalUnitOfWork`).
-- Postgres implementation lives in `internal/infra/postgres/uow/uow.go` — dual-mode via interface composition + struct embedding.
-- Handlers depending on `UnitOfWork` get both auto-commit and transactional modes; handlers depending on `TransactionalUnitOfWork` are restricted to inside-DoTransaction by type.
+- Interface lives in `internal/app/command/port.go` (`UnitOfWork` + the accessor surface `TransactionalUnitOfWork` + the `TransactionalUnitOfWorkHandler` closure type).
+- Postgres implementation lives in `internal/infra/postgres/uow/uow.go`.
+- **Every write is tenant-scoped.** `UnitOfWork` exposes a single entry point, `DoOrganizationTransaction(ctx, id organization.ID, handler)`: it validates `id` (`idgen.Validate`), binds the org to the connection for Row-Level Security via `set_config('app.organization_id', …, true)` (transaction-local) in `bindOrganizationRLS`, then runs `handler` with a tx-scoped `TransactionalUnitOfWork`. Writers reached through it are filtered to that one organization; the closure commits or rolls back as one unit.
+- There is **no org-less / auto-commit write path** — RLS requires every write to carry an organization. The org-less `DoTransaction` is left commented out in `uow.go` for non-multi-tenant systems only.
+- RLS policy authoring + the GUC contract (`app.organization_id`) are documented in the `rls-patterns` skill (`packages/nix/core/ai/skills/db-rls-patterns/`).
 
 ### Postgres repo
 

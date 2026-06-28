@@ -15,7 +15,8 @@
           ofType = with lib.types; str;
           default = [
             "Creating or modifying API routes that access the database"
-            "Accessing admin-only tables (disputes, webhook_events)"
+            "Adding an org-scoped table or aggregate (carries organization_id, like portal staff)"
+            "Writing goose migrations, repos, or the UnitOfWork transaction path"
           ];
         };
       };
@@ -73,19 +74,21 @@
 
         4. **Set tenant context per transaction, never per session.** Inject the
            org id as the FIRST statement inside the transaction with
-           `SELECT set_config('app.current_org', ?, true)`. The third arg
+           `SELECT set_config('app.organization_id', ?, true)`. The third arg
            `is_local = true` scopes the GUC to the transaction so it reverts on
            COMMIT/ROLLBACK. A bare `SET` (session scope) leaks the previous
            request's org to the next checkout of the same pooled connection — a
-           silent cross-tenant data leak.
+           silent cross-tenant data leak. In the portal this is done once, in
+           `bindOrganizationRLS` inside `UnitOfWork.DoOrganizationTransaction`.
 
         5. **Always parameterize the org id (`?` / `$1`).** Never build the
            `set_config` value with string formatting; the id originates from an
-           auth token and must be bound, not interpolated.
+           auth token and must be bound, not interpolated. Validate it as a
+           UUIDv7 first (`idgen.Validate`), as `DoOrganizationTransaction` does.
 
         6. **Make policies fail-closed with the `missing_ok` flag.** Policy
-           expressions read `current_setting('app.current_org', true)`. The `true`
-           returns `NULL` when the GUC is unset instead of raising, and
+           expressions read `current_setting('app.organization_id', true)`. The
+           `true` returns `NULL` when the GUC is unset instead of raising, and
            `organization_id = NULL` evaluates to unknown → the row is denied. Drop
            the `true` and an unmapped request 500s instead of returning no rows.
 
@@ -127,12 +130,27 @@
         - Tables only ever touched by `admin` (migrations, ops). `admin` bypasses
           RLS anyway, so a policy adds nothing.
 
-        ## Common Patterns
+        ## Worked Example: the portal `staff` aggregate
 
-        ### 1. Enable RLS + tenant policy (goose migration, run as `admin`)
+        The portal service is the canonical example. Its schema
+        (`services/portal/internal/infra/postgres/migrations/20260626000001_init.sql`)
+        has exactly the shape RLS targets:
 
-        IDs are `TEXT` UUIDv7 strings (see ADR-0004), so compare as text — no
-        `::uuid` cast. Create with `migrate-new <name>`:
+        - `organizations` — the **tenant root** (`id, name, slug, owner_staff_id,
+          deactivated`). No `organization_id` column → it is the tenant itself,
+          so it does NOT get a policy (see "Does NOT need RLS" above).
+        - `staff` — an **org-scoped aggregate** (`id, organization_id, email,
+          first_name, last_name, role, deactivated`) with `organization_id TEXT
+          NOT NULL` and an existing `idx_staff_organization_id`. This is the table
+          that needs tenant isolation.
+
+        IDs are `TEXT` UUIDv7 strings (ADR-0004), so policies compare as text —
+        no `::uuid` cast.
+
+        ### 1. Enable RLS + tenant policy on `staff` (goose migration, run as `admin`)
+
+        Create with `migrate-new staff_rls`; goose runs it via `migrate-up` as
+        the `admin` (owner) role:
 
         ```sql
         -- +goose Up
@@ -144,8 +162,8 @@
             AS PERMISSIVE
             FOR ALL
             TO writer, reader
-            USING      (organization_id = current_setting('app.current_org', true))
-            WITH CHECK (organization_id = current_setting('app.current_org', true));
+            USING      (organization_id = current_setting('app.organization_id', true))
+            WITH CHECK (organization_id = current_setting('app.organization_id', true));
         -- +goose StatementEnd
 
         -- +goose Down
@@ -156,55 +174,85 @@
         -- +goose StatementEnd
         ```
 
+        `organizations` gets no policy — it is the tenant root. Restrict it with
+        column-scoped `GRANT`s if needed, not RLS.
+
         ### 2. Split read/write policies (optional, finer than `FOR ALL`)
+
+        The portal already splits command (`writer`) from query (`reader`) at the
+        port level (CQRS). You can mirror that split in policy:
 
         ```sql
         CREATE POLICY staff_tenant_read ON staff
             AS PERMISSIVE FOR SELECT TO reader
-            USING (organization_id = current_setting('app.current_org', true));
+            USING (organization_id = current_setting('app.organization_id', true));
 
         CREATE POLICY staff_tenant_write ON staff
             AS PERMISSIVE FOR ALL TO writer
-            USING      (organization_id = current_setting('app.current_org', true))
-            WITH CHECK (organization_id = current_setting('app.current_org', true));
+            USING      (organization_id = current_setting('app.organization_id', true))
+            WITH CHECK (organization_id = current_setting('app.organization_id', true));
         ```
 
-        ### 3. Inject the org GUC in the UnitOfWork (gormx + GORM `?`)
+        ### 3. Bind the org at the portal's transaction chokepoint
 
-        The single chokepoint is `UnitOfWork.DoTransaction` in
-        `services/portal/internal/infra/postgres/uow/uow.go`. Make the GUC the
-        first statement of every transaction:
+        Every write flows through `UnitOfWork.DoOrganizationTransaction` in
+        `services/portal/internal/infra/postgres/uow/uow.go`. The org id is a
+        REQUIRED, explicit parameter (`organization.ID`) — there is no org-less
+        write path, so a handler cannot accidentally mutate outside a tenant
+        scope. It validates the id, then binds RLS as the first statement of the
+        transaction:
 
         ```go
-        func (u *UnitOfWork) DoTransaction(
-            ctx context.Context,
-            orgID string, // from the auth token; or pull from ctx via a typed key
-            handler func(ctx context.Context, utx command.TransactionalUnitOfWork) error,
-        ) error {
-            return u.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-                // transaction-local: reverts on COMMIT/ROLLBACK, pool-safe.
-                if err := tx.Exec(
-                    "SELECT set_config('app.current_org', ?, true)", orgID,
-                ).Error; err != nil {
-                    return fmt.Errorf("set app.current_org: %w", err)
+        // ACTUAL portal code (uow.go).
+        func (u *UnitOfWork) DoOrganizationTransaction(ctx context.Context, id organization.ID, handler command.TransactionalUnitOfWorkHandler) error {
+            return u.db.Transaction(func(tx *gorm.DB) error {
+                if err := idgen.Validate(id); err != nil {
+                    return organization.ErrEmptyID
+                }
+                if err := bindOrganizationRLS(ctx, tx, id); err != nil {
+                    return err
                 }
                 return handler(ctx, newTxUnitOfWork(tx))
             })
         }
+
+        // bindOrganizationRLS sets the tenant GUC transaction-locally (is_local=
+        // true), so it reverts on COMMIT/ROLLBACK and a pooled connection never
+        // leaks one request's org to the next.
+        func bindOrganizationRLS(ctx context.Context, tx *gorm.DB, id organization.ID) error {
+            if err := tx.WithContext(ctx).Exec(
+                `select set_config('app.organization_id', ?, true)`, id.String(),
+            ).Error; err != nil {
+                return fmt.Errorf("%w: %v", ErrOrganizationRLSCannotBeBound, err)
+            }
+            return nil
+        }
         ```
 
-        The reader/query side wraps `SELECT`s in the same `set_config`-first
-        transaction. gormx connects with the `writer` (command) or `reader`
-        (query) DSN — never `admin`.
+        Notes:
+        - The GUC name is `app.organization_id` — the policy predicates above MUST
+          read the same name (`current_setting('app.organization_id', true)`).
+        - The org-less `DoTransaction` is intentionally commented out in `uow.go`;
+          enable it ONLY for a non-multi-tenant system that does not need RLS.
+        - The query side (`readstore.ReadStore` →
+          `services/portal/internal/infra/postgres/readstore/readstore.go`) reads
+          with the root DB and no transaction today; to enforce RLS on reads, wrap
+          each query in a transaction that runs the same `set_config` first.
+        - The portal connects gormx with the `writer` (command) DSN and the
+          `reader` (query) DSN — never `admin`.
 
         ### 4. Index the tenant column
 
-        Policy predicates filter on `organization_id`, so it must be indexed.
-        `staff` already ships `idx_staff_organization_id`; every new RLS table
-        needs the equivalent. Confirm with `EXPLAIN (ANALYZE, BUFFERS)` that the
-        policy filter uses the index.
+        Policy predicates filter on `organization_id`, so it must be indexed. The
+        portal `staff` table already ships `idx_staff_organization_id`
+        (init migration); every new RLS table needs the equivalent. Confirm with
+        `EXPLAIN (ANALYZE, BUFFERS)` that the policy filter uses the index.
 
         ### 5. Isolation test (connect as `writer`, prove cross-org returns 0)
+
+        Run against a `writer`/`reader` connection — never the `admin` DSN, or the
+        policy is a silent no-op. The org id is passed explicitly to
+        `DoOrganizationTransaction(ctx, id, handler)`, matching the real signature:
 
         ```go
         // requireRLSEnforced: skip if the connected role bypasses RLS.
@@ -214,17 +262,19 @@
         ).Scan(&bypass).Error)
         require.False(t, bypass, "connected role bypasses RLS; check DSN/GRANTs")
 
-        // org A inserts a row; org B must see zero.
+        // org A inserts a staff row; org B must see zero.
         var seenByB int64
-        require.NoError(t, uow.DoTransaction(ctx, orgB, func(ctx context.Context, _ command.TransactionalUnitOfWork) error {
+        require.NoError(t, uow.DoOrganizationTransaction(ctx, orgB, func(ctx context.Context, _ command.TransactionalUnitOfWork) error {
             return db.Raw("SELECT count(*) FROM staff").Scan(&seenByB).Error
         }))
         assert.Equal(t, int64(0), seenByB)
         ```
 
-        Cover: per-org SELECT scoping, unset-GUC fails closed (0 rows),
-        `WITH CHECK` rejecting a foreign-org INSERT, cross-org UPDATE/DELETE
-        affecting 0 rows, and `FORCE` applying to the owner.
+        Cover, using `staff`: per-org SELECT scoping, unset-GUC fails closed
+        (0 rows), `WITH CHECK` rejecting a foreign-org `Staffs().Create`, cross-org
+        UPDATE/DELETE affecting 0 rows, and `FORCE` applying to the owner. Also
+        assert `DoOrganizationTransaction` rejects an invalid id
+        (`organization.ErrEmptyID`) before any row is touched.
 
         ## Authoritative References
 
@@ -244,7 +294,8 @@
 
         **This workspace**
         - Postgres roles (`admin`/`writer`/`reader`) — `packages/nix/core/services/postgres/default.nix`
-        - Transaction chokepoint — `services/portal/internal/infra/postgres/uow/uow.go`
+        - RLS chokepoint — `UnitOfWork.DoOrganizationTransaction` + `bindOrganizationRLS` in `services/portal/internal/infra/postgres/uow/uow.go`
+        - Write-side port (`command.UnitOfWork`, `TransactionalUnitOfWorkHandler`) — `services/portal/internal/app/command/port.go`
         - Migration format + role — `services/portal/internal/infra/postgres/migrations/`, run as `admin` via `migrate-up`
         - Typed UUIDv7 IDs (`TEXT` columns) — `docs/adrs/0004-typed-aggregate-ids-uuidv7.md`
       '';
