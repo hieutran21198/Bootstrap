@@ -14,10 +14,10 @@ Tenant isolation could be left to application discipline — every query remembe
 
 But the platform has **two kinds of actor**, not one, and they need different row visibility:
 
-- **Tenant-facing surfaces** (the future per-tenant CMS, and per-tenant background jobs) act *inside one organization* and must see only that org's rows.
-- **The platform back-office** (the portal) and **cross-tenant background jobs** act *above* any single tenant — listing every org, running platform-wide rollups, supporting any customer — and must see across organizations.
+- **Tenant-facing surfaces** (the portal, where a tenant manages itself, and per-tenant background jobs) act *inside one organization* and must see only that org's rows.
+- **Cross-tenant actors** (background jobs that run platform-wide rollups or maintenance, and a future separate back-office service that supports any customer) act *above* any single tenant and must see across organizations.
 
-A model with only an organization context cannot express the second actor: the portal has no single org to bind. So isolation needs **two named scopes on one axis**, not a single tenant context plus ad-hoc bypasses. The pre-RLS data-access surface also exposed **auto-commit paths**: a bare `Create(...)` ran as a single statement outside any transaction, with no transaction in which to bind a scope transaction-locally.
+A model with only an organization context cannot express the second actor: a cross-tenant job or back-office request has no single org to bind. So isolation needs **two named scopes on one axis**, not a single tenant context plus ad-hoc bypasses. The pre-RLS data-access surface also exposed **auto-commit paths**: a bare `Create(...)` ran as a single statement outside any transaction, with no transaction in which to bind a scope transaction-locally.
 
 We needed one decision: what is the authority for tenant isolation, and what scopes does the application bind to uphold it uniformly across writes, reads, and schema changes?
 
@@ -32,7 +32,7 @@ The contract is two transaction-local GUCs:
 | Scope          | `app.scope`    | `app.organization_id` | Row visibility                     | Bound by                                  |
 | -------------- | -------------- | --------------------- | ---------------------------------- | ----------------------------------------- |
 | `organization` | `organization` | the tenant's id       | rows of that one organization      | per-tenant CMS, per-tenant jobs           |
-| `system`       | `system`       | unset                 | all organizations' rows            | portal back-office, cross-tenant jobs     |
+| `system`       | `system`       | unset                 | all organizations' rows            | cross-tenant jobs; future back-office svc |
 | *(unbound)*    | unset          | unset                 | none — fails closed (zero rows)    | nobody; the safety default                |
 
 Policy predicate: `current_setting('app.scope', true) = 'system' OR organization_id = current_setting('app.organization_id', true)`.
@@ -51,7 +51,7 @@ The runtime entry points share one shape. Inside a single `db.Transaction`, each
 
 There is **no scope-less runtime path** — neither an auto-commit write nor an unbound read. An unbound transaction fails closed (zero rows) against the `FORCE`d policy.
 
-**Implementation status.** The `organization` scope is implemented today: `DoOrganizationTransaction` / `DoOrganizationQuery` bind `app.organization_id` via `bindOrganizationRLS`. The `system` scope is part of this accepted model but **not yet in code** — it needs a `bindSystemScope` binder, `system`-scoped entry points (e.g. `DoSystemTransaction` / `DoSystemQuery`), and the migration that defines the `app.scope`-aware policy (the init migration creates tables only, no policy yet). The portal back-office requires `system` scope, so it is the first consumer to land it; the CMS and the worker job framework are later consumers of the same model and out of scope for this ADR.
+**Implementation status.** The `organization` scope is implemented today: `DoOrganizationTransaction` / `DoOrganizationQuery` bind `app.organization_id` via `bindOrganizationRLS`. The portal is a **tenant-facing** service — a tenant manages itself — so it uses the `organization` scope exclusively and never binds `system`. The `system` scope is part of this accepted model but **not yet in code** — it needs a `bindSystemScope` binder, `system`-scoped entry points (e.g. `DoSystemTransaction` / `DoSystemQuery`), and the migration that defines the `app.scope`-aware policy (the init migration creates tables only, no policy yet). Its first consumer is the **cross-tenant background-job / worker** path (platform-wide rollups, maintenance); a **separate back-office service** that supports any customer is a later consumer of the same model. Both are out of scope for this ADR.
 
 For a service that is **genuinely not multi-tenant** (no tenant boundary, no RLS), the scope-less variant `DoTransaction(ctx, handler)` is the documented escape hatch. It is kept commented out in `uow.go` and must be enabled deliberately — the exception, not the default.
 
@@ -59,14 +59,14 @@ For a service that is **genuinely not multi-tenant** (no tenant boundary, no RLS
 
 - **Positive**:
   - Tenant isolation is enforced by the database (RLS), not by remembering a `WHERE` clause — the failure mode (missed predicate) is eliminated by construction, on reads and writes alike.
-  - One axis, two named scopes: back-office, CMS, and workers all bind `organization` or `system` through the same mechanism, so there is one isolation model to reason about — no ad-hoc bypass paths.
+  - One axis, two named scopes: tenant-facing services (the portal), cross-tenant jobs, and a future back-office service all bind `organization` or `system` through the same mechanism, so there is one isolation model to reason about — no ad-hoc bypass paths.
   - `system` is still RLS-on (`NOBYPASSRLS`): a cross-tenant actor's queries are audited and constrained by the same policy, never silently unfiltered.
   - Scope is bound transaction-locally, so it is pool-safe — no session-state leakage between requests sharing a pooled connection.
   - The org id is a **required, explicit parameter** on the `organization` entry points, and selecting `system` is an explicit, named choice — an actor cannot start work without declaring its scope.
 - **Negative**:
   - Auto-commit convenience is gone — even a one-aggregate write must wrap a closure and declare a scope, and reads must open a transaction. Slightly more ceremony per call site.
   - The GUC contract (`app.scope`, `app.organization_id`) is split across several places — the UoW, the read store, and every table policy. They must stay in sync; the `rls-patterns` skill documents the contract but cannot mechanise it.
-  - `system` scope is a sharp tool: a back-office bug runs against every tenant's rows at once. Authorization (who may bind `system`) must gate it at the application layer — RLS only enforces the data boundary, not who is allowed to widen it.
+  - `system` scope is a sharp tool: a bug in a cross-tenant job (or the future back-office) runs against every tenant's rows at once. Authorization (who may bind `system`) must gate it at the application layer — RLS only enforces the data boundary, not who is allowed to widen it.
 - **Neutral**:
   - The two-struct accessor shape from [ADR-0003](0003-service-architecture.md) is unchanged on both sides; the embedded root-db accessor exists only to satisfy the accessor surface at construction, never as an auto-commit path.
   - Builds on the existing `admin`/`writer`/`reader` role split — the app connects as `writer`/`reader` (NOBYPASSRLS) for **both** scopes; `admin` (superuser) runs migrations and bypasses RLS by design.
@@ -74,7 +74,7 @@ For a service that is **genuinely not multi-tenant** (no tenant boundary, no RLS
 
 ## Alternatives considered
 
-- **One organization scope only; let the back-office bypass RLS (run as superuser).** Rejected: it makes the most powerful, least tenant-bound actor the one with no database-level guardrail — a single back-office bug becomes a cross-tenant breach. The `system` scope keeps cross-tenant access under the same `FORCE`d policy and the same `NOBYPASSRLS` role.
+- **One organization scope only; let cross-tenant actors bypass RLS (run as superuser).** Rejected: it makes the most powerful, least tenant-bound actors (cross-tenant jobs, the future back-office) the ones with no database-level guardrail — a single bug becomes a cross-tenant breach. The `system` scope keeps cross-tenant access under the same `FORCE`d policy and the same `NOBYPASSRLS` role.
 - **Filter in Go (`WHERE organization_id = ?`) instead of RLS.** Rejected: defense-in-depth at best, authority at worst. One forgotten predicate leaks data, with no compile-time or database-level guarantee. RLS removes the whole class of bug; app-side filtering can sit on top but must not replace it.
 - **Bind a scope on writes only, leave reads to Go-side filtering.** Rejected: it splits isolation across two mechanisms and leaves the read path — the most common path — the least protected. Binding the same scope on both sides keeps one authority and one failure model.
 - **Carry the scope in `ctx` and read it implicitly inside the entry points.** Rejected: it hides a hard requirement behind an implicit channel. An explicit scope choice (and an explicit `organization.ID` for the org scope) makes "you must declare your scope" a call-site fact, not a runtime surprise.

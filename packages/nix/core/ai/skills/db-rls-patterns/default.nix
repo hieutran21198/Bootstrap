@@ -183,12 +183,15 @@
 
         The platform has two kinds of actor on **one** RLS axis (ADR-0008):
 
-        - **`organization`** — bound to one tenant (per-tenant CMS, per-tenant
-          jobs). The policy above handles it.
-        - **`system`** — cross-tenant (the back-office portal, cross-tenant jobs).
-          It must see every org's rows, but it is **still `NOBYPASSRLS`** — never
-          run the back-office as the `admin` superuser. Widen the policy with a
-          second GUC, `app.scope`, instead of bypassing RLS:
+        - **`organization`** — bound to one tenant (the tenant-facing portal where
+          a tenant manages itself, and per-tenant jobs). The policy above handles
+          it.
+        - **`system`** — cross-tenant (background jobs running platform-wide
+          rollups/maintenance, and a future separate back-office service — never
+          the tenant-facing portal). It must see every org's rows, but it is
+          **still `NOBYPASSRLS`** — never run a cross-tenant actor as the `admin`
+          superuser. Widen the policy with a second GUC, `app.scope`, instead of
+          bypassing RLS:
 
         ```sql
         CREATE POLICY tenant_isolation_staff ON staff
@@ -204,10 +207,11 @@
         A transaction binds **either** `app.scope = system` (cross-tenant) **or**
         `app.organization_id = <id>` (one tenant); an unbound transaction matches
         neither branch and fails closed (zero rows). `system` is a sharp tool — a
-        back-office bug runs against every tenant at once — so gate *who* may bind
-        it at the application layer; RLS only enforces the data boundary, not who
-        may widen it. The `system`-scope binder/entry points are planned, not yet
-        in portal code.
+        bug in a cross-tenant job (or the future back-office) runs against every
+        tenant at once — so gate *who* may bind it at the application layer; RLS
+        only enforces the data boundary, not who may widen it. The `system`-scope
+        binder/entry points are planned, not yet implemented — the portal is
+        tenant-facing and uses the `organization` scope only.
 
         ### 2. Split read/write policies (optional, finer than `FOR ALL`)
 
