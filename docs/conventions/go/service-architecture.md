@@ -538,6 +538,10 @@ func (u *UnitOfWork) DoTransaction(ctx context.Context, handler command.Transact
 - **Multi-tenant default**: bind RLS (`set_config('app.organization_id', …, true)`) as the FIRST statement, after validating the id. The GUC name must match the table policies — see the `rls-patterns` skill (`packages/nix/core/ai/skills/db-rls-patterns/`).
 - **Compile-time `var _ command.UnitOfWork = (*UnitOfWork)(nil)`** and `var _ command.TransactionalUnitOfWork = (*txUnitOfWork)(nil)`.
 
+#### Read side mirrors the write side
+
+The query side is symmetric. `query.ReadStore` exposes a single tenant-scoped entry point, `DoOrganizationQuery(ctx, id organization.ID, handler)`, implemented in `internal/infra/postgres/readstore/readstore.go` with the identical two-struct pattern (`txReadStore` + `ReadStore`) and the same `bindOrganizationRLS`. Reads MUST be RLS-bound too: against a `FORCE`d policy an unbound read fails closed (zero rows), so there is no org-less read path. The handler receives a `TransactionalReadStore` (per-aggregate `Reader` accessors) bound to the RLS-scoped transaction. See [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md).
+
 ---
 
 ## Anti-patterns

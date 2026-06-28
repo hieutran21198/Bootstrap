@@ -43,7 +43,7 @@ For a service that is **genuinely not multi-tenant** (no tenant boundary, no RLS
   - Invalid tenant ids are rejected at the boundary (`idgen.Validate`) before any row is touched.
 - **Negative**:
   - The auto-commit convenience is gone — even a one-aggregate write must wrap a closure and supply an org id. Slightly more ceremony per call site.
-  - The query/read side (`readstore.ReadStore`) does not yet bind RLS; reads currently run on the root DB without a transaction. Enforcing RLS on reads is follow-up work (wrap each query in a `set_config`-first transaction).
+  - The query/read side is symmetric: `query.ReadStore.DoOrganizationQuery(ctx, id, handler)` (impl in `readstore.ReadStore`) opens a transaction, binds the same `app.organization_id` GUC, and hands the handler a tenant-scoped `TransactionalReadStore`. Reads are therefore RLS-bound too — an unbound read fails closed (zero rows) against a `FORCE`d policy.
   - The GUC name (`app.organization_id`) is a contract split across two places — the UoW and every table policy. They must stay in sync; the `rls-patterns` skill documents the contract but cannot mechanise it.
 - **Neutral**:
   - The two-struct UoW shape from [ADR-0003](0003-service-architecture.md) is unchanged; the embedded root-db `txUnitOfWork` now exists only to satisfy the accessor surface at construction, never as an auto-commit path.

@@ -234,10 +234,13 @@
           read the same name (`current_setting('app.organization_id', true)`).
         - The org-less `DoTransaction` is intentionally commented out in `uow.go`;
           enable it ONLY for a non-multi-tenant system that does not need RLS.
-        - The query side (`readstore.ReadStore` →
-          `services/portal/internal/infra/postgres/readstore/readstore.go`) reads
-          with the root DB and no transaction today; to enforce RLS on reads, wrap
-          each query in a transaction that runs the same `set_config` first.
+        - The query side is symmetric: `query.ReadStore.DoOrganizationQuery(ctx,
+          id, handler)` (impl in
+          `services/portal/internal/infra/postgres/readstore/readstore.go`) opens
+          a transaction, binds the same `app.organization_id` GUC via
+          `bindOrganizationRLS`, and hands the handler a tenant-scoped
+          `TransactionalReadStore`. Reads are RLS-bound too — an unbound read
+          fails closed (zero rows) against a `FORCE`d policy.
         - The portal connects gormx with the `writer` (command) DSN and the
           `reader` (query) DSN — never `admin`.
 
@@ -294,8 +297,10 @@
 
         **This workspace**
         - Postgres roles (`admin`/`writer`/`reader`) — `packages/nix/core/services/postgres/default.nix`
-        - RLS chokepoint — `UnitOfWork.DoOrganizationTransaction` + `bindOrganizationRLS` in `services/portal/internal/infra/postgres/uow/uow.go`
+        - Write RLS chokepoint — `UnitOfWork.DoOrganizationTransaction` + `bindOrganizationRLS` in `services/portal/internal/infra/postgres/uow/uow.go`
+        - Read RLS chokepoint — `ReadStore.DoOrganizationQuery` + `bindOrganizationRLS` in `services/portal/internal/infra/postgres/readstore/readstore.go`
         - Write-side port (`command.UnitOfWork`, `TransactionalUnitOfWorkHandler`) — `services/portal/internal/app/command/port.go`
+        - Read-side port (`query.ReadStore`, `TransactionalReadStoreHandler`) — `services/portal/internal/app/query/port.go`
         - Migration format + role — `services/portal/internal/infra/postgres/migrations/`, run as `admin` via `migrate-up`
         - Typed UUIDv7 IDs (`TEXT` columns) — `docs/adrs/0004-typed-aggregate-ids-uuidv7.md`
       '';

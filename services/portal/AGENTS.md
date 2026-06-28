@@ -90,6 +90,13 @@ services/portal/
 - There is **no org-less / auto-commit write path** — RLS requires every write to carry an organization. The org-less `DoTransaction` is left commented out in `uow.go` for non-multi-tenant systems only.
 - RLS policy authoring + the GUC contract (`app.organization_id`) are documented in the `rls-patterns` skill (`packages/nix/core/ai/skills/db-rls-patterns/`).
 
+### Read Store
+
+- Interface lives in `internal/app/query/port.go` (`ReadStore` + the accessor surface `TransactionalReadStore` + the `TransactionalReadStoreHandler` closure type).
+- Postgres implementation lives in `internal/infra/postgres/readstore/readstore.go`.
+- **Every read is tenant-scoped too.** `ReadStore` mirrors the write side: a single entry point, `DoOrganizationQuery(ctx, id organization.ID, handler)`, validates `id`, binds the same `app.organization_id` GUC (transaction-local), then runs `handler` with a tx-scoped `TransactionalReadStore`. Readers reached through it are filtered to that one organization.
+- There is **no org-less read path** — an unbound read fails closed (zero rows) against a `FORCE`d policy, so reads must be RLS-bound just like writes.
+
 ### Postgres repo
 
 - One file per aggregate: `internal/infra/postgres/repo/<aggregate>.go`. **No `_repo` suffix** — would stutter inside `package repo`.
