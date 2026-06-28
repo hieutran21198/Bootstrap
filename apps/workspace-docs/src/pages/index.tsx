@@ -18,7 +18,7 @@ const cards: readonly DocCard[] = [
     body: 'ADRs, conventions, glossary, findings, debt, and specs that apply across every service and shared package.',
   },
   {
-    to: '/portal/',
+    to: '/portal',
     title: 'Portal service docs',
     body: 'Portal-only ADRs, specs, findings, and debt. Anything that dies with the portal service lives here.',
   },

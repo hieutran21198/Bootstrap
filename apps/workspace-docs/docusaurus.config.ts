@@ -72,6 +72,11 @@ const config: Config = {
       title: 'Bootstrap Docs',
       items: [
         {
+          to: '/',
+          label: 'Home',
+          position: 'left',
+        },
+        {
           type: 'docSidebar',
           sidebarId: 'workspaceSidebar',
           position: 'left',
@@ -84,10 +89,33 @@ const config: Config = {
           position: 'left',
           label: 'Portal',
         },
+        {
+          href: 'https://github.com/hieutran21198/Bootstrap',
+          label: 'GitHub',
+          position: 'right',
+        },
       ],
     },
     footer: {
       style: 'dark',
+      links: [
+        {
+          title: 'Docs',
+          items: [
+            {label: 'Workspace', to: '/docs/AGENTS'},
+            {label: 'Portal', to: '/portal'},
+          ],
+        },
+        {
+          title: 'More',
+          items: [
+            {
+              label: 'GitHub',
+              href: 'https://github.com/hieutran21198/Bootstrap',
+            },
+          ],
+        },
+      ],
       copyright: `Bootstrap workspace documentation`,
     },
     prism: {
