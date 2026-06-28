@@ -17,6 +17,8 @@
             "Creating or modifying API routes that access the database"
             "Adding an org-scoped table or aggregate (carries organization_id, like portal staff)"
             "Writing goose migrations, repos, or the UnitOfWork transaction path"
+            "Creating or reviewing a database migration (the approval -> RLS -> verify -> document workflow)"
+            "Adding a table, changing a schema, or proposing a tenant-boundary / RLS-scope change"
           ];
         };
       };
@@ -177,6 +179,36 @@
         `organizations` gets no policy — it is the tenant root. Restrict it with
         column-scoped `GRANT`s if needed, not RLS.
 
+        #### Two scopes: `organization` and `system`
+
+        The platform has two kinds of actor on **one** RLS axis (ADR-0008):
+
+        - **`organization`** — bound to one tenant (per-tenant CMS, per-tenant
+          jobs). The policy above handles it.
+        - **`system`** — cross-tenant (the back-office portal, cross-tenant jobs).
+          It must see every org's rows, but it is **still `NOBYPASSRLS`** — never
+          run the back-office as the `admin` superuser. Widen the policy with a
+          second GUC, `app.scope`, instead of bypassing RLS:
+
+        ```sql
+        CREATE POLICY tenant_isolation_staff ON staff
+            AS PERMISSIVE
+            FOR ALL
+            TO writer, reader
+            USING      (current_setting('app.scope', true) = 'system'
+                        OR organization_id = current_setting('app.organization_id', true))
+            WITH CHECK (current_setting('app.scope', true) = 'system'
+                        OR organization_id = current_setting('app.organization_id', true));
+        ```
+
+        A transaction binds **either** `app.scope = system` (cross-tenant) **or**
+        `app.organization_id = <id>` (one tenant); an unbound transaction matches
+        neither branch and fails closed (zero rows). `system` is a sharp tool — a
+        back-office bug runs against every tenant at once — so gate *who* may bind
+        it at the application layer; RLS only enforces the data boundary, not who
+        may widen it. The `system`-scope binder/entry points are planned, not yet
+        in portal code.
+
         ### 2. Split read/write policies (optional, finer than `FOR ALL`)
 
         The portal already splits command (`writer`) from query (`reader`) at the
@@ -230,9 +262,11 @@
         ```
 
         Notes:
-        - The GUC name is `app.organization_id` — the policy predicates above MUST
-          read the same name (`current_setting('app.organization_id', true)`).
-        - The org-less `DoTransaction` is intentionally commented out in `uow.go`;
+        - The GUC names are `app.organization_id` and `app.scope` — the policy
+          predicates above MUST read the same names. The `organization` scope binds
+          `app.organization_id`; the `system` scope binds `app.scope = system`
+          (cross-tenant, still `NOBYPASSRLS`). See ADR-0008 for the two-scope model.
+        - The scope-less `DoTransaction` is intentionally commented out in `uow.go`;
           enable it ONLY for a non-multi-tenant system that does not need RLS.
         - The query side is symmetric: `query.ReadStore.DoOrganizationQuery(ctx,
           id, handler)` (impl in
@@ -279,6 +313,93 @@
         assert `DoOrganizationTransaction` rejects an invalid id
         (`organization.ErrEmptyID`) before any row is touched.
 
+        ## Migration Workflow
+
+        A schema change is not just SQL — it is an approved, RLS-complete, tested
+        unit. Follow these steps in order. The engine is **goose** (run via
+        `migrate-up`); there is no Prisma, no ORM auto-migrate.
+
+        ### Step 1 — Approval (our gate is the ADR)
+
+        Schema changes that introduce or alter a **decision** (a new aggregate
+        table, a new RLS scope, a role/grant change, a tenant-boundary change) are
+        gated on an **ADR**, not an ad-hoc issue. The ADR's `Status: Proposed →
+        Accepted` transition IS the approval workflow; its `Deciders` field names
+        who approved. Proceed only once the ADR is `Accepted`.
+
+        - Applying an **already-accepted** decision needs no new ADR. Adding an
+          org-scoped table that just follows ADR-0008's RLS model is routine —
+          write the migration. Only a **material** change (new scope, reversed
+          rule, broadened tenant boundary) needs a new ADR (`docs/adrs/`).
+        - When the change needs design detail (column-by-column shape, rollout),
+          write a **spec** (`docs/specs/` or `services/<svc>/docs/specs/`) whose
+          `Tracks` field points at the ADR. The ADR records *why*; the spec records
+          *how*; the migration SQL is the source of truth for *what*.
+
+        ### Step 2 — Create the migration (goose)
+
+        ```bash
+        migrate-new add_<table>_rls      # scaffolds services/<svc>/internal/infra/postgres/migrations/<ts>_*.sql
+        ```
+
+        ### Step 3 — RLS lives in the SAME migration file (mandatory)
+
+        Never ship the `CREATE TABLE` without its RLS in the same file — an enabled
+        table with no policy is fail-closed (zero rows), and a created table with no
+        `ENABLE` is wide open. One file contains the complete, safe unit:
+
+        - [ ] `CREATE TABLE ...` with `organization_id TEXT NOT NULL` (org-scoped tables)
+        - [ ] `CREATE INDEX idx_<table>_organization_id ON <table>(organization_id)` — the policy filters on it
+        - [ ] `ALTER TABLE <table> ENABLE ROW LEVEL SECURITY` **and** `FORCE ROW LEVEL SECURITY`
+        - [ ] `CREATE POLICY` with the two-scope predicate (`app.scope='system' OR organization_id=current_setting('app.organization_id',true)`), `TO writer, reader` — see [Two scopes](#two-scopes-organization-and-system)
+        - [ ] A `-- +goose Down` block that drops the policy, `NO FORCE`, `DISABLE`, and the table
+
+        Roles and grants are **not** per-migration here: `writer`/`reader` already
+        hold schema-wide CRUD/SELECT grants plus `ALTER DEFAULT PRIVILEGES` from the
+        postgres devenv module (`packages/nix/core/services/postgres/default.nix`),
+        so new tables inherit them. Only add explicit `GRANT`s for a column-scoped
+        exception (e.g. locking down `organizations`, the tenant root).
+
+        ### Step 4 — Verify locally
+
+        ```bash
+        migrate-up        # applies as the admin (owner) role
+        migrate-status    # confirm the new version is applied
+        ```
+
+        Then prove RLS is live (the isolation test above): connect as `writer`/
+        `reader`, confirm `rolsuper OR rolbypassrls = false`, and that a cross-org
+        SELECT returns 0 rows. `pg-info` lists the role DSNs.
+
+        ### Step 5 — Document the change
+
+        We have no separate data dictionary — the **migration SQL is the schema
+        source of truth**. Beyond it, document only what carries meaning:
+        - the **ADR** if the change was a decision (Step 1);
+        - a **spec** update if one tracks this area;
+        - the relevant `AGENTS.md` "Code map" / table notes if a new aggregate
+          changes the service's shape.
+
+        ### Production migrations
+
+        Migrations run as the `admin` (SUPERUSER) role and bypass RLS, so a bad
+        policy or `Down` block is high-blast-radius. Before applying to a shared/
+        production database:
+        - [ ] Reviewer present and the originating ADR is `Accepted`
+        - [ ] Backup (or a point-in-time-recovery window) confirmed
+        - [ ] The `-- +goose Down` block is tested (`migrate-down` then `migrate-up` round-trips clean locally)
+        - [ ] Post-migration validation defined: RLS enforced (isolation test), policy filter uses the index (`EXPLAIN`), no table left `ENABLE` without a policy
+
+        ### Pre-PR checklist
+
+        - [ ] ADR `Accepted` (if the change is a decision)
+        - [ ] RLS `ENABLE` + `FORCE` + policy in the **same** migration file
+        - [ ] Two-scope policy predicate, `TO writer, reader` (never `TO admin`)
+        - [ ] `organization_id` index created in the same file
+        - [ ] `-- +goose Down` round-trips clean
+        - [ ] Isolation test passes against a `writer`/`reader` connection
+        - [ ] No raw role/GUC drift — `app.scope` / `app.organization_id` only
+
         ## Authoritative References
 
         **PostgreSQL docs (current)**
@@ -297,8 +418,9 @@
 
         **This workspace**
         - Postgres roles (`admin`/`writer`/`reader`) — `packages/nix/core/services/postgres/default.nix`
-        - Write RLS chokepoint — `UnitOfWork.DoOrganizationTransaction` + `bindOrganizationRLS` in `services/portal/internal/infra/postgres/uow/uow.go`
-        - Read RLS chokepoint — `ReadStore.DoOrganizationQuery` + `bindOrganizationRLS` in `services/portal/internal/infra/postgres/readstore/readstore.go`
+        - Two-scope RLS model (`organization` + `system`) — `docs/adrs/0008-tenant-scoped-unit-of-work-rls.md`
+        - Write RLS chokepoint — `UnitOfWork.DoOrganizationTransaction` + `bindOrganizationRLS` in `services/portal/internal/infra/postgres/uow/uow.go` (`system`-scope entry point planned)
+        - Read RLS chokepoint — `ReadStore.DoOrganizationQuery` + `bindOrganizationRLS` in `services/portal/internal/infra/postgres/readstore/readstore.go` (`system`-scope entry point planned)
         - Write-side port (`command.UnitOfWork`, `TransactionalUnitOfWorkHandler`) — `services/portal/internal/app/command/port.go`
         - Read-side port (`query.ReadStore`, `TransactionalReadStoreHandler`) — `services/portal/internal/app/query/port.go`
         - Migration format + role — `services/portal/internal/infra/postgres/migrations/`, run as `admin` via `migrate-up`
