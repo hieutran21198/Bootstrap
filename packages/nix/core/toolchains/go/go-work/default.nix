@@ -35,6 +35,12 @@
         '';
       };
       scripts = {
+        sync-go-mods = {
+          exec = lib.concatMapStringsSep "\n" (x: ''
+            go -C "$WORKSPACE_ROOT"/${lib.escapeShellArg x} mod tidy
+          '') opts.mods;
+          description = "Run go mod tidy for all module inside go work.";
+        };
         lint-go = {
           exec = ''
             set -o pipefail

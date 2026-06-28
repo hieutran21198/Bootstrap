@@ -44,6 +44,10 @@
             Go work enabled: ${toString opts.go-work.enable}
             Go work modules:
             ''\t${lib.optionalString (opts.go-work.enable) "${lib.concatStringsSep "\n\t" opts.go-work.mods}"}
+
+            # Workspace commands
+            lint-go       # Lint Go files
+            sync-go-mods  # Synchronize Go modules in workspace
             EOF
           '';
           description = "Go toolchain information";
