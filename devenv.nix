@@ -13,6 +13,18 @@
         enable = true;
         profile = "max";
       };
+      skills = {
+        dbRLSPatterns = {
+          enable = true;
+          statements = {
+            whenInvocation = [
+              "Creating or modifying API routes that access the database"
+              "Writing new/raw SQL scripts"
+              "Working with user data, payments, subscriptions, or enrollments"
+            ];
+          };
+        };
+      };
     };
     workspace = {
       enable = true;

@@ -97,6 +97,7 @@ All are Nix-store symlinks regenerated on `direnv reload`. Gitignored.
 | `.editorconfig`           | [packages/nix/core/workspace/default.nix](packages/nix/core/workspace/default.nix) (`core.workspace.editorConfig` plus per-toolchain contributions) |
 | `.claude/settings.json`, `CLAUDE.md` | [packages/nix/core/ai/default.nix](packages/nix/core/ai/default.nix) when `core.ai.claude.enable = true` (`CLAUDE.md` is just `@AGENTS.md`)             |
 | `.opencode/<plugin>.json` | the active opencode profile under [packages/nix/core/ai/opencode/profiles/](packages/nix/core/ai/opencode/profiles/) when `core.ai.opencode.enable = true` |
+| `.claude/skills/<name>/SKILL.md`, `.opencode/skills/<name>/SKILL.md` | enabled skills under [packages/nix/core/ai/skills/](packages/nix/core/ai/skills/) — each enabled `core.ai.skills.*` writes one `SKILL.md` per enabled agent (`.claude/` when `core.ai.claude.enable`, `.opencode/` when `core.ai.opencode.enable`) |
 
 Edit the Nix source, run `direnv reload`, and the artifact regenerates.
 

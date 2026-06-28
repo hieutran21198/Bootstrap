@@ -53,4 +53,4 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | 0003 | [DDD + CQRS + Hexagonal architecture for services](0003-service-architecture.md)   | Accepted |
 | 0004 | [Typed aggregate IDs with UUIDv7](0004-typed-aggregate-ids-uuidv7.md)              | Accepted |
 | 0005 | [Collection-style repositories](0005-collection-style-repositories.md)             | Accepted |
-| 0006 | [Zitadel as the identity and auth provider](0006-zitadel-identity-auth.md)        | Proposed |
+| 0006 | [Zitadel as the identity and auth provider](0006-zitadel-identity-auth.md)         | Proposed |
