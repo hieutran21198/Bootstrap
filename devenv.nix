@@ -47,6 +47,7 @@
         "services" = "Backend deployable services (each may carry its own docs/)";
         "services/portal" = "Portal backend";
         "apps" = "User-facing applications by platform";
+        "apps/workspace-docs" = "Docusaurus site rendering workspace + service docs (public, read-only)";
 
         "deploy" = "Deployment and infrastructure definitions";
 

@@ -38,3 +38,9 @@ deploy/local/.env
 
 # environment variables
 .env*
+
+# Docusaurus workspace-docs app (apps/workspace-docs)
+node_modules
+apps/workspace-docs/.docusaurus
+apps/workspace-docs/build
+apps/workspace-docs/.cache-loader
