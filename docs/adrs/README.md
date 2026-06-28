@@ -55,4 +55,4 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | 0005 | [Collection-style repositories](0005-collection-style-repositories.md)             | Accepted |
 | 0006 | [Zitadel as the identity and auth provider](0006-zitadel-identity-auth.md)         | Proposed |
 | 0007 | [Manage the developer environment with Nix + devenv](0007-nix-devenv-developer-environment.md) | Accepted |
-| 0008 | [Tenant-scoped Unit of Work enforcing Row-Level Security](0008-tenant-scoped-unit-of-work-rls.md) | Accepted |
+| 0008 | [RLS tenant isolation with organization and system scopes](0008-tenant-scoped-unit-of-work-rls.md) | Accepted |

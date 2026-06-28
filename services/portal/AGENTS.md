@@ -87,15 +87,16 @@ services/portal/
 - Interface lives in `internal/app/command/port.go` (`UnitOfWork` + the accessor surface `TransactionalUnitOfWork` + the `TransactionalUnitOfWorkHandler` closure type).
 - Postgres implementation lives in `internal/infra/postgres/uow/uow.go`.
 - **Every write is tenant-scoped.** `UnitOfWork` exposes a single entry point, `DoOrganizationTransaction(ctx, id organization.ID, handler)`: it validates `id` (`idgen.Validate`), binds the org to the connection for Row-Level Security via `set_config('app.organization_id', …, true)` (transaction-local) in `bindOrganizationRLS`, then runs `handler` with a tx-scoped `TransactionalUnitOfWork`. Writers reached through it are filtered to that one organization; the closure commits or rolls back as one unit.
-- There is **no org-less / auto-commit write path** — RLS requires every write to carry an organization. The org-less `DoTransaction` is left commented out in `uow.go` for non-multi-tenant systems only.
-- RLS policy authoring + the GUC contract (`app.organization_id`) are documented in the `rls-patterns` skill (`packages/nix/core/ai/skills/db-rls-patterns/`).
+- There is **no scope-less / auto-commit write path** — RLS requires every write to declare a scope. The scope-less `DoTransaction` is left commented out in `uow.go` for non-multi-tenant systems only.
+- **Two RLS scopes ([ADR-0008](../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md))**: `organization` (bound to one tenant, implemented above) and `system` (cross-tenant, for this back-office portal and cross-tenant jobs). Both run under `NOBYPASSRLS` roles — `system` widens the policy via `app.scope = system`, it does not bypass RLS. The `system`-scope entry point (e.g. `DoSystemTransaction`) + the `app.scope`-aware policy are **planned**, not yet in code.
+- RLS policy authoring + the GUC contract (`app.scope` / `app.organization_id`) are documented in the `rls-patterns` skill (`packages/nix/core/ai/skills/db-rls-patterns/`).
 
 ### Read Store
 
 - Interface lives in `internal/app/query/port.go` (`ReadStore` + the accessor surface `TransactionalReadStore` + the `TransactionalReadStoreHandler` closure type).
 - Postgres implementation lives in `internal/infra/postgres/readstore/readstore.go`.
 - **Every read is tenant-scoped too.** `ReadStore` mirrors the write side: a single entry point, `DoOrganizationQuery(ctx, id organization.ID, handler)`, validates `id`, binds the same `app.organization_id` GUC (transaction-local), then runs `handler` with a tx-scoped `TransactionalReadStore`. Readers reached through it are filtered to that one organization.
-- There is **no org-less read path** — an unbound read fails closed (zero rows) against a `FORCE`d policy, so reads must be RLS-bound just like writes.
+- There is **no scope-less read path** — an unbound read fails closed (zero rows) against a `FORCE`d policy, so reads must be RLS-bound just like writes. The read side gets the same two scopes as writes (a planned `DoSystemQuery` for the `system` scope) — see [ADR-0008](../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md).
 
 ### Postgres repo
 

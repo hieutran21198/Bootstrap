@@ -334,7 +334,7 @@ func (h HireStaffHandler) Handle(ctx context.Context, cmd HireStaff) error {
 
 The write-side persistence port. Interface in `app/command/port.go`, postgres implementation in `infra/postgres/uow/uow.go`.
 
-This workspace is **multi-tenant**: every write MUST be scoped to an organization so [Row-Level Security](../../adrs/0008-tenant-scoped-unit-of-work-rls.md) can enforce isolation at the database. The port reflects that — a single, tenant-scoped entry point and no org-less auto-commit path.
+This workspace is **multi-tenant**: every write MUST declare an RLS scope so [Row-Level Security](../../adrs/0008-tenant-scoped-unit-of-work-rls.md) can enforce isolation at the database. [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md) defines two scopes on one axis — `organization` (bound to one tenant) and `system` (cross-tenant, for platform back-office and cross-tenant jobs) — both under `NOBYPASSRLS` roles. The `organization` scope is implemented today via `DoOrganizationTransaction`; the `system`-scope entry point is planned. The port reflects the implemented scope — a single, tenant-scoped entry point and no scope-less auto-commit path.
 
 ```go
 // services/portal/internal/app/command/port.go
@@ -540,7 +540,9 @@ func (u *UnitOfWork) DoTransaction(ctx context.Context, handler command.Transact
 
 #### Read side mirrors the write side
 
-The query side is symmetric. `query.ReadStore` exposes a single tenant-scoped entry point, `DoOrganizationQuery(ctx, id organization.ID, handler)`, implemented in `internal/infra/postgres/readstore/readstore.go` with the identical two-struct pattern (`txReadStore` + `ReadStore`) and the same `bindOrganizationRLS`. Reads MUST be RLS-bound too: against a `FORCE`d policy an unbound read fails closed (zero rows), so there is no org-less read path. The handler receives a `TransactionalReadStore` (per-aggregate `Reader` accessors) bound to the RLS-scoped transaction. See [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md).
+The query side is symmetric. `query.ReadStore` exposes a single tenant-scoped entry point, `DoOrganizationQuery(ctx, id organization.ID, handler)`, implemented in `internal/infra/postgres/readstore/readstore.go` with the identical two-struct pattern (`txReadStore` + `ReadStore`) and the same `bindOrganizationRLS`. Reads MUST be RLS-bound too: against a `FORCE`d policy an unbound read fails closed (zero rows), so there is no scope-less read path. The handler receives a `TransactionalReadStore` (per-aggregate `Reader` accessors) bound to the RLS-scoped transaction. See [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md).
+
+The same scope axis applies to both sides: the `system` scope (cross-tenant, for the platform back-office and cross-tenant jobs) will add `system`-scoped entry points (e.g. `DoSystemTransaction` / `DoSystemQuery`) alongside the `organization` ones, binding `app.scope = system` instead of an org id. See [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md) for the two-scope model.
 
 ---
 
