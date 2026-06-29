@@ -72,7 +72,9 @@ Then cross-link: the spec's `Tracks` field points at the ADR (or ticket) that au
 
 ## Index
 
-_No specs yet._
-
 | Spec | Status | Tracks |
 | ---- | ------ | ------ |
+| [architecture/](architecture/README.md) — system architecture (area) | — | — |
+| [architecture/system-overview.md](architecture/system-overview.md) | Accepted | ADR-0003, ADR-0006, ADR-0008 |
+| [architecture/request-flow.md](architecture/request-flow.md) | Accepted | ADR-0003, ADR-0008, ADR-0009 |
+| [architecture/deployment-topology.md](architecture/deployment-topology.md) | Accepted | ADR-0006 |
