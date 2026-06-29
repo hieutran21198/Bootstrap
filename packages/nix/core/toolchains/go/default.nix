@@ -36,6 +36,26 @@
       };
 
       scripts = {
+        sync-go =
+          let
+            goModSync = "go mod tidy";
+            goWorkSync = (
+              lib.concatMapStringsSep "\n" (
+                x:
+                let
+                  cleanPath = lib.removePrefix "./" x;
+                in
+                ''go -C "$WORKSPACE_ROOT"/${lib.escapeShellArg cleanPath} mod tidy''
+              ) opts.go-work.mods
+            );
+          in
+          {
+            exec = ''
+              set -euo pipefail''\n
+              ${if opts.go-work.enable then goWorkSync else goModSync}
+            '';
+            description = "Run go mod tidy for all module inside go work.";
+          };
         go-info = {
           exec = ''
             cat<<EOF
@@ -47,7 +67,7 @@
 
             # Workspace commands
             lint-go       # Lint Go files
-            sync-go-mods  # Synchronize Go modules in workspace
+            sync-go       # Synchronize Go modules in workspace
             EOF
           '';
           description = "Go toolchain information";
