@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -97,6 +98,68 @@ func (r *ReadStore) DoOrganizationQuery(ctx context.Context, id organization.ID,
 func bindOrganizationRLS(ctx context.Context, tx *gorm.DB, id organization.ID) error {
 	if err := tx.WithContext(ctx).Exec(`select set_config('app.organization_id', ?, true)`, id.String()).Error; err != nil {
 		return fmt.Errorf("%w: %w", ErrOrganizationRLSCannotBeBound, err)
+	}
+
+	return nil
+}
+
+// ErrInvalidSystemCapability indicates DoSystemQuery was called with a
+// capability that was not minted by a SystemScopeAuthorizer (a forged or
+// zero-value SystemReadCapability). The system scope can only be bound
+// with a valid capability — see ADR-0009.
+var ErrInvalidSystemCapability = errors.New("invalid system read capability")
+
+// ErrSystemRLSCannotBeBound indicates the `system` scope could not be
+// bound to the transaction (a set_config call failed). The wrapped cause
+// carries the driver error.
+var ErrSystemRLSCannotBeBound = errors.New("system RLS scope cannot be bound")
+
+// DoSystemQuery implements [query.ReadStore]. It is the cross-tenant,
+// read-only counterpart to DoOrganizationQuery (ADR-0009): it rejects an
+// unminted capability, opens a transaction, binds the `system` scope and
+// the capability's org allowlist transaction-locally, then runs the
+// handler against a tx-scoped reader. The dedicated system_reader role's
+// RLS policy is what actually widens visibility; an unbound or
+// wrongly-targeted read fails closed.
+func (r *ReadStore) DoSystemQuery(ctx context.Context, cap query.SystemReadCapability, handler query.TransactionalReadStoreHandler) error {
+	if !cap.IsValid() {
+		return ErrInvalidSystemCapability
+	}
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := bindSystemRLS(ctx, tx, cap.Target()); err != nil {
+			return err
+		}
+		return handler(ctx, newTxReadStore(tx))
+	})
+}
+
+// bindSystemRLS binds the `system` scope and the org allowlist to the
+// given transaction, both transaction-local (is_local=true). The
+// allowlist is '*' for an all-organizations target, else a comma-joined
+// list of validated UUIDv7 ids; a target with no ids yields an empty
+// allowlist, which the policy treats as fail-closed (zero rows).
+func bindSystemRLS(ctx context.Context, tx *gorm.DB, target query.SystemTarget) error {
+	if err := tx.WithContext(ctx).Exec(`select set_config('app.scope', 'system', true)`).Error; err != nil {
+		return fmt.Errorf("%w: %w", ErrSystemRLSCannotBeBound, err)
+	}
+
+	allowlist := "*"
+	if !target.IsAll() {
+		ids := target.IDs()
+		for _, id := range ids {
+			if err := idgen.Validate(id); err != nil {
+				return fmt.Errorf("%w: %w", ErrSystemRLSCannotBeBound, err)
+			}
+		}
+		parts := make([]string, len(ids))
+		for i, id := range ids {
+			parts[i] = id.String()
+		}
+		allowlist = strings.Join(parts, ",")
+	}
+
+	if err := tx.WithContext(ctx).Exec(`select set_config('app.organization_allowlist', ?, true)`, allowlist).Error; err != nil {
+		return fmt.Errorf("%w: %w", ErrSystemRLSCannotBeBound, err)
 	}
 
 	return nil

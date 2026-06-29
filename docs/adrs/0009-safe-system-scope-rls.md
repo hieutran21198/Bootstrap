@@ -1,10 +1,12 @@
 # 0009. Safe `system`-scope RLS: separate role, capability gate, read-only first
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-06-29
 - **Deciders**: Minh Hieu Tran <hieu.tran21198@gmail.com>
 - **Supersedes**: -
 - **Superseded by**: -
+
+> **Implementation note (2026-06-29):** Accepted, and the four-layer design (separate `system_reader` role + split policies + capability gate + read-side `DoSystemQuery`) was implemented immediately rather than deferred — the workspace opted to build the read-only `system` primitive up front. The "read-only first" constraint still holds: only `DoSystemQuery` exists; `DoSystemTransaction` (system writes) remains deferred to its own future ADR. The "separate runtime" rule also still holds: no `system_*` DSN is wired into the tenant-facing portal. See [`docs/specs/portal/system-scope-rls.md`](../../services/portal/docs/specs/system-scope-rls.md) for the build.
 
 ## Context
 

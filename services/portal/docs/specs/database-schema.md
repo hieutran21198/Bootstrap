@@ -1,11 +1,11 @@
 # Portal database schema
 
-> **Status**: Accepted
+> **Status**: Implemented
 > **Authors**: Minh Hieu Tran <hieu.tran21198@gmail.com>
 > **Last reviewed**: 2026-06-29
 > **Tracks**: [ADR-0003](../../../../docs/adrs/0003-service-architecture.md), [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md), [ADR-0009](../../../../docs/adrs/0009-safe-system-scope-rls.md)
 
-> **Implementation status:** The **tables and indexes** below exist in the init migration (`20260626000001_init.sql`). The **RLS policies** this spec documents are **not yet in any migration** — they are planned (see [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md) for the `organization` policy and [ADR-0009](../../../../docs/adrs/0009-safe-system-scope-rls.md) for the `system_reader` policy). This spec moves to `Implemented` only when the documented RLS migration lands. "Implemented" / "planned" is called out per table below.
+> **Implementation status:** Tables and indexes exist in the init migration (`20260626000001_init.sql`); the `staff` RLS policies — the `organization` policy (`TO writer, reader`) and the `system` read policy (`TO system_reader`) — exist in `20260629000001_staff_rls.sql`. The migrations have **not been run** against a database yet (apply with `migrate-up`). The cross-tenant `system_reader` role is provisioned by the postgres devenv module but **disabled by default** (`core.services.postgres.roles.systemReader.enable = false`); it is enabled only by a separate system-scoped runtime, never the tenant-facing portal (ADR-0009).
 
 ## Problem
 
@@ -79,7 +79,12 @@ Every table is exactly one of:
 - `idx_staff_organization_id (organization_id)` — required; the RLS policy predicate filters on it (covers all rows, active and deactivated).
 - `uq_staff_active_org_email` — **partial unique** `(organization_id, email) WHERE NOT deactivated`. Enforces one active staff member per email per organization. Scoped to the tenant because the same person may legitimately work for more than one organization; partial so an email frees up once its holder is deactivated and can be re-hired. There is **no** application-level dedup — this constraint is the only enforcement (the repo `Create` relies on DB constraints; see `internal/infra/postgres/repo/staff.go`).
 
-**RLS:** **required** (org-scoped) — **planned, not yet in any migration.** The init migration enables no RLS on `staff` (no `ENABLE`/`FORCE`/`CREATE POLICY`); until the policy migration lands, the table has no database-level tenant isolation. The planned `organization` policy (`TO writer, reader`) passes a row when `app.scope = organization AND organization_id = current_setting('app.organization_id', true)`; the planned `system` read policy (`TO system_reader`) passes when `app.scope = system AND` the row's org is in the bound allowlist. The `organization` scope is bound by the UoW/Read Store in code today, but binds against a policy that does not exist yet. See [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md) (organization policy) and [ADR-0009](../../../../docs/adrs/0009-safe-system-scope-rls.md) (`system_reader` policy). Policy SQL: [`rls-patterns` skill](../../../../tools/ai/skills/rls-patterns/SKILL.md).
+**RLS:** **required** (org-scoped) — **`ENABLE` + `FORCE` + two policies in `20260629000001_staff_rls.sql`** (not yet applied to a DB). Two policies cover the two scopes:
+
+- `tenant_isolation_staff` (`FOR ALL TO writer, reader`) — the `organization` scope. `USING`/`WITH CHECK`: `organization_id = current_setting('app.organization_id', true)`. The tenant-facing UoW/Read Store binds `app.organization_id`; a missing GUC denies the row (fail closed). Writer + reader share it; `WITH CHECK` stops a writer forging a row for another org.
+- `system_read_staff` (`FOR SELECT TO system_reader`) — the `system` scope (ADR-0009). Passes when `app.scope = system` **and** the row's org is in `app.organization_allowlist` (`*` or a comma list). The tenant-facing roles have **no** branch here, so `app.scope='system'` on a tenant connection matches nothing and fails closed. A missing allowlist denies all rows — "all tenants" is never an implicit default.
+
+See [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md) (organization policy), [ADR-0009](../../../../docs/adrs/0009-safe-system-scope-rls.md) (`system_reader` policy + the capability gate enforced in the Read Store), [`system-scope-rls.md`](system-scope-rls.md) (the full system-scope build), and the [`rls-patterns` skill](../../../../tools/ai/skills/rls-patterns/SKILL.md) (policy authoring).
 
 ### Relationships
 
@@ -97,12 +102,13 @@ Every table is exactly one of:
 
 ## Implementation plan
 
-The **tables and indexes** are implemented (init migration). The **RLS policies** documented above are not — this spec stays `Accepted` until the policy migration lands, then moves to `Implemented`.
+Tables, indexes, and the `staff` RLS policies are written. The migrations have not been applied to a database yet (`migrate-up` when ready).
 
 - [x] Create the `organizations` + `staff` tables and indexes — done (init migration).
 - [x] Decide and encode `staff.email` uniqueness — done: partial unique `(organization_id, email) WHERE NOT deactivated` (`uq_staff_active_org_email`) in the init migration.
-- [ ] Add the `FORCE`d RLS migration for `staff`: `ENABLE` + `FORCE ROW LEVEL SECURITY` + the `organization` policy (`TO writer, reader`) — tracked by [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md); SQL in the [`rls-patterns` skill](../../../../tools/ai/skills/rls-patterns/SKILL.md). **Moving this checkbox to `[x]` flips this spec to `Implemented`.**
-- [ ] Add the `system_reader` role + `system` read policy (`TO system_reader`) on `staff` — tracked by [ADR-0009](../../../../docs/adrs/0009-safe-system-scope-rls.md); deferred until a cross-tenant consumer exists.
+- [x] Add the `FORCE`d RLS migration for `staff`: `ENABLE` + `FORCE` + the `organization` policy (`tenant_isolation_staff`, `TO writer, reader`) — done in `20260629000001_staff_rls.sql` ([ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md)).
+- [x] Add the `system_reader` role + `system` read policy (`system_read_staff`, `TO system_reader`) on `staff` — done: role in the postgres devenv module (disabled by default), policy in `20260629000001_staff_rls.sql` ([ADR-0009](../../../../docs/adrs/0009-safe-system-scope-rls.md), [`system-scope-rls.md`](system-scope-rls.md)).
+- [ ] Apply the migrations against the dev database (`migrate-up`) and run the RLS isolation tests (two-tenant + cross-tenant `system_reader`).
 - [ ] Update this dictionary whenever a migration adds/changes a table — bump `Last reviewed`.
 
 ## References

@@ -49,6 +49,16 @@ type TransactionalReadStoreHandler func(ctx context.Context, rs TransactionalRea
 // Complex read models — joins, projections, list views — belong in
 // consumer-defined interfaces returning DTOs, not on this port; they
 // run inside the same DoOrganizationQuery transaction.
+//
+// DoSystemQuery is the cross-tenant counterpart (ADR-0009). It is
+// read-only and capability-gated: the caller must present a
+// [SystemReadCapability] minted by a [SystemScopeAuthorizer]. It binds
+// the `system` scope (app.scope='system') plus an org allowlist derived
+// from the capability's target, all transaction-local, then hands the
+// caller a [TransactionalReadStore] whose reads span the targeted
+// organizations under the dedicated system_reader RLS policy. There is
+// deliberately no DoSystemTransaction — system writes need their own ADR.
 type ReadStore interface {
 	DoOrganizationQuery(ctx context.Context, id organization.ID, handler TransactionalReadStoreHandler) error
+	DoSystemQuery(ctx context.Context, cap SystemReadCapability, handler TransactionalReadStoreHandler) error
 }
