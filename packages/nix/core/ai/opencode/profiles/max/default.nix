@@ -42,6 +42,7 @@
             atlas = inheritAgent agents.orchestrator-minion;
             # category-spawn executor.
             sysiphus-junior = inheritAgent agents.orchestrator-minion;
+            artistry = inheritAgent agents.worker;
           };
         };
     };
