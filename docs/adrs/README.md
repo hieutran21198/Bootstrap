@@ -57,3 +57,4 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | 0007 | [Manage the developer environment with Nix + devenv](0007-nix-devenv-developer-environment.md) | Accepted |
 | 0008 | [RLS tenant isolation with organization and system scopes](0008-tenant-scoped-unit-of-work-rls.md) | Accepted |
 | 0009 | [Safe system-scope RLS: separate role, capability gate, read-only first](0009-safe-system-scope-rls.md) | Proposed |
+| 0010 | [Architecture is its own top-level docs track](0010-architecture-as-lifecycle-track.md) | Accepted |

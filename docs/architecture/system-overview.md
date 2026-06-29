@@ -3,7 +3,7 @@
 > **Status**: Accepted
 > **Authors**: Minh Hieu Tran <hieu.tran21198@gmail.com>
 > **Last reviewed**: 2026-06-29
-> **Tracks**: [ADR-0003](../../adrs/0003-service-architecture.md), [ADR-0006](../../adrs/0006-zitadel-identity-auth.md), [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md)
+> **Tracks**: [ADR-0003](../adrs/0003-service-architecture.md), [ADR-0006](../adrs/0006-zitadel-identity-auth.md), [ADR-0008](../adrs/0008-tenant-scoped-unit-of-work-rls.md)
 
 > **Implementation status:** This view describes the **intended** system. What exists today: the `portal` service code (Clean Arch + CQRS, `organization` scope), the shared Go/Nix packages, and the local ZITADEL stack (`deploy/local/`). What is planned: the portal's two HTTP binaries (`cmd/http/{command,query}` are dir-only), the portal↔ZITADEL integration (`infra/zitadel/`, ADR-0006 `Proposed`), and the RLS policy migration (ADR-0008). Planned pieces are marked *(planned)* below.
 
@@ -19,16 +19,16 @@ The system's big picture is fragmented: the root README shows a folder tree, `de
 
 ## Non-goals
 
-- Per-service internal structure (DDD layers, repos, UoW) — that's [`conventions/go/service-architecture.md`](../../conventions/go/service-architecture.md) and each service's `AGENTS.md`.
+- Per-service internal structure (DDD layers, repos, UoW) — that's [`conventions/go/service-architecture.md`](../conventions/go/service-architecture.md) and each service's `AGENTS.md`.
 - Request-by-request flow — see [request-flow.md](request-flow.md).
 - Deployment wiring detail (proxy routes, healthchecks) — see [deployment-topology.md](deployment-topology.md).
 
 ## Background
 
-- **Monorepo, Go workspace.** Three Go modules (`packages/go`, `services/portal`, `tools`) bound by `go.work`; Nix/devenv owns the toolchain ([ADR-0007](../../adrs/0007-nix-devenv-developer-environment.md)).
-- **Service pattern.** Every service follows Clean Architecture + CQRS + DDD ([ADR-0003](../../adrs/0003-service-architecture.md)): physical read/write split, two HTTP binaries intended per service.
-- **Identity.** ZITADEL is the identity/auth provider ([ADR-0006](../../adrs/0006-zitadel-identity-auth.md), `Proposed`); run locally via `deploy/local/`.
-- **Tenancy.** Multi-tenant; Postgres RLS is the isolation authority with `organization`/`system` scopes ([ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md), [ADR-0009](../../adrs/0009-safe-system-scope-rls.md)).
+- **Monorepo, Go workspace.** Three Go modules (`packages/go`, `services/portal`, `tools`) bound by `go.work`; Nix/devenv owns the toolchain ([ADR-0007](../adrs/0007-nix-devenv-developer-environment.md)).
+- **Service pattern.** Every service follows Clean Architecture + CQRS + DDD ([ADR-0003](../adrs/0003-service-architecture.md)): physical read/write split, two HTTP binaries intended per service.
+- **Identity.** ZITADEL is the identity/auth provider ([ADR-0006](../adrs/0006-zitadel-identity-auth.md), `Proposed`); run locally via `deploy/local/`.
+- **Tenancy.** Multi-tenant; Postgres RLS is the isolation authority with `organization`/`system` scopes ([ADR-0008](../adrs/0008-tenant-scoped-unit-of-work-rls.md), [ADR-0009](../adrs/0009-safe-system-scope-rls.md)).
 
 ## Design
 
@@ -73,7 +73,7 @@ flowchart TB
 | Component | Boundary / role | Connects to | Status |
 | --------- | --------------- | ----------- | ------ |
 | **portal — Command API** | Write side; HTTP handlers → `app/command` → domain → `infra`. Connects to Postgres as `writer` (`NOBYPASSRLS`), binds the `organization` scope per transaction. | App Postgres (write), ZITADEL (token verify) | API binary planned; app/domain/infra exist |
-| **portal — Query API** | Read side; physically separate from the write side ([ADR-0003](../../adrs/0003-service-architecture.md)). Connects as `reader`, binds a scope per query. | App Postgres (read), ZITADEL (token verify) | API binary planned; readstore exists |
+| **portal — Query API** | Read side; physically separate from the write side ([ADR-0003](../adrs/0003-service-architecture.md)). Connects as `reader`, binds a scope per query. | App Postgres (read), ZITADEL (token verify) | API binary planned; readstore exists |
 | **portal — migrate CLI** | Schema + RLS policy management. Connects as `admin` (`SUPERUSER`, `BYPASSRLS`) — the only `BYPASSRLS` path, never request-time. | App Postgres (DDL) | Exists (`cmd/migrate`) |
 | **Shared Go packages** | Cross-service libraries: `env`, `gormx`, `idgen` (UUIDv7), `migrate` (goose), `server/echox`. No business logic. | — | Exists |
 | **ZITADEL** | External identity provider: OIDC login, token issuance/verification. Tenant users authenticate here. | App Postgres is **separate** from ZITADEL's own DB | Local stack exists; portal integration planned |
@@ -99,15 +99,15 @@ flowchart TB
 
 - [x] Document the intended component map (this view).
 - [ ] Build the portal HTTP binaries (`cmd/http/{command,query}`) — flips those components to "exists".
-- [ ] Wire portal ↔ ZITADEL token verification ([ADR-0006](../../adrs/0006-zitadel-identity-auth.md), `infra/zitadel/`).
-- [ ] Land the RLS policy migration ([ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md)).
+- [ ] Wire portal ↔ ZITADEL token verification ([ADR-0006](../adrs/0006-zitadel-identity-auth.md), `infra/zitadel/`).
+- [ ] Land the RLS policy migration ([ADR-0008](../adrs/0008-tenant-scoped-unit-of-work-rls.md)).
 - [ ] Update this view whenever a component is added/removed — bump `Last reviewed`.
 
 ## References
 
 - [request-flow.md](request-flow.md) · [deployment-topology.md](deployment-topology.md) — the other two architecture views.
-- [ADR-0003](../../adrs/0003-service-architecture.md) — service-internal pattern (Clean Arch + CQRS).
-- [ADR-0006](../../adrs/0006-zitadel-identity-auth.md) — ZITADEL as identity provider.
-- [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md) · [ADR-0009](../../adrs/0009-safe-system-scope-rls.md) — tenant isolation model.
-- [Portal database schema](../../../services/portal/docs/specs/database-schema.md) — the app DB's tables.
-- [`conventions/go/service-architecture.md`](../../conventions/go/service-architecture.md) — per-service internal structure.
+- [ADR-0003](../adrs/0003-service-architecture.md) — service-internal pattern (Clean Arch + CQRS).
+- [ADR-0006](../adrs/0006-zitadel-identity-auth.md) — ZITADEL as identity provider.
+- [ADR-0008](../adrs/0008-tenant-scoped-unit-of-work-rls.md) · [ADR-0009](../adrs/0009-safe-system-scope-rls.md) — tenant isolation model.
+- [Portal database schema](../../services/portal/docs/specs/database-schema.md) — the app DB's tables.
+- [`conventions/go/service-architecture.md`](../conventions/go/service-architecture.md) — per-service internal structure.

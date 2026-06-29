@@ -3,7 +3,7 @@
 > **Status**: Accepted
 > **Authors**: Minh Hieu Tran <hieu.tran21198@gmail.com>
 > **Last reviewed**: 2026-06-29
-> **Tracks**: [ADR-0006](../../adrs/0006-zitadel-identity-auth.md)
+> **Tracks**: [ADR-0006](../adrs/0006-zitadel-identity-auth.md)
 
 > **Implementation status:** The **local** topology below exists (`deploy/local/docker-compose.yaml`) — Postgres, ZITADEL API, ZITADEL Login v2, and a Traefik proxy. The portal service is **not yet** wired into this compose stack (its HTTP binaries are planned); it runs from the devenv shell against its own app Postgres. A non-local (staging/prod) topology is not yet defined.
 
@@ -20,12 +20,12 @@ The runtime wiring of the system — which processes run, how they network, whic
 ## Non-goals
 
 - Component responsibilities — [system-overview.md](system-overview.md).
-- ZITADEL configuration knobs — `deploy/local/.env.example` and [ADR-0006](../../adrs/0006-zitadel-identity-auth.md).
+- ZITADEL configuration knobs — `deploy/local/.env.example` and [ADR-0006](../adrs/0006-zitadel-identity-auth.md).
 - A production deployment design — not yet defined; this view is local-only.
 
 ## Background
 
-- The local auth stack lives in `deploy/local/docker-compose.yaml` ([ADR-0006](../../adrs/0006-zitadel-identity-auth.md)): four services on a single `zitadel` Docker network.
+- The local auth stack lives in `deploy/local/docker-compose.yaml` ([ADR-0006](../adrs/0006-zitadel-identity-auth.md)): four services on a single `zitadel` Docker network.
 - Bring-up: `cp .env.example .env` (set `ZITADEL_MASTERKEY`), `docker compose up -d --wait`, then `http://localhost:8080/ui/console`.
 - The **app** Postgres (for portal aggregates, with the `admin`/`writer`/`reader` roles) is provisioned by the postgres devenv module (`packages/nix/core/services/postgres/`), **separate** from the ZITADEL Postgres in this compose file.
 
@@ -74,7 +74,7 @@ flowchart TB
 ### Two Postgres instances — do not conflate
 
 - **ZITADEL Postgres** — the `postgres` container in this compose file; stores ZITADEL's own IAM state. Exposed on `127.0.0.1:5432` locally.
-- **App Postgres** — provisioned by the postgres devenv module for the portal's aggregates with the RLS roles ([role and scope contract](../../conventions/database/role-and-scope-contract.md)). The portal connects here, never to ZITADEL's DB.
+- **App Postgres** — provisioned by the postgres devenv module for the portal's aggregates with the RLS roles ([role and scope contract](../conventions/database/role-and-scope-contract.md)). The portal connects here, never to ZITADEL's DB.
 
 > Both default to port 5432 locally; when running both, give the app DB a distinct port to avoid the clash. This is an open item (see below).
 
@@ -99,7 +99,7 @@ flowchart TB
 ## References
 
 - [system-overview.md](system-overview.md) · [request-flow.md](request-flow.md) — the other two architecture views.
-- [ADR-0006](../../adrs/0006-zitadel-identity-auth.md) — ZITADEL as the identity/auth provider.
+- [ADR-0006](../adrs/0006-zitadel-identity-auth.md) — ZITADEL as the identity/auth provider.
 - `deploy/local/docker-compose.yaml` — the source this view documents.
 - `deploy/local/.env.example` — the local config surface.
-- [`conventions/database/role-and-scope-contract.md`](../../conventions/database/role-and-scope-contract.md) — the app DB's roles (distinct from ZITADEL's DB).
+- [`conventions/database/role-and-scope-contract.md`](../conventions/database/role-and-scope-contract.md) — the app DB's roles (distinct from ZITADEL's DB).

@@ -25,7 +25,7 @@ Provisions: Go `1.26.3` + delve + gopls + `golangci-lint v2.12.2`, AWS CLI + aws
 bootstrap/
 ├── apps/                   # platform-specific apps                        (scaffold)
 ├── deploy/                 # infra defs + deploy/local (ZITADEL docker-compose)
-├── docs/                   # GLOBAL docs: adrs / specs / conventions / glossary / findings / debt
+├── docs/                   # GLOBAL docs: adrs / architecture / specs / conventions / glossary / findings / debt
 ├── packages/
 │   ├── go/                 # shared Go module (env, gormx, idgen, migrate, server/echox)
 │   └── nix/                # devenv modules (core/ mandatory, extra/ opt-in)
@@ -46,7 +46,7 @@ Every populated subtree has its own `AGENTS.md` — terse knowledge base for hum
 | Path                                                   | Covers                                                  |
 | ------------------------------------------------------ | ------------------------------------------------------- |
 | [AGENTS.md](AGENTS.md)                                 | Canonical project knowledge base — start here for depth |
-| [docs/AGENTS.md](docs/AGENTS.md)                       | ADRs, specs, conventions, glossary, findings, debt      |
+| [docs/AGENTS.md](docs/AGENTS.md)                       | ADRs, architecture, specs, conventions, glossary, findings, debt |
 | [packages/go/AGENTS.md](packages/go/AGENTS.md)         | Shared Go library governance (SRP per-package)          |
 | [packages/nix/AGENTS.md](packages/nix/AGENTS.md)       | Nix devenv module conventions + opencode/claude AI setup |
 | [services/portal/AGENTS.md](services/portal/AGENTS.md) | Clean Architecture + CQRS module layout                 |
@@ -80,7 +80,7 @@ Available after entering the shell (i.e. any `cd` into the repo with direnv enab
 - **Go version**: `1.26.3` across all `go.mod` + `go.work`. Match when adding modules.
 - **Folder descriptions**: Add the path to `core.workspace.treeInfos` in the owning [`devenv.nix`](devenv.nix) (root or a service) — it generates the `.info` row `ws-tree` inlines. It writes **descriptions only**; create the directory and its `.gitkeep` yourself.
 - **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) via `commitizen` ran by [`prek`](https://github.com/j178/prek).
-- **Documentation is two-tier**: workspace-wide standards live in root [`docs/`](docs/) (six tracks — adrs/specs/conventions/glossary/findings/debt, each with its own `TEMPLATE.md` + `README.md`); service-only docs live under `services/<name>/docs/` (e.g. [services/portal/docs/](services/portal/docs/)). ADRs are append-only and numbered; specs/conventions/glossary are living; findings are append-only after `Resolved`; debt has an append-only _Encounters_ ledger. See [docs/AGENTS.md](docs/AGENTS.md) for per-track rules.
+- **Documentation is two-tier**: workspace-wide standards live in root [`docs/`](docs/) (seven tracks — adrs/architecture/specs/conventions/glossary/findings/debt, each with its own `TEMPLATE.md` + `README.md`); service-only docs live under `services/<name>/docs/` (e.g. [services/portal/docs/](services/portal/docs/)). ADRs are append-only and numbered; architecture/specs/conventions/glossary are living; findings are append-only after `Resolved`; debt has an append-only _Encounters_ ledger. The [`architecture/`](docs/architecture/) track is the living, system-wide view of what the running system is. See [docs/AGENTS.md](docs/AGENTS.md) for per-track rules.
 - **Local-only (gitignored)**: `.opencode/`, `.claude/`, `.codex/`, `.omo/`, `.codegraph/` — per-developer agent config + caches.
 - **File size cap**: 1 MB (`check-added-large-files --maxkb=1024`).
 

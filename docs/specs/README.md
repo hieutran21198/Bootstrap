@@ -2,12 +2,12 @@
 
 Specs describe **how** something is built — the design contract for a feature, a service, or a cross-cutting change. Compare to [`adrs/`](../adrs/), which records the **decision** to build it, and [`conventions/`](../conventions/), which captures the rules that apply once it ships.
 
-| Track                            | Question it answers              | Lifecycle             |
-| -------------------------------- | -------------------------------- | --------------------- |
-| [adrs/](../adrs/)                | *Why did we choose this?*        | Append-only, dated    |
-| [conventions/](../conventions/)  | *What is the rule, right now?*   | Living, edit-in-place |
-| specs/                           | *How is this built?*             | Living per spec       |
-| [glossary/](../glossary/)        | *What does this term mean here?* | Living, edit-in-place |
+| Track                           | Question it answers              | Lifecycle             |
+| ------------------------------- | -------------------------------- | --------------------- |
+| [adrs/](../adrs/)               | _Why did we choose this?_        | Append-only, dated    |
+| [conventions/](../conventions/) | _What is the rule, right now?_   | Living, edit-in-place |
+| [specs/](../specs/)             | _How is this built?_             | Living per spec       |
+| [glossary/](../glossary/)       | _What does this term mean here?_ | Living, edit-in-place |
 
 A spec is the **single source of truth for an in-flight or shipped design**. ADRs cite specs; commit messages and PRs cite specs; code comments cite specs. When two readers disagree on the design, the spec is the tiebreaker.
 
@@ -53,7 +53,7 @@ Specs are **living per spec**. `Status` transitions:
 - `Superseded by specs/<other>.md` — a newer spec replaces this one.
 - `Deprecated` — the feature was removed; the spec is retained as history.
 
-Move forward through statuses; bump `Last reviewed` on every material edit. Material design changes after `Implemented` need a new ADR plus either a new spec or an in-place revision that keeps `Status: Implemented` and records the change in `Open questions` → *Resolved*.
+Move forward through statuses; bump `Last reviewed` on every material edit. Material design changes after `Implemented` need a new ADR plus either a new spec or an in-place revision that keeps `Status: Implemented` and records the change in `Open questions` → _Resolved_.
 
 A spec stays in the repo even after the feature is removed (`Status: Deprecated`); old links must keep resolving.
 
@@ -68,13 +68,13 @@ cp docs/specs/TEMPLATE.md "docs/specs/${AREA}/${FEATURE}.md"
 $EDITOR "docs/specs/${AREA}/${FEATURE}.md"
 ```
 
-Then cross-link: the spec's `Tracks` field points at the ADR (or ticket) that authorised the work; the ADR's *References* points back at the spec. Add the spec to the Index below.
+Then cross-link: the spec's `Tracks` field points at the ADR (or ticket) that authorised the work; the ADR's _References_ points back at the spec. Add the spec to the Index below.
+
+> **Note**: system-architecture views moved to their own top-level track at [`docs/architecture/`](../architecture/README.md) ([ADR-0010](../adrs/0010-architecture-as-lifecycle-track.md)). Specs are now per-feature designs only.
 
 ## Index
 
+_No specs yet._
+
 | Spec | Status | Tracks |
 | ---- | ------ | ------ |
-| [architecture/](architecture/README.md) — system architecture (area) | — | — |
-| [architecture/system-overview.md](architecture/system-overview.md) | Accepted | ADR-0003, ADR-0006, ADR-0008 |
-| [architecture/request-flow.md](architecture/request-flow.md) | Accepted | ADR-0003, ADR-0008, ADR-0009 |
-| [architecture/deployment-topology.md](architecture/deployment-topology.md) | Accepted | ADR-0006 |

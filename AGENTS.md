@@ -10,7 +10,7 @@ A greenfield Go monorepo scaffold managed by Nix and devenv. Three Go modules ar
 bootstrap/
 ├── apps/               # platform-specific apps (scaffold)
 ├── deploy/             # infra defs + deploy/local (ZITADEL docker-compose)
-├── docs/               # GLOBAL docs: ADRs / specs / conventions / glossary / findings / debt
+├── docs/               # GLOBAL docs: ADRs / architecture / specs / conventions / glossary / findings / debt
 ├── packages/
 │   ├── go/             # shared Go module (env, gormx, idgen, migrate, server/echox)
 │   └── nix/            # Nix devenv modules (core/ mandatory, extra/ opt-in)
@@ -29,6 +29,7 @@ bootstrap/
 | Task | Location | Notes |
 |------|----------|-------|
 | Add workspace-wide ADR / convention | `docs/adrs/`, `docs/conventions/` | See [docs/AGENTS.md](docs/AGENTS.md) for per-track format + lifecycle |
+| See/update the system architecture | `docs/architecture/` | Living, system-wide views (overview, request flow, deployment topology) — see [docs/architecture/README.md](docs/architecture/README.md), ADR-0010 |
 | Add portal-specific doc | `services/portal/docs/` | Service-scoped ADRs/specs/findings/debt — see [services/portal/docs/README.md](services/portal/docs/README.md) |
 | Add a folder description | `core.workspace.treeInfos` in the owning `devenv.nix` | Generates the `.info` row `ws-tree` inlines (descriptions only — no `.gitkeep` seeding) |
 | Add Nix devenv module | `packages/nix/core/` (or `extra/` for opt-in) | See [packages/nix/AGENTS.md](packages/nix/AGENTS.md) |

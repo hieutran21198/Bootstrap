@@ -1,7 +1,7 @@
 # docs/
 
 ## OVERVIEW
-Workspace-wide (**global**) documentation — standards and records shared across services, the shared Go/Nix packages, and deployment. Six tracks, each with a distinct lifecycle and its own `TEMPLATE.md` + `README.md`. `adrs/`, `conventions/`, and `findings/` carry content; `specs/`, `glossary/`, and `debt/` are infrastructured but empty.
+Workspace-wide (**global**) documentation — standards and records shared across services, the shared Go/Nix packages, and deployment. Seven tracks, each with a distinct lifecycle and its own `TEMPLATE.md` + `README.md`. `adrs/`, `conventions/`, `findings/`, and `architecture/` carry content; `specs/`, `glossary/`, and `debt/` are infrastructured but empty.
 
 **Two-tier model.** This tree is global. Service-only docs live under `services/<name>/docs/` (e.g. [../services/portal/docs/](../services/portal/docs/)), which mirrors the `adrs / specs / findings / debt` tracks but defers all format + lifecycle authority to here. Rule of thumb: if another service would inherit it, it's global (here); if it dies with one service, it's service-local. `conventions/` and `glossary/` are global-only — never redefine a term or rule in a service tree; link to it.
 
@@ -9,7 +9,8 @@ Workspace-wide (**global**) documentation — standards and records shared acros
 ```
 docs/
 ├── adrs/          # decisions (append-only, numbered)
-├── specs/         # feature/system designs (living per spec)
+├── architecture/  # what the system is right now (living reference, system-wide)
+├── specs/         # feature designs (living per spec)
 ├── conventions/   # workspace-wide rules (living, by topic)
 │   └── go/        # Go-specific conventions + templates
 ├── glossary/      # canonical terms (living, atomic per term)
@@ -23,6 +24,9 @@ docs/
 | Why we chose X over Y | `adrs/` |
 | ADR format | [adrs/TEMPLATE.md](adrs/TEMPLATE.md) |
 | ADR authoring policy | [adrs/README.md](adrs/README.md) |
+| What the system is right now | `architecture/` |
+| Architecture view format | [architecture/TEMPLATE.md](architecture/TEMPLATE.md) |
+| Architecture authoring policy | [architecture/README.md](architecture/README.md) |
 | Workspace-wide rules | `conventions/` |
 | Convention format | [conventions/TEMPLATE.md](conventions/TEMPLATE.md) |
 | Convention authoring policy | [conventions/README.md](conventions/README.md) |
@@ -46,11 +50,14 @@ docs/
 ### ADRs
 Filename: `NNNN-kebab-case-title.md`. Title is short, decisive, and reads as a result ("use-go-workspaces", not "should-we-use-go-workspaces"). One decision per ADR. Required sections in order: Context, Decision, Consequences, Alternatives considered, References. Status transitions: `Proposed` → `Accepted` → `Superseded by ADR-NNNN` or `Deprecated`.
 
+### Architecture
+Filename: `<view>.md`, no numbering, kebab-case (`system-overview.md`, `request-flow.md`, `deployment-topology.md`). Front matter fields: `Status`, `Authors`, `Last reviewed`, `Tracks`. One view per file. Required sections: Purpose, Diagram (fenced `mermaid`), Components, Boundaries, Open questions, References — plus an "exists today vs planned" annotation. **Living reference** for what the system *is right now* (not a per-feature design and not a decision): edit in place as the system changes and bump `Last reviewed`; there is no `Draft → Implemented` arc. A new ADR is required only when the architecture changes by decision (new service, new external dependency, changed boundary). Distinct from `specs/` (one feature's design, has a finish line) and `adrs/` (the decision, append-only).
+
 ### Conventions
 Filename: `<topic>/<rule>.md`, no numbering. Front matter fields: `Scope`, `Status`, `Decided by`, `Last reviewed`. One rule per file. Required sections: **Rule** (one-sentence imperative), **Rationale**, **Apply**, **Examples** (Good / Bad), **Enforcement**. Living document; edit in place and bump `Last reviewed` for clarifications. Material changes need a new ADR.
 
 ### Specs
-Filename: `<feature>.md` or `<area>/<feature>.md`, no numbering, kebab-case. Front matter fields: `Status`, `Authors`, `Last reviewed`, `Tracks`. One feature per file. Required sections in order: Problem, Goals, Non-goals, Background, Design, Alternatives considered, Open questions, Implementation plan, References. Status transitions: `Draft` → `Accepted` → `Implemented` → `Superseded by specs/<other>.md` or `Deprecated`. Living per spec; bump `Last reviewed` on every material edit. Material changes after `Implemented` need a new ADR.
+Filename: `<feature>.md` or `<area>/<feature>.md`, no numbering, kebab-case. Front matter fields: `Status`, `Authors`, `Last reviewed`, `Tracks`. One **feature** per file (a per-feature design with a finish line; system-wide views live in `architecture/`). Required sections in order: Problem, Goals, Non-goals, Background, Design, Alternatives considered, Open questions, Implementation plan, References. Status transitions: `Draft` → `Accepted` → `Implemented` → `Superseded by specs/<other>.md` or `Deprecated`. Living per spec; bump `Last reviewed` on every material edit. Material changes after `Implemented` need a new ADR.
 
 ### Glossary
 Filename: `<term>.md`, no numbering, kebab-case, singular form. Front matter fields: `Status`, `Last reviewed`. One term per file. Required sections: **Definition** (one sentence), **Context**, **Examples**, **Synonyms / Avoid**. Living document; edit in place and bump `Last reviewed` for clarifications. A new ADR is only required when the definition has structural consequences the workspace must accept.
@@ -65,6 +72,7 @@ Filename: `<topic>-<desc>.md` or `<area>/<topic>-<desc>.md`, kebab-case; no numb
 - Editing the body of an accepted ADR; supersede it instead.
 - Putting design discussion or specs inside an ADR; specs live in `specs/`.
 - Putting decisions inside a spec; decisions live in `adrs/` and the spec's `Tracks` field points at them.
+- Putting a system-wide view (component map, request flow, topology) in `specs/`; those are living references and live in `architecture/`. A spec is one feature's design with a finish line.
 - Skipping status transitions on ADRs, specs, findings, or debt items.
 - Listing every imaginable option in Alternatives; include only those seriously weighed.
 - Numbering convention, spec, glossary, or debt filenames; numbering belongs to ADRs. Findings use date prefixes, not numbers.
