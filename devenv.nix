@@ -16,13 +16,6 @@
       skills = {
         dbRLSPatterns = {
           enable = true;
-          statements = {
-            whenInvocation = [
-              "Creating or modifying API routes that access the database"
-              "Adding an org-scoped table or aggregate (carries organization_id, like portal staff)"
-              "Writing goose migrations, repos, or the UnitOfWork transaction path"
-            ];
-          };
         };
       };
     };

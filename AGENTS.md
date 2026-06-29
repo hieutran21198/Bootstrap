@@ -16,7 +16,7 @@ bootstrap/
 │   └── nix/            # Nix devenv modules (core/ mandatory, extra/ opt-in)
 ├── services/portal/    # Clean Arch + CQRS service (carries its own docs/)
 ├── tools/              # workspace tooling Go module
-│   ├── ai/             # AI agent skills/presets (scaffold)
+│   ├── ai/skills/      # AI agent skill bodies (plain SKILL.md; Nix readFile-links them)
 │   ├── generators/ws-tree/  # tree + .info description inliner
 │   ├── scripts/        # dev helper scripts (scaffold)
 │   └── validators/     # workspace / arch validators (scaffold)
@@ -36,6 +36,7 @@ bootstrap/
 | Add shared Go library | `packages/go/` | See [packages/go/AGENTS.md](packages/go/AGENTS.md) for SRP governance |
 | Add workspace CLI tool | `tools/generators/<name>/` | See [tools/AGENTS.md](tools/AGENTS.md) |
 | Configure AI agents | `packages/nix/core/ai/opencode/` | opencode agents + `max`/`slim` profiles |
+| Add/edit an AI skill body | `tools/ai/skills/<name>/SKILL.md` | Plain markdown; the `core.ai.skills.<skill>` Nix module readFile-links it into `.claude/`/`.opencode/` (ADR-0007 §4) |
 
 ## CODE MAP
 | Symbol | Type | Location | Role |

@@ -6,7 +6,8 @@ Workspace-wide tooling. Go module `bootstrap/tools`. Nix devenv modules have **m
 ## STRUCTURE
 ```
 tools/
-├── ai/             # agent prompts / presets / evals (scaffold)
+├── ai/
+│   └── skills/     # AI agent skill bodies (plain SKILL.md; e.g. rls-patterns/) — Nix readFile-links them
 ├── generators/
 │   └── ws-tree/    # directory listing tool that injects .info metadata (Go binary)
 ├── scripts/        # dev helper scripts (scaffold)
@@ -20,6 +21,7 @@ tools/
 | New CLI generator | `generators/<name>/` (package main; follow ws-tree pattern) |
 | One-off dev shell helper | `scripts/<name>` |
 | Workspace structure validator | `validators/<name>/` |
+| Project-specific AI skill body | `ai/skills/<name>/SKILL.md` (plain markdown; the `core.ai.skills.<skill>` Nix module readFile-links it into `.claude/`/`.opencode/`) |
 | Prompt / eval / agent helper | `ai/` |
 | Nix devenv module (lint, hooks, Go toolchain) | Nix core modules under `packages/nix/` -- consult the sibling AGENTS guide |
 
