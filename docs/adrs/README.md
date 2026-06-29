@@ -56,3 +56,4 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | 0006 | [Zitadel as the identity and auth provider](0006-zitadel-identity-auth.md)         | Proposed |
 | 0007 | [Manage the developer environment with Nix + devenv](0007-nix-devenv-developer-environment.md) | Accepted |
 | 0008 | [RLS tenant isolation with organization and system scopes](0008-tenant-scoped-unit-of-work-rls.md) | Accepted |
+| 0009 | [Safe system-scope RLS: separate role, capability gate, read-only first](0009-safe-system-scope-rls.md) | Proposed |

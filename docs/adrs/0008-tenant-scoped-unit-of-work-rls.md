@@ -4,7 +4,7 @@
 - **Date**: 2026-06-28
 - **Deciders**: Minh Hieu Tran <hieu.tran21198@gmail.com>
 - **Supersedes**: -
-- **Superseded by**: -
+- **Superseded by**: [ADR-0009](0009-safe-system-scope-rls.md) (partial — the `system`-scope implementation only: ADR-0009 replaces the single `OR` policy on `writer`/`reader` with a dedicated `system_reader` role + capability gate. The core model — RLS as authority, two named scopes, transaction-local GUCs, `organization` scope as implemented — stands.)
 
 ## Context
 

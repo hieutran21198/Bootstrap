@@ -1,9 +1,11 @@
 # Portal database schema
 
-> **Status**: Implemented
+> **Status**: Accepted
 > **Authors**: Minh Hieu Tran <hieu.tran21198@gmail.com>
 > **Last reviewed**: 2026-06-29
-> **Tracks**: [ADR-0003](../../../../docs/adrs/0003-service-architecture.md), [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md)
+> **Tracks**: [ADR-0003](../../../../docs/adrs/0003-service-architecture.md), [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md), [ADR-0009](../../../../docs/adrs/0009-safe-system-scope-rls.md)
+
+> **Implementation status:** The **tables and indexes** below exist in the init migration (`20260626000001_init.sql`). The **RLS policies** this spec documents are **not yet in any migration** — they are planned (see [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md) for the `organization` policy and [ADR-0009](../../../../docs/adrs/0009-safe-system-scope-rls.md) for the `system_reader` policy). This spec moves to `Implemented` only when the documented RLS migration lands. "Implemented" / "planned" is called out per table below.
 
 ## Problem
 
@@ -77,7 +79,7 @@ Every table is exactly one of:
 - `idx_staff_organization_id (organization_id)` — required; the RLS policy predicate filters on it (covers all rows, active and deactivated).
 - `uq_staff_active_org_email` — **partial unique** `(organization_id, email) WHERE NOT deactivated`. Enforces one active staff member per email per organization. Scoped to the tenant because the same person may legitimately work for more than one organization; partial so an email frees up once its holder is deactivated and can be re-hired. There is **no** application-level dedup — this constraint is the only enforcement (the repo `Create` relies on DB constraints; see `internal/infra/postgres/repo/staff.go`).
 
-**RLS:** **required** (org-scoped). The planned `FORCE`d policy passes a row when the bound scope is `system` **or** `organization_id = current_setting('app.organization_id', true)`. The `organization` scope is implemented in the UoW/Read Store today; the policy migration and `system` scope are planned ([ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md)). Policy SQL: [`rls-patterns` skill](../../../../tools/ai/skills/rls-patterns/SKILL.md).
+**RLS:** **required** (org-scoped) — **planned, not yet in any migration.** The init migration enables no RLS on `staff` (no `ENABLE`/`FORCE`/`CREATE POLICY`); until the policy migration lands, the table has no database-level tenant isolation. The planned `organization` policy (`TO writer, reader`) passes a row when `app.scope = organization AND organization_id = current_setting('app.organization_id', true)`; the planned `system` read policy (`TO system_reader`) passes when `app.scope = system AND` the row's org is in the bound allowlist. The `organization` scope is bound by the UoW/Read Store in code today, but binds against a policy that does not exist yet. See [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md) (organization policy) and [ADR-0009](../../../../docs/adrs/0009-safe-system-scope-rls.md) (`system_reader` policy). Policy SQL: [`rls-patterns` skill](../../../../tools/ai/skills/rls-patterns/SKILL.md).
 
 ### Relationships
 
@@ -95,10 +97,12 @@ Every table is exactly one of:
 
 ## Implementation plan
 
-The current schema is implemented (init migration). Outstanding schema work tracked elsewhere:
+The **tables and indexes** are implemented (init migration). The **RLS policies** documented above are not — this spec stays `Accepted` until the policy migration lands, then moves to `Implemented`.
 
-- [ ] Add the `FORCE`d RLS policy migration for `staff` (the `app.scope`-aware predicate) — tracked by [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md) and the [`rls-patterns` skill](../../../../tools/ai/skills/rls-patterns/SKILL.md).
+- [x] Create the `organizations` + `staff` tables and indexes — done (init migration).
 - [x] Decide and encode `staff.email` uniqueness — done: partial unique `(organization_id, email) WHERE NOT deactivated` (`uq_staff_active_org_email`) in the init migration.
+- [ ] Add the `FORCE`d RLS migration for `staff`: `ENABLE` + `FORCE ROW LEVEL SECURITY` + the `organization` policy (`TO writer, reader`) — tracked by [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md); SQL in the [`rls-patterns` skill](../../../../tools/ai/skills/rls-patterns/SKILL.md). **Moving this checkbox to `[x]` flips this spec to `Implemented`.**
+- [ ] Add the `system_reader` role + `system` read policy (`TO system_reader`) on `staff` — tracked by [ADR-0009](../../../../docs/adrs/0009-safe-system-scope-rls.md); deferred until a cross-tenant consumer exists.
 - [ ] Update this dictionary whenever a migration adds/changes a table — bump `Last reviewed`.
 
 ## References
