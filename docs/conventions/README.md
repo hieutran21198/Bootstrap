@@ -72,6 +72,7 @@ Then cross-link: the rule's `Decided by` points at the ADR; the ADR's *Reference
 
 ## Index
 
-| Topic        | Coverage                                                                                            | Docs |
-| ------------ | --------------------------------------------------------------------------------------------------- | ---- |
-| [go/](go/)   | Templates + decision tree for Go packages across `packages/`, `services/`, `tools/`, `apps/`        | 2    |
+| Topic                  | Coverage                                                                                            | Docs |
+| ---------------------- | --------------------------------------------------------------------------------------------------- | ---- |
+| [go/](go/)             | Templates + decision tree for Go packages across `packages/`, `services/`, `tools/`, `apps/`        | 2    |
+| [database/](database/) | Connection role (`admin`/`writer`/`reader`) + RLS scope GUC contract (`app.scope`, `app.organization_id`) | 1    |

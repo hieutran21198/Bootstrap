@@ -8,7 +8,6 @@ Start a new spec by copying [TEMPLATE.md](TEMPLATE.md). Cross-link: the spec's `
 
 ## Index
 
-_No portal specs yet._
-
 | Spec | Status | Tracks |
 | ---- | ------ | ------ |
+| [database-schema.md](database-schema.md) | Implemented | [ADR-0003](../../../../docs/adrs/0003-service-architecture.md), [ADR-0008](../../../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md) |
