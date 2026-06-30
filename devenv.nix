@@ -11,7 +11,6 @@
       };
       opencode = {
         enable = true;
-        profile = "max";
       };
       skills = {
         dbRLSPatterns = {

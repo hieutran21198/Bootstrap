@@ -1,6 +1,7 @@
 { lib, config, ... }:
 {
   imports = [
+    ./agents/default.nix
     ./skills/default.nix
     ./opencode/default.nix
     (lib.mkAliasOptionModule [ "core" "ai" "claude" ] [ "claude" "code" ])
