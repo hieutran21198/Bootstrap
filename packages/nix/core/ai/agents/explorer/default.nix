@@ -21,21 +21,18 @@
       temperature = utils.makeFloatOption { default = 0.1; };
       permission = utils.makeAttrsOption {
         ofType = lib.types.anything;
-        default = {
-          question = "allow";
-          council_session = "deny";
-          cancel_task = "deny";
-          skill = {
-            "*" = "deny";
-          };
-          "websearch_*" = "deny";
-          "context7_*" = "deny";
-          "gh_grep_*" = "deny";
-        };
+        default = { };
       };
       mcps = utils.makeListOption {
         ofType = lib.types.str;
         default = [ ];
+      };
+      # Per-tool, one-line descriptions advertised in the agent's <tools> prompt
+      # section. MCP modules populate this (e.g. mcps/codegraph pushes
+      # `toolDefs."codegraph"`), mirroring how context7 populates researcher.toolDefs.
+      toolDefs = utils.makeAttrsOption {
+        ofType = lib.types.str;
+        default = { };
       };
       system =
         let
@@ -96,6 +93,28 @@
       inherit (opts) name;
     in
     lib.mkIf opts.enable {
+      core.ai.agents.explorer.permission = {
+        question = "allow";
+        cancel_task = "deny";
+        council_session = "deny";
+        read = "allow";
+        glob = "allow";
+        grep = "allow";
+        list = "allow";
+        lsp = "allow";
+        edit = "deny";
+        bash = "deny";
+        task = "deny";
+        todowrite = "deny";
+        external_directory = "deny";
+        webfetch = "deny";
+        websearch = "deny";
+        doom_loop = "ask";
+        skill = {
+          "*" = "deny";
+        };
+      };
+
       core.ai.agents.orchestrator = {
         minionProfiles.${name} = ''
           aliases: ["codebase_recon", "discoverer"]
@@ -154,7 +173,13 @@
 
         <role>${opts.system.role}</role>
 
-        <workflow>${opts.system.instructions}</workflow>
+        ${
+          lib.optionalString (opts.toolDefs != { }) (
+            "<tools>\n"
+            + lib.concatStringsSep "\n" (lib.mapAttrsToList (k: v: "- ${k}: ${v}") opts.toolDefs)
+            + "\n</tools>\n\n"
+          )
+        }<workflow>${opts.system.instructions}</workflow>
       '';
     };
 }

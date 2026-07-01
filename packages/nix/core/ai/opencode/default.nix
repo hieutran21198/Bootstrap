@@ -5,6 +5,12 @@
   config = lib.mkIf config.core.ai.opencode.enable {
     opencode = {
       enable = true;
+      settings = {
+        agent = {
+          explore.enabled = false;
+        };
+        plugin = [ "compound-engineering@git+https://github.com/EveryInc/compound-engineering-plugin.git" ];
+      };
     };
     env = {
       OPENCODE_CONFIG_DIR = config.core.workspace.root + "/.opencode";

@@ -21,21 +21,18 @@
       temperature = utils.makeFloatOption { default = 0.1; };
       permission = utils.makeAttrsOption {
         ofType = lib.types.anything;
-        default = {
-          question = "allow";
-          council_session = "deny";
-          cancel_task = "allow";
-          skill = {
-            "*" = "deny";
-          };
-          "websearch_*" = "deny";
-          "context7_*" = "deny";
-          "gh_grep_*" = "deny";
-        };
+        default = { };
       };
       mcps = utils.makeListOption {
         ofType = lib.types.str;
         default = [ ];
+      };
+      # Per-tool, one-line descriptions advertised in the agent's <tools> prompt
+      # section. MCP modules populate this (e.g. mcps/codegraph pushes
+      # `toolDefs."codegraph"`), mirroring how context7 populates researcher.toolDefs.
+      toolDefs = utils.makeAttrsOption {
+        ofType = lib.types.str;
+        default = { };
       };
       minionProfiles = utils.makeAttrsOption {
         ofType = with lib.types; str;
@@ -308,6 +305,34 @@
       '';
     in
     lib.mkIf opts.enable {
+      core.ai.agents.orchestrator.permission = {
+        question = "allow";
+        cancel_task = "allow";
+        council_session = "deny";
+        read = "allow";
+        glob = "allow";
+        grep = "allow";
+        list = "allow";
+        lsp = "allow";
+        edit = "ask";
+        bash = "ask";
+        task = "allow";
+        todowrite = "allow";
+        external_directory = "ask";
+        webfetch = "ask";
+        websearch = "ask";
+        doom_loop = "ask";
+        skill = {
+          "*" = "deny";
+          "ce-brainstorm" = "allow";
+          "ce-ideate" = "allow";
+          "ce-plan" = "allow";
+          "ce-strategy" = "allow";
+          "ce-setup" = "allow";
+          "lfg" = "allow";
+        };
+      };
+
       files.".opencode/agents/${opts.name}.md".text = lib.mkIf opencodeOpts.enable ''
         ---
         ${builtins.toJSON (
@@ -359,7 +384,13 @@
         ${lib.concatStringsSep "\n" (lib.mapAttrsToList makeMinionProfile opts.minionProfiles)}
         </agent_profiles>
 
-        <workflow>
+        ${
+          lib.optionalString (opts.toolDefs != { }) (
+            "<tools>\n"
+            + lib.concatStringsSep "\n" (lib.mapAttrsToList (k: v: "- ${k}: ${v}") opts.toolDefs)
+            + "\n</tools>\n\n"
+          )
+        }<workflow>
         ${opts.system.instructions}
         </workflow>
 

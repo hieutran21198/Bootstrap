@@ -15,28 +15,15 @@
       temperature = utils.makeFloatOption { default = 0.1; };
       permission = utils.makeAttrsOption {
         ofType = lib.types.anything;
-        default = {
-          question = "allow";
-          council_session = "deny";
-          cancel_task = "deny";
-          skill = {
-            "*" = "deny";
-            customer-research = "allow";
-          };
-          "websearch_*" = "allow";
-          "context7_*" = "allow";
-          "gh_grep_*" = "deny";
-        };
+        default = { };
       };
       mcps = utils.makeListOption {
         ofType = lib.types.str;
-        default = [
-          "websearch"
-          "context7"
-          "gh_app"
-          "searxng"
-          "crawl4ai"
-        ];
+        default = [ ];
+      };
+      toolDefs = utils.makeAttrsOption {
+        ofType = with lib.types; str;
+        default = { };
       };
       system =
         let
@@ -56,7 +43,6 @@
               READ-ONLY. Research and report; do not modify files.
 
               Use:
-              - `context7` for official library documentation.
               - `gh_grep` for GitHub examples and external repository patterns.
               - `websearch` for general docs, articles, issues, and references.
               - `glob`, `grep`, `ast_grep_search`, and `read` for local codebase inspection.
@@ -95,6 +81,28 @@
       inherit (opts) name;
     in
     lib.mkIf opts.enable {
+      core.ai.agents.researcher.permission = {
+        question = "allow";
+        cancel_task = "deny";
+        council_session = "deny";
+        read = "allow";
+        glob = "allow";
+        grep = "allow";
+        list = "allow";
+        lsp = "allow";
+        edit = "deny";
+        bash = "deny";
+        task = "deny";
+        todowrite = "deny";
+        external_directory = "deny";
+        webfetch = "allow";
+        websearch = "allow";
+        doom_loop = "ask";
+        skill = {
+          "*" = "deny";
+        };
+      };
+
       core.ai.agents.orchestrator = {
         minionProfiles.${name} = ''
           aliases: ["librarian", "external_researcher", "reference_researcher"]
@@ -154,7 +162,13 @@
 
         <role>${opts.system.role}</role>
 
-        <workflow>${opts.system.instructions}</workflow>
+        ${
+          lib.optionalString (opts.toolDefs != { }) (
+            "<tools>\n"
+            + lib.concatStringsSep "\n" (lib.mapAttrsToList (k: v: "- ${k}: ${v}") opts.toolDefs)
+            + "\n</tools>\n\n"
+          )
+        }<workflow>${opts.system.instructions}</workflow>
       '';
     };
 }

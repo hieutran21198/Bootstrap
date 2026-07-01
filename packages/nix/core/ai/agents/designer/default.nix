@@ -15,29 +15,18 @@
       temperature = utils.makeFloatOption { default = 0.1; };
       permission = utils.makeAttrsOption {
         ofType = lib.types.anything;
-        default = {
-          question = "allow";
-          council_session = "deny";
-          cancel_task = "deny";
-          skill = {
-            "*" = "deny";
-            "make-interfaces-feel-better" = "allow";
-            "better-icons" = "allow";
-            "motion" = "allow";
-            "image" = "allow";
-            "video" = "allow";
-            "marketing-psychology" = "allow";
-          };
-          "websearch_*" = "deny";
-          "context7_*" = "deny";
-          "gh_grep_*" = "deny";
-        };
+        default = { };
       };
       mcps = utils.makeListOption {
         ofType = lib.types.str;
-        default = [
-          "codegraph"
-        ];
+        default = [ ];
+      };
+      # Per-tool, one-line descriptions advertised in the agent's <tools> prompt
+      # section. MCP modules populate this (e.g. mcps/codegraph pushes
+      # `toolDefs."codegraph"`), mirroring how context7 populates researcher.toolDefs.
+      toolDefs = utils.makeAttrsOption {
+        ofType = lib.types.str;
+        default = { };
       };
       system =
         let
@@ -103,6 +92,30 @@
       inherit (opts) name;
     in
     lib.mkIf opts.enable {
+      core.ai.agents.designer.permission = {
+        question = "allow";
+        cancel_task = "deny";
+        council_session = "deny";
+        read = "allow";
+        glob = "allow";
+        grep = "allow";
+        list = "allow";
+        lsp = "allow";
+        edit = "allow";
+        bash = "ask";
+        task = "deny";
+        todowrite = "allow";
+        external_directory = "ask";
+        webfetch = "deny";
+        websearch = "deny";
+        doom_loop = "ask";
+        skill = {
+          "*" = "deny";
+          "ce-polish" = "allow";
+          "ce-dogfood" = "allow";
+        };
+      };
+
       core.ai.agents.orchestrator = {
         minionProfiles."${name}" = ''
           aliases: ["ui_designer", "ux_designer", "design_reviewer"]
@@ -186,7 +199,13 @@
 
         <role>${opts.system.role}</role>
 
-        <workflow>${opts.system.instructions}</workflow>
+        ${
+          lib.optionalString (opts.toolDefs != { }) (
+            "<tools>\n"
+            + lib.concatStringsSep "\n" (lib.mapAttrsToList (k: v: "- ${k}: ${v}") opts.toolDefs)
+            + "\n</tools>\n\n"
+          )
+        }<workflow>${opts.system.instructions}</workflow>
       '';
     };
 }

@@ -15,25 +15,18 @@
       temperature = utils.makeFloatOption { default = 0.2; };
       permission = utils.makeAttrsOption {
         ofType = lib.types.anything;
-        default = {
-          question = "allow";
-          council_session = "deny";
-          cancel_task = "deny";
-          skill = {
-            "*" = "deny";
-          };
-          "websearch_*" = "deny";
-          "context7_*" = "deny";
-          "gh_grep_*" = "deny";
-        };
+        default = { };
       };
       mcps = utils.makeListOption {
         ofType = lib.types.str;
-        default = [
-          "codegraph"
-          "searxng"
-          "crawl4ai"
-        ];
+        default = [ ];
+      };
+      # Per-tool, one-line descriptions advertised in the agent's <tools> prompt
+      # section. MCP modules populate this (e.g. mcps/codegraph pushes
+      # `toolDefs."codegraph"`), mirroring how context7 populates researcher.toolDefs.
+      toolDefs = utils.makeAttrsOption {
+        ofType = lib.types.str;
+        default = { };
       };
       system =
         let
@@ -110,6 +103,41 @@
       inherit (opts) name;
     in
     lib.mkIf opts.enable {
+      core.ai.agents.worker.permission = {
+        question = "allow";
+        cancel_task = "deny";
+        council_session = "deny";
+        read = "allow";
+        glob = "allow";
+        grep = "allow";
+        list = "allow";
+        lsp = "allow";
+        edit = "allow";
+        bash = "ask";
+        task = "deny";
+        todowrite = "allow";
+        external_directory = "ask";
+        webfetch = "deny";
+        websearch = "deny";
+        doom_loop = "ask";
+        skill = {
+          "*" = "deny";
+          "ce-work" = "allow";
+          "ce-debug" = "allow";
+          "ce-simplify-code" = "allow";
+          "ce-optimize" = "allow";
+          "ce-commit" = "allow";
+          "ce-commit-push-pr" = "allow";
+          "ce-resolve-pr-feedback" = "allow";
+          "ce-worktree" = "allow";
+          "ce-test-browser" = "allow";
+          "ce-compound" = "allow";
+          "ce-compound-refresh" = "allow";
+          "go-pattern" = "allow";
+          "rls-patterns" = "allow";
+        };
+      };
+
       core.ai.agents.orchestrator = {
         minionProfiles.${name} = ''
           aliases: ["fixer", "implementation_worker", "executioner"]
@@ -172,7 +200,13 @@
 
         <role>${opts.system.role}</role>
 
-        <workflow>${opts.system.instructions}</workflow>
+        ${
+          lib.optionalString (opts.toolDefs != { }) (
+            "<tools>\n"
+            + lib.concatStringsSep "\n" (lib.mapAttrsToList (k: v: "- ${k}: ${v}") opts.toolDefs)
+            + "\n</tools>\n\n"
+          )
+        }<workflow>${opts.system.instructions}</workflow>
       '';
     };
 }

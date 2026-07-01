@@ -1,4 +1,4 @@
-{
+{ config, ... }: {
   extra = {
     dev-container = {
       enable = true;
@@ -13,9 +13,11 @@
         enable = true;
       };
       skills = {
-        dbRLSPatterns = {
-          enable = true;
-        };
+        init-deep.enable = true;
+        go-pattern.enable = true;
+      };
+      mcps = {
+        context7.apiKey = config.secretspec.secrets.CONTEXT_SEVEN_API_KEY;
       };
     };
     workspace = {
