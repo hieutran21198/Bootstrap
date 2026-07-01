@@ -1,0 +1,42 @@
+
+# ^ Subject line above — format: <type>(<scope>): <subject>
+#   Then leave a blank line and add an optional body, then optional footer(s):
+#
+#       <type>(<scope>): <subject>
+#
+#       [optional body]
+#
+#       [optional footer(s)]
+#
+# ------------------------------------------------------------------------------
+# Conventional Commits 1.0.0 — https://www.conventionalcommits.org/en/v1.0.0/
+# Enforced by commitizen at the commit-msg stage. Lines starting with # are dropped.
+#
+# type   one of:
+#   feat      a new feature                                  (SemVer MINOR)
+#   fix       a bug fix                                       (SemVer PATCH)
+#   docs      documentation only
+#   style     formatting / whitespace, no behaviour change
+#   refactor  code change that neither fixes a bug nor adds a feature
+#   test      adding or correcting tests
+#   chore     build, tooling, deps, housekeeping
+#   perf      performance improvement                         (SemVer PATCH)
+#   ci        CI/CD configuration and scripts
+#   revert    reverts a previous commit (footer: Refs: <sha>)
+#
+# scope    optional; a noun for the area touched, e.g. (portal), (gormx), (nix)
+# subject  imperative mood, lower-case start, no trailing period, aim <= 50 (72 max)
+#          e.g. "add tenant invite flow"  (not "Added tenant invite flow.")
+#
+# body     optional; one blank line after subject; explain WHAT and WHY, wrap ~72
+# footer   optional; one blank line after body; git-trailer format, e.g.
+#          Closes #123
+#          Refs: #123, 9f2c1ab
+#          Reviewed-by: Name
+#          Co-authored-by: Name <email>
+#
+# Breaking change: add ! after type/scope AND/OR a footer, e.g.
+#   feat(api)!: send email when a product is shipped
+#   BREAKING CHANGE: describe what breaks and the migration
+# ------------------------------------------------------------------------------
+# See docs/conventions/git/commit-messages.md

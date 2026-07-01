@@ -1,0 +1,53 @@
+name: PR validation
+
+# Enforces the Git conventions (docs/conventions/git/) on every pull request,
+# using the same git-guard validator the local pre-commit hooks run — so the
+# rules cannot drift between a developer's machine and CI.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-validate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  git-conventions:
+    name: Git conventions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: tools/go.mod
+
+      - name: Build git-guard
+        working-directory: tools
+        run: go build -o "$RUNNER_TEMP/git-guard" ./validators/git-guard
+
+      - name: Validate PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: '"$RUNNER_TEMP/git-guard" pr-title "$PR_TITLE"'
+
+      - name: Validate branch name
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: '"$RUNNER_TEMP/git-guard" branch-name "$HEAD_REF"'
+
+      - name: Validate commit subjects (advisory)
+        continue-on-error: true
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --depth=100 origin "$BASE_REF"
+          "$RUNNER_TEMP/git-guard" commit-range FETCH_HEAD HEAD

@@ -15,6 +15,7 @@
       skills = {
         init-deep.enable = true;
         go-pattern.enable = true;
+        git-workflow.enable = true;
       };
       mcps = {
         context7.apiKey = config.secretspec.secrets.CONTEXT_SEVEN_API_KEY;
@@ -29,6 +30,8 @@
 
         "docs" =
           "Workspace-wide docs shared across services, packages, and deployment — ADRs, specs, conventions, glossary, findings, debt (service-specific docs live under services/<name>/docs/)";
+        "docs/prds" =
+          "Product Requirement Documents — product and domain intent (WHAT/WHY), upstream of ADRs and specs";
         "docs/adrs" = "Architecture Decision Records";
         "docs/specs" = "Feature and system design documents";
         "docs/conventions" = "Workspace-wide rules and guidelines";
