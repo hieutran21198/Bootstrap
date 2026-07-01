@@ -9,6 +9,7 @@ Shared Go library module (`bootstrap/packages/go`). SRP-stateful governance per 
 ```
 packages/go/
 ├── env/                # env-var loaders + typed parser (pre-governance, function-based)
+├── errorsx/            # structured, transport-neutral error type (SRP-stateless; Code/Error/FieldError)
 ├── aws/                # AWS service wrapper.
 │   └── ssmx/           # AWS system managed secrets manager wrapper.
 ├── gormx/              # gorm v2 wrapper (SRP-stateful)
@@ -66,7 +67,7 @@ func New(ctx context.Context, cfg Config) (*Target, error) {
 
 ## NOTES
 
-- **Two SRP sub-shapes** (see [`single-responsibility.md`](../../docs/conventions/go/single-responsibility.md)): _stateful_ = `Config` / target / `New` (above) — `gormx`, `migrate`, `echox`; _stateless_ = pure funcs + types with no constructable target — `idgen` (`NewFor[T]` / `Validate[T]`), the gormx dialectors. Classify with [`creating-new-package.md`](../../docs/conventions/go/creating-new-package.md) before adding code.
+- **Two SRP sub-shapes** (see [`single-responsibility.md`](../../docs/conventions/go/single-responsibility.md)): _stateful_ = `Config` / target / `New` (above) — `gormx`, `migrate`, `echox`; _stateless_ = pure funcs + types with no constructable target — `idgen` (`NewFor[T]` / `Validate[T]`), the gormx dialectors, `errorsx` (structured `Error` / `Code` / `FieldError`). Classify with [`creating-new-package.md`](../../docs/conventions/go/creating-new-package.md) before adding code.
 - `env/` predates governance; it uses a function-based design. No exception granted to new packages.
 - `idgen` (typed aggregate IDs, [ADR-0004](../../docs/adrs/0004-typed-aggregate-ids-uuidv7.md)) is the canonical stateless example; `migrate` wraps `pressly/goose` behind the stateful shape.
 - New packages go here without moving `go.mod`. Run `go mod tidy` from this directory after adding dependencies.
