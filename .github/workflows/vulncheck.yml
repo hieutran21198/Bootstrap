@@ -1,9 +1,5 @@
 name: vulncheck
 
-# Automated Go dependency-vulnerability scanning with govulncheck.
-# Per ADR-0015: reachability-aware checks against vuln.go.dev on every
-# push to the default branch and every pull request.
-
 on:
   pull_request:
     branches:
@@ -20,15 +16,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  vulncheck:
-    name: Govulncheck
+  govulncheck:
+    name: govulncheck (go.work modules)
     runs-on: ubuntu-latest
     steps:
-      - name: Run govulncheck
-        uses: golang/govulncheck-action@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          # Read Go version from the workspace root; govulncheck traverses
-          # all modules bound by go.work (./packages/go, ./services/portal,
-          # ./tools) via ./...
-          go-version-file: go.work
-          go-package: ./...
+          go-version-file: services/portal/go.mod
+      - name: Reconstruct go.work (gitignored; Nix-generated locally)
+        run: |
+          set -euo pipefail
+          go work init
+          for gomod in $(find . -name go.mod -not -path '*/vendor/*' -not -path '*/testdata/*'); do
+            go work use "$(dirname "$gomod")"
+          done
+          cat go.work
+      - name: Run govulncheck on all workspace modules
+        run: |
+          set -euo pipefail
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          failed=0
+          for dir in $(go list -m -f '{{.Dir}}'); do
+            echo "=== govulncheck: $dir ==="
+            if ! (cd "$dir" && govulncheck ./...); then
+              failed=1
+            fi
+          done
+          exit "$failed"

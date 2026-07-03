@@ -40,15 +40,6 @@
     };
   };
   core = {
-    ai = {
-      claude = {
-        enable = true;
-      };
-      opencode = {
-        enable = true;
-        profile = "slim";
-      };
-    };
     services = {
       postgres =
         let

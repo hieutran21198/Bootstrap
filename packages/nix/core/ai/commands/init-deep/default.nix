@@ -11,8 +11,8 @@
       opts = config.core.ai.commands.init-deep;
       render = opts.enable && config.core.ai.opencode.enable && config.core.ai.skills.init-deep.enable;
     in
-    {
-      files.".opencode/command/init-deep.md".text = lib.mkIf render ''
+    lib.mkIf render {
+      files.".opencode/command/init-deep.md".text = ''
         ---
         description: ${builtins.toJSON "Deep-init: regenerate this workspace's hierarchical AGENTS.md knowledge base via the init-deep skill"}
         agent: orchestrator
