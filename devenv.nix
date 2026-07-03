@@ -20,8 +20,8 @@
               disabled = true;
             };
             orchestrator = {
-              model = "anthropic/claude-fable-5";
-              variant = "high";
+              model = "anthropic/claude-opus-4-8";
+              variant = "xhigh";
             };
             researcher = {
               model = "opencode-go/minimax-m3";
