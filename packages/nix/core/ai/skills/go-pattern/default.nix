@@ -1,4 +1,9 @@
-{ config, ... }: {
+{
+  config,
+  lib,
+  ...
+}:
+{
   options.core.ai.skills.go-pattern =
     let
       inherit (config.core) utils;
@@ -8,6 +13,11 @@
       content = utils.makeStrOption {
         default = builtins.readFile (config.core.workspace.root + "/tools/ai/skills/go-pattern/SKILL.md");
         readOnly = true;
+      };
+      agents = utils.makeListOption {
+        ofType = lib.types.str;
+        default = [ "backend-engineer" ];
+        description = "Agents this skill is available to (allowed); every other agent is denied.";
       };
     };
 }

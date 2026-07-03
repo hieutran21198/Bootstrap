@@ -15,6 +15,17 @@
       apiKey = utils.makeStrOption {
         default = "";
       };
+      agents = utils.makeListOption {
+        ofType = lib.types.str;
+        default = [ "researcher" ];
+        description = "Agents this MCP is wired to (allowed); every other agent is denied.";
+      };
+      toolDef = utils.makeStrOption {
+        default = "fetch official, version-specific library and framework documentation; prefer it over guessing an API.";
+      };
+      toolGlob = utils.makeStrOption {
+        default = "context7_*";
+      };
     };
   config =
     let
@@ -22,44 +33,14 @@
       opencodeOpts = config.core.ai.opencode;
     in
     lib.mkIf opts.enable {
-      core.ai.agents = {
-        researcher = {
-          permission = {
-            "context7_*" = "allow";
-          };
-          mcps = [ "context7" ];
-          toolDefs = {
-            "context7" = "use to get official library documentation.";
-          };
-        };
-        orchestrator.permission = {
-          "context7_*" = "deny";
-        };
-        architecturer.permission = {
-          "context7_*" = "deny";
-        };
-        designer.permission = {
-          "context7_*" = "deny";
-        };
-        explorer.permission = {
-          "context7_*" = "deny";
-        };
-        worker.permission = {
-          "context7_*" = "deny";
-        };
-      };
       opencode = lib.mkIf opencodeOpts.enable {
-        settings = {
-          mcp = {
-            "context7" = {
-              type = "remote";
-              url = "https://mcp.context7.com/mcp";
-              headers = {
-                "CONTEXT7_API_KEY" = opts.apiKey;
-              };
-              oauth = false;
-            };
+        settings.mcp.context7 = {
+          type = "remote";
+          url = "https://mcp.context7.com/mcp";
+          headers = {
+            "CONTEXT7_API_KEY" = opts.apiKey;
           };
+          oauth = false;
         };
       };
     };
