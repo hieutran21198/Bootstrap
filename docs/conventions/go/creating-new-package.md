@@ -15,23 +15,23 @@ Write down what the package does, in one sentence. If you need more than one sen
 
 Where does the package belong?
 
-| Segment              | When                                                                |
-| -------------------- | ------------------------------------------------------------------- |
-| `packages/go/`       | Reusable shared library code — used by 2+ services or by tools.     |
-| `services/<name>/`   | Code that lives inside a single deployable service.                 |
-| `tools/generators/`  | A workspace CLI tool, compiled and installed in the dev shell.      |
-| `apps/`              | UI app code.                                                        |
+| Segment             | When                                                            |
+| ------------------- | --------------------------------------------------------------- |
+| `packages/go/`      | Reusable shared library code — used by 2+ services or by tools. |
+| `services/<name>/`  | Code that lives inside a single deployable service.             |
+| `tools/generators/` | A workspace CLI tool, compiled and installed in the dev shell.  |
+| `apps/`             | UI app code.                                                    |
 
 ## 3. Classify the shape
 
-| Shape                                     | Signals                                                                                     | Outcome                                                                  |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| **SRP-stateful**                          | Owns state. Has a lifecycle (start/stop, open/close). Wrapper, client, server, connection.  | Use [`templates/stateful.go.tmpl`](templates/stateful.go.tmpl).            |
-| **SRP-stateless**                         | Pure functions over input. No setup. Parser, formatter, loader, codec, dialector.            | Use [`templates/stateless.go.tmpl`](templates/stateless.go.tmpl).          |
-| **Service composition**                   | HTTP handlers + DB + auth + business logic. Multi-axis by design.                            | Hand-roll. Apply Clean Architecture (see [`services/portal/`](../../../services/portal/)). |
-| **Looks like `util`/`common`/`helpers`**  | 2+ unrelated nouns describe it, OR the name is a generic catchall.                          | **STOP**. Split into focused packages. Re-run step 1 for each piece.     |
+| Shape                                    | Signals                                                                                    | Outcome                                                                                    |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| **SRP-stateful**                         | Owns state. Has a lifecycle (start/stop, open/close). Wrapper, client, server, connection. | Use [`templates/stateful.go.tmpl`](templates/stateful.go.tmpl).                            |
+| **SRP-stateless**                        | Pure functions over input. No setup. Parser, formatter, loader, codec, dialector.          | Use [`templates/stateless.go.tmpl`](templates/stateless.go.tmpl).                          |
+| **Service composition**                  | HTTP handlers + DB + auth + business logic. Multi-axis by design.                          | Hand-roll. Apply Clean Architecture (see [`services/portal/`](../../../services/portal/)). |
+| **Looks like `util`/`common`/`helpers`** | 2+ unrelated nouns describe it, OR the name is a generic catchall.                         | **STOP**. Split into focused packages. Re-run step 1 for each piece.                       |
 
-If you're unsure between SRP-stateful and SRP-stateless: stateful packages are *constructed* (`New(ctx, cfg)` once, then use the returned `*T`); stateless packages are *called directly* (`env.Parse(...)`, no instance with state).
+If you're unsure between SRP-stateful and SRP-stateless: stateful packages are _constructed_ (`New(ctx, cfg)` once, then use the returned `*T`); stateless packages are _called directly_ (`env.Parse(...)`, no instance with state).
 
 ## 4. Use the template (SRP cases)
 
@@ -60,7 +60,7 @@ lint-go
 
 If you landed on "Service composition" or "STOP/split":
 
-- **Service composition** — write the package without a template. Apply the relevant architecture for the segment (Clean Architecture for `services/portal/`, etc.). The package's `AGENTS.md` (or the parent module's) must justify the shape — for example: *"This package is hand-rolled because it is a multi-axis service module; see `docs/conventions/go/creating-new-package.md` step 5."*
+- **Service composition** — write the package without a template. Apply the relevant architecture for the segment (Clean Architecture for `services/portal/`, etc.). The package's `AGENTS.md` (or the parent module's) must justify the shape — for example: _"This package is hand-rolled because it is a multi-axis service module; see `docs/conventions/go/creating-new-package.md` step 5."_
 - **STOP/split** — go back to step 1 for each piece. Don't proceed until each piece passes step 3 cleanly.
 
 Hand-rolled packages still go through code review. The reviewer's job is to confirm step 5 was the right step, not to apply the SRP-stateful contract.

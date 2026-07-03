@@ -2,10 +2,10 @@
 
 Conventions are the **standing rules** the workspace currently follows — how a package is shaped, how a file is named, what a commit message looks like. They are the day-to-day reference. Compare to [`adrs/`](../adrs/), which records the **decisions** that produced the rules.
 
-| Track             | Question it answers              | Lifecycle             |
-| ----------------- | -------------------------------- | --------------------- |
-| [adrs/](../adrs/) | *Why did we choose this rule?*   | Append-only, dated    |
-| conventions/      | *What is the rule, right now?*   | Living, edit-in-place |
+| Track             | Question it answers            | Lifecycle             |
+| ----------------- | ------------------------------ | --------------------- |
+| [adrs/](../adrs/) | _Why did we choose this rule?_ | Append-only, dated    |
+| conventions/      | _What is the rule, right now?_ | Living, edit-in-place |
 
 A convention without a decision is hearsay; a decision without a convention is a forgotten meeting. Use both.
 
@@ -24,7 +24,7 @@ docs/conventions/
 
 ## Template
 
-[TEMPLATE.md](TEMPLATE.md) is the skeleton for **one rule**: front matter (`Scope`, `Status`, `Decided by`, `Last reviewed`), then the five required sections — **Rule / Rationale / Apply / Examples (✓ Good / ✗ Bad) / Enforcement**, plus *See also*.
+[TEMPLATE.md](TEMPLATE.md) is the skeleton for **one rule**: front matter (`Scope`, `Status`, `Decided by`, `Last reviewed`), then the five required sections — **Rule / Rationale / Apply / Examples (✓ Good / ✗ Bad) / Enforcement**, plus _See also_.
 
 ## Naming
 
@@ -68,11 +68,13 @@ cp docs/adrs/TEMPLATE.md "docs/adrs/${NEXT}-<title>.md"
 $EDITOR "docs/adrs/${NEXT}-<title>.md"
 ```
 
-Then cross-link: the rule's `Decided by` points at the ADR; the ADR's *References* points at the rule. Add the rule to the topic README's Index table and the ADR to [docs/adrs/README.md](../adrs/README.md) Index.
+Then cross-link: the rule's `Decided by` points at the ADR; the ADR's _References_ points at the rule. Add the rule to the topic README's Index table and the ADR to [docs/adrs/README.md](../adrs/README.md) Index.
 
 ## Index
 
-| Topic                  | Coverage                                                                                            | Docs |
-| ---------------------- | --------------------------------------------------------------------------------------------------- | ---- |
-| [go/](go/)             | Templates + decision tree for Go packages across `packages/`, `services/`, `tools/`, `apps/`        | 2    |
-| [database/](database/) | Connection role (`admin`/`writer`/`reader`) + RLS scope GUC contract (`app.scope`, `app.organization_id`) | 1    |
+| Topic                  | Coverage                                                                                                                              | Docs |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| [go/](go/)             | Templates + decision tree for Go packages across `packages/`, `services/`, `tools/`, `apps/`                                          | 2    |
+| [database/](database/) | Connection role (`admin`/`writer`/`reader`) + RLS scope GUC contract (`app.scope`, `app.organization_id`)                             | 1    |
+| [auth/](auth/)         | Slim provider-neutral OIDC port in `app/{command,query}/port.go`; identity-provider SDK (`zitadel-go`) confined to `infra/<provider>` | 1    |
+| [git/](git/)           | `main`-trunk branch & release workflow, Conventional Commits, squash-merge vs rebase, and pull-request + review rules                 | 4    |

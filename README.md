@@ -96,8 +96,8 @@ All are Nix-store symlinks regenerated on `direnv reload`. Gitignored.
 | `.info`                   | [packages/nix/core/workspace/default.nix](packages/nix/core/workspace/default.nix) from `core.workspace.treeInfos`                                  |
 | `.editorconfig`           | [packages/nix/core/workspace/default.nix](packages/nix/core/workspace/default.nix) (`core.workspace.editorConfig` plus per-toolchain contributions) |
 | `.claude/settings.json`, `CLAUDE.md` | [packages/nix/core/ai/default.nix](packages/nix/core/ai/default.nix) when `core.ai.claude.enable = true` (`CLAUDE.md` is just `@AGENTS.md`)             |
-| `.opencode/<plugin>.json` | the active opencode profile under [packages/nix/core/ai/opencode/profiles/](packages/nix/core/ai/opencode/profiles/) when `core.ai.opencode.enable = true` |
-| `.claude/skills/<name>/SKILL.md`, `.opencode/skills/<name>/SKILL.md` | enabled skills under [packages/nix/core/ai/skills/](packages/nix/core/ai/skills/) — each enabled `core.ai.skills.*` links one `SKILL.md` per enabled agent (`.claude/` when `core.ai.claude.enable`, `.opencode/` when `core.ai.opencode.enable`). Project-specific skill bodies are authored as plain markdown under [`tools/ai/skills/<name>/SKILL.md`](tools/ai/skills/) and read via `builtins.readFile` (see [ADR-0007 §4](docs/adrs/0007-nix-devenv-developer-environment.md)) |
+| `.opencode/agents/<NAME>.md` | per-agent files rendered by [packages/nix/core/ai/default.nix](packages/nix/core/ai/default.nix) from `core.ai.agents` + the capability wiring, when `core.ai.opencode.enable = true` |
+| `.claude/skills/<name>/SKILL.md`, `.opencode/skills/<name>/SKILL.md` | enabled skills under [packages/nix/core/ai/skills/](packages/nix/core/ai/skills/) — each enabled `core.ai.skills.*` links its `SKILL.md` into the shared catalog (`.claude/` when `core.ai.claude.enable`, `.opencode/` when `core.ai.opencode.enable`); per-agent access is gated in the rendered agent files via each skill's `agents` allow-list. Project-specific skill bodies are authored as plain markdown under [`tools/ai/skills/<name>/SKILL.md`](tools/ai/skills/) and read via `builtins.readFile` (see [ADR-0007 §4](docs/adrs/0007-nix-devenv-developer-environment.md)) |
 
 Edit the Nix source, run `direnv reload`, and the artifact regenerates.
 
@@ -124,10 +124,10 @@ lint-go                             # verify clean across all modules
 
 AI tooling is configured under [`packages/nix/core/ai/`](packages/nix/core/ai/) and toggled via `core.ai.{claude,opencode}.enable` in [`devenv.nix`](devenv.nix).
 
-- **opencode** — `core.ai.opencode.profile` selects one of two plugin presets: `"max"` (the `oh-my-openagent` plugin) or `"slim"` (`oh-my-opencode-slim`). A single set of _abstract_ agents (`orchestrator`, `architecturer`, `researcher`, `codeExplorer`, `designer`, `worker`, …) is declared once in [`core/ai/opencode/agents/default.nix`](packages/nix/core/ai/opencode/agents/default.nix) — each carrying a `model`, `fallbacks`, `variant`, `skills`, and `mcps`. Each profile under [`core/ai/opencode/profiles/`](packages/nix/core/ai/opencode/profiles/) maps those abstract agents onto the plugin's named roles and writes `.opencode/<plugin>.json`.
+- **opencode** — enabled via `core.ai.opencode.enable`. Each agent is defined once in [`core/ai/agents/`](packages/nix/core/ai/agents/) (`core.ai.agents.<name>`: `mode`, `posture`, card metadata, and `instructions` defaulting to a sibling `PROMPT.md` in the agent's module dir, overridable per consumer). Skills and MCPs each declare an `agents` allow-list; the renderer in [`core/ai/default.nix`](packages/nix/core/ai/default.nix) inverts those into every agent's opencode `permission` (allow for listed agents, deny for the rest) and writes `.opencode/agents/<NAME>.md`.
 - **claude** — `core.ai.claude` is an alias for devenv's `claude.code` integration. When enabled it writes `.claude/settings.json` (the experimental agent-teams flag) and a `CLAUDE.md` that re-exports `@AGENTS.md`, so Claude Code and every other agent read the same knowledge base.
 
-The root enables `profile = "max"`; `services/portal/` uses `profile = "slim"`. See [packages/nix/AGENTS.md](packages/nix/AGENTS.md) for the option schema and the agent→preset wiring.
+See [packages/nix/AGENTS.md](packages/nix/AGENTS.md) for the agent submodule schema and the capability→agent wiring.
 
 ## Further reading
 

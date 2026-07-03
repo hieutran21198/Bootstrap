@@ -1,6 +1,6 @@
 # 0006. Zitadel as the identity and auth provider
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-06-26
 - **Deciders**: Minh Hieu Tran <hieu.tran21198@gmail.com>
 - **Supersedes**: -

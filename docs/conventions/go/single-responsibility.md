@@ -1,11 +1,11 @@
 # Single-responsibility category
 
-> **Scope**: a *category* of Go packages, not all of them. A package is in this category if its responsibility can be named in one or two words.
+> **Scope**: a _category_ of Go packages, not all of them. A package is in this category if its responsibility can be named in one or two words.
 > **Status**: Active
 > **Decided by**: [ADR-0001](../../adrs/0001-single-responsibility-go-packages.md)
 > **Last reviewed**: 2026-06-24
 
-**What this is.** "Single-responsibility" (SRP) is a *category* of Go packages in this workspace — those whose purpose can be stated in one sentence with one noun: `env` = environment variables; `echox` = Echo HTTP server; `gormx` = GORM wrapper. For packages in this category, the workspace provides ready-made templates at [`templates/`](templates/) that capture the canonical shape.
+**What this is.** "Single-responsibility" (SRP) is a _category_ of Go packages in this workspace — those whose purpose can be stated in one sentence with one noun: `env` = environment variables; `echox` = Echo HTTP server; `gormx` = GORM wrapper. For packages in this category, the workspace provides ready-made templates at [`templates/`](templates/) that capture the canonical shape.
 
 **It is not a universal rule.** Not every Go package in this workspace must be SRP. Service modules under [`services/`](../../../services/) are multi-axis by design (HTTP + DB + auth + business logic); `apps/` may host UI code that doesn't fit. For those cases, see [`creating-new-package.md`](creating-new-package.md) — step 5 (hand-roll) is a first-class outcome.
 
@@ -49,7 +49,7 @@ The SRP category has two sub-shapes, each with its own template:
 - **SRP-stateful** — the package owns state. It has a lifecycle (you call `New(ctx, cfg)` once and use the returned `*T`). Wrappers, clients, servers, connections, caches. Template: [`templates/stateful.go.tmpl`](templates/stateful.go.tmpl).
 - **SRP-stateless** — the package is pure functions over input. No setup. Parsers, formatters, loaders, codecs, dialectors. Template: [`templates/stateless.go.tmpl`](templates/stateless.go.tmpl).
 
-If you're unsure: stateful packages are *constructed* and then *used*; stateless packages are *called directly* (`env.Parse(...)`, `postgres.New(...)` where `New` returns a value, not an instance with lifecycle).
+If you're unsure: stateful packages are _constructed_ and then _used_; stateless packages are _called directly_ (`env.Parse(...)`, `postgres.New(...)` where `New` returns a value, not an instance with lifecycle).
 
 ## What the category guarantees
 
