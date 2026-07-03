@@ -19,6 +19,8 @@ jobs:
   govulncheck:
     name: govulncheck (${{ matrix.module }})
     runs-on: ubuntu-latest
+    env:
+      GOWORK: ${{ github.workspace }}/go.work
     strategy:
       fail-fast: false
       matrix:
