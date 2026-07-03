@@ -30,6 +30,10 @@ jobs:
         run: |
           set -euo pipefail
           go work init
+          # Auto-discover all workspace modules via go.mod files. This is
+          # intentional for a security scanner: a hardcoded list could silently
+          # miss a new module, creating a blind spot. The exclusions avoid noise
+          # from vendored deps and test fixtures.
           for gomod in $(find . -name go.mod -not -path '*/vendor/*' -not -path '*/testdata/*'); do
             go work use "$(dirname "$gomod")"
           done

@@ -28,6 +28,25 @@ done
 
 The implementer will also add `.github/workflows/vulncheck.yml` using `golang/govulncheck-action@v1` with `go-version-file: go.work` and `go-package: ./...`. `govulncheck` will not be added to pre-commit: the network dependency on `vuln.go.dev` and the expected latency make it a PR gate and explicit local command, not a per-commit hook.
 
+### Correction (2026-07-03): GitHub Actions invocation
+
+The CI mechanic originally planned above — `golang/govulncheck-action@v1` with `go-version-file: go.work` and `go-package: ./...` — did not fit the shipped repository shape. This workspace has no root `go.mod`, and root `go.work` is Nix-generated from `core.toolchains.go.go-work.mods` and gitignored, so the whole-repo action path fails in CI before scanning.
+
+The shipped `.github/workflows/vulncheck.yml` instead uses `actions/setup-go` with `go-version-file: services/portal/go.mod`, reconstructs `go.work` in the runner, and scans each discovered workspace module:
+
+```bash
+go work init
+for gomod in $(find . -name go.mod -not -path '*/vendor/*' -not -path '*/testdata/*'); do
+  go work use "$(dirname "$gomod")"
+done
+
+for dir in $(go list -m -f '{{.Dir}}'); do
+  (cd "$dir" && govulncheck ./...)
+done
+```
+
+This preserves the decision's intent — a PR-gated, reachability-aware `govulncheck` scan across all real Go modules while keeping `go.work` Nix-owned and uncommitted. The first sound run caught reachable standard-library vulnerabilities `GO-2026-5037` (`crypto/x509`) and `GO-2026-5039` (`net/textproto`), remediated by bumping Go `1.26.3` to `1.26.4`; see [the finding](../findings/2026-07-03-govulncheck-go-stdlib-vulns.md).
+
 For SAST, the decision is to leave the current `gosec` integration alone. `packages/nix/core/toolchains/go/golangci-lint/default.nix` remains the single configuration and suppression surface for Go lint/SAST; standalone `securego/gosec` is deferred unless the workspace later adopts GitHub code scanning/SARIF as a separate decision.
 
 ## Consequences
