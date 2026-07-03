@@ -8,5 +8,6 @@
     ./05-frontend-engineer/default.nix
     ./06-scribe/default.nix
     ./07-release-engineer/default.nix
+    ./08-security-reviewer/default.nix
   ];
 }

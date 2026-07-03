@@ -22,6 +22,7 @@
           "backend-engineer"
           "release-engineer"
           "frontend-engineer"
+          "security-reviewer"
         ];
         description = "Agents this MCP is wired to (allowed); every other agent is denied.";
       };
