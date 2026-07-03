@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           go work init
-          for gomod in $(find . -name go.mod -not -path '*/vendor/*'); do
+          for gomod in $(find . -name go.mod -not -path '*/vendor/*' -not -path '*/testdata/*'); do
             go work use "$(dirname "$gomod")"
           done
           cat go.work

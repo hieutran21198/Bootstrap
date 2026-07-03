@@ -113,10 +113,16 @@ in
       enabledMcps = lib.filterAttrs (_: m: m.enable or false) mcps;
 
       # ---- global skill catalog (content on disk for both tools) ----------
-      skillFiles = lib.concatMapAttrs (name: value: {
-        ".claude/skills/${name}/SKILL.md".text = lib.mkIf claudeOpts.enable value.content;
-        ".opencode/skills/${name}/SKILL.md".text = lib.mkIf opencodeOpts.enable value.content;
-      }) enabledSkills;
+      skillFiles = lib.concatMapAttrs (
+        name: value:
+        { }
+        // lib.optionalAttrs claudeOpts.enable {
+          ".claude/skills/${name}/SKILL.md".text = value.content;
+        }
+        // lib.optionalAttrs opencodeOpts.enable {
+          ".opencode/skills/${name}/SKILL.md".text = value.content;
+        }
+      ) enabledSkills;
 
       # ---- invert capability allow-lists into per-agent views -------------
       agentMcps = name: lib.filterAttrs (_: m: lib.elem name m.agents) enabledMcps; # mcpName -> mcp
@@ -250,13 +256,13 @@ in
       };
 
       files = (
-        {
-          ".claude/settings.json".json = lib.mkIf claudeOpts.enable {
+        lib.optionalAttrs claudeOpts.enable {
+          ".claude/settings.json".json = {
             env = {
               CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
             };
           };
-          "CLAUDE.md" = lib.mkIf claudeOpts.enable {
+          "CLAUDE.md" = {
             text = "@AGENTS.md";
           };
         }
