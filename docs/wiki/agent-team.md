@@ -31,16 +31,16 @@ the plan/decision index, and enforces `writer ≠ reviewer`. See
 
 ## When to use which agent
 
-| Role | Use Case | Success Criteria | Wired tools (posture) | Wired skills |
-| ---- | -------- | ---------------- | --------------------- | ------------ |
-| **orchestrator** (primary) | Default entry point for any multi-step or multi-lane goal; planning, routing, and the review gate | Every non-trivial slice delegated (not inline); self-contained briefs; final summary carries raw `go test` / `lint-go` proof; `writer ≠ reviewer` honored | codegraph, `task` (`edit`/`bash` denied) | — |
-| **researcher** | External / library / domain knowledge, option evaluation, upstream docs, impact analysis — read-only | Completion Report with sourced findings + an explicit recommendation; claims cited; no code changes | context7, gh_grep (read-only + web) | — |
-| **explorer** | "Where / how does X work" in *this* repo; find files/symbols, trace call paths, survey an area — read-only | Exact `file:line` locations + call paths + a concise map; no edits | codegraph (read-only) | — |
-| **architect** | Design decisions and tradeoffs; produce/validate ADRs & specs; define boundaries; independent review (`writer ≠ reviewer`) | Output matches the relevant `docs/` track format, or a review verdict with concrete findings; decisions → `adrs/`, designs → `specs/`, views → `architecture/` | codegraph (edit docs, no bash) | — |
-| **backend-engineer** | Implement/refactor Go in `packages/go`, `services/portal`, `tools`; repos, migrations, echox, DB/RLS | Follows Go conventions + SRP; `lint-go` + `go test` pass (raw output); RLS honored | codegraph (edit + bash) | go-pattern, rls-patterns, git-workflow |
-| **frontend-engineer** | Implement/refactor `apps/` UI; browser-verified polish (*`apps/workspace-docs/` is a real Docusaurus site; UI-heavy app work is still thin*) | UI builds & renders; playwright QA passes; matches design; tests green | codegraph, playwright (edit + bash) | git-workflow |
-| **release-engineer** | CI/CD + release coordination: GitHub Actions, git-hook/branch-protection wiring (calls git-guard), versioning/tagging/changelog, deploy/ config | CI green; hooks + branch protection enforce ADR-0012 via git-guard (no duplicated rules); release/CI commands return raw proof; no product/architecture/release-authority decision made unilaterally | codegraph (edit + bash) | git-workflow |
-| **scribe** | Break PRDs/epics into tracked work items; maintain roadmap, debt register, and status; sync issues; write/triage tickets and status reports | Work items w/ acceptance criteria + owners; `docs/` trackers updated; reconciles plan vs. done; no code or design | jira¹ (edit docs, no bash) | git-workflow |
+| Role                       | Use Case                                                                                                                                        | Success Criteria                                                                                                                                                                                     | Wired tools (posture)                    | Wired skills                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | -------------------------------------- |
+| **orchestrator** (primary) | Default entry point for any multi-step or multi-lane goal; planning, routing, and the review gate                                               | Every non-trivial slice delegated (not inline); self-contained briefs; final summary carries raw `go test` / `lint-go` proof; `writer ≠ reviewer` honored                                            | codegraph, `task` (`edit`/`bash` denied) | —                                      |
+| **researcher**             | External / library / domain knowledge, option evaluation, upstream docs, impact analysis — read-only                                            | Completion Report with sourced findings + an explicit recommendation; claims cited; no code changes                                                                                                  | context7, gh_grep (read-only + web)      | —                                      |
+| **explorer**               | "Where / how does X work" in _this_ repo; find files/symbols, trace call paths, survey an area — read-only                                      | Exact `file:line` locations + call paths + a concise map; no edits                                                                                                                                   | codegraph (read-only)                    | —                                      |
+| **architect**              | Design decisions and tradeoffs; produce/validate ADRs & specs; define boundaries; independent review (`writer ≠ reviewer`)                      | Output matches the relevant `docs/` track format, or a review verdict with concrete findings; decisions → `adrs/`, designs → `specs/`, views → `architecture/`                                       | codegraph (edit docs, no bash)           | —                                      |
+| **backend-engineer**       | Implement/refactor Go in `packages/go`, `services/portal`, `tools`; repos, migrations, echox, DB/RLS                                            | Follows Go conventions + SRP; `lint-go` + `go test` pass (raw output); RLS honored                                                                                                                   | codegraph (edit + bash)                  | go-pattern, rls-patterns, git-workflow |
+| **frontend-engineer**      | Implement/refactor `apps/` UI; browser-verified polish (_`apps/workspace-docs/` is a real Docusaurus site; UI-heavy app work is still thin_)    | UI builds & renders; playwright QA passes; matches design; tests green                                                                                                                               | codegraph, playwright (edit + bash)      | git-workflow                           |
+| **release-engineer**       | CI/CD + release coordination: GitHub Actions, git-hook/branch-protection wiring (calls git-guard), versioning/tagging/changelog, deploy/ config | CI green; hooks + branch protection enforce ADR-0012 via git-guard (no duplicated rules); release/CI commands return raw proof; no product/architecture/release-authority decision made unilaterally | codegraph (edit + bash)                  | git-workflow                           |
+| **scribe**                 | Break PRDs/epics into tracked work items; maintain roadmap, debt register, and status; sync issues; write/triage tickets and status reports     | Work items w/ acceptance criteria + owners; `docs/` trackers updated; reconciles plan vs. done; no code or design                                                                                    | jira¹ (edit docs, no bash)               | git-workflow                           |
 
 ¹`jira` is wired to `scribe` but its MCP server is disabled by default
 (`core.ai.mcps.jira.enable = false`); it only appears once enabled.
@@ -52,16 +52,16 @@ declared as `core.ai.agents.<name>.posture` and emitted into each agent's
 `permission` frontmatter. MCP and skill permissions (the table above) are layered
 on top by the renderer.
 
-| Agent | `edit` | `bash` | `task` | `webfetch` / `websearch` |
-| ----- | ------ | ------ | ------ | ------------------------ |
-| **orchestrator** (primary) | deny | deny | allow | allow |
-| **researcher** | deny | deny | — | allow |
-| **explorer** | deny | deny | — | — |
-| **architect** | allow | deny | — | — |
-| **backend-engineer** | allow | allow | — | — |
-| **frontend-engineer** | allow | allow | — | — |
-| **release-engineer** | allow | allow | — | — |
-| **scribe** | allow | deny | — | — |
+| Agent                      | `edit` | `bash` | `task` | `webfetch` / `websearch` |
+| -------------------------- | ------ | ------ | ------ | ------------------------ |
+| **orchestrator** (primary) | deny   | deny   | allow  | allow                    |
+| **researcher**             | deny   | deny   | —      | allow                    |
+| **explorer**               | deny   | deny   | —      | —                        |
+| **architect**              | allow  | deny   | —      | —                        |
+| **backend-engineer**       | allow  | allow  | —      | —                        |
+| **frontend-engineer**      | allow  | allow  | —      | —                        |
+| **release-engineer**       | allow  | allow  | —      | —                        |
+| **scribe**                 | allow  | deny   | —      | —                        |
 
 - `—` = not declared, so the agent inherits opencode's default. Unset built-ins
   (`read`, `glob`, `grep`, `list`, and by default `webfetch`/`websearch`) stay

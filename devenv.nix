@@ -30,30 +30,30 @@
               model = "opencode-go/minimax-m3";
             };
             explorer = {
-              model = "opencode-go/minimax-m3";
+              model = "opencode/deepseek-v4-flash-free";
             };
             architect = {
               model = "openai/gpt-5.5";
               variant = "xhigh";
             };
+            backend-engineer = {
+              model = "opencode-go/deepseek-v4-pro";
+              variant = "high";
+            };
             security-reviewer = {
               model = "openai/gpt-5.5";
               variant = "xhigh";
             };
-            backend-engineer = {
-              model = "openai/gpt-5.5";
-              variant = "low";
-            };
             release-engineer = {
-              model = "opencode-go/deepseek-v4-flash";
+              model = "opencode-go/deepseek-v4-pro";
+              variant = "high";
             };
             frontend-engineer = {
-              model = "openai/gpt-5.5";
-              variant = "low";
+              model = "opencode-go/deepseek-v4-pro";
+              variant = "medium";
             };
-            scrible = {
-              model = "anthropic/claude-sonnet-5";
-              variant = "high";
+            scribe = {
+              model = "opencode-go/qwen3.7-plus";
             };
           };
         };
@@ -64,7 +64,11 @@
         git-workflow.enable = true;
       };
       mcps = {
+        linear = {
+          enable = true;
+        };
         context7.apiKey = config.secretspec.secrets.CONTEXT_SEVEN_API_KEY;
+        github.apiKey = config.secretspec.secrets.GITHUB_API_KEY;
       };
       agents = {
         orchestrator.enable = true;
