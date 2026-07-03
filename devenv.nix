@@ -14,8 +14,8 @@
         settings = {
           agent = {
             orchestrator = {
-              model = "anthropic/claude-opus-4-8";
-              variant = "xhigh";
+              model = "anthropic/claude-fable-5";
+              variant = "high";
             };
             researcher = {
               model = "opencode-go/minimax-m3";
