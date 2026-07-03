@@ -60,3 +60,4 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | 0010 | [Architecture is its own top-level docs track](0010-architecture-as-lifecycle-track.md) | Accepted |
 | 0011 | [Org-root RLS hardening with a self-binding registration insert](0011-org-root-rls-hardening.md) | Accepted |
 | 0012 | [Git workflow, commit, and pull-request conventions](0012-git-workflow-and-conventions.md) | Accepted |
+| 0013 | [Use Plannotator OpenCode plugin for orchestrated plan review](0013-use-plannotator-opencode-for-plan-review.md) | Accepted |
