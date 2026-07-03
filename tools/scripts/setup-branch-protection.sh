@@ -22,12 +22,13 @@ command -v gh >/dev/null || { echo "error: gh CLI not found" >&2; exit 1; }
 command -v jq >/dev/null || { echo "error: jq not found" >&2; exit 1; }
 
 REPO="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
-CHECK_CONTEXT="Git conventions"   # job name in .github/workflows/pr-validate.yml
+REQUIRED_CHECKS='["Git conventions","govulncheck (go.work modules)"]'
 echo "Repository: $REPO"
+echo "Required checks (from workflow jobs): $REQUIRED_CHECKS"
 
 # Build a branch-ruleset payload. $1 = ruleset name, $2 = ref include pattern.
 ruleset_payload() {
-  jq -n --arg name "$1" --arg ref "$2" --arg check "$CHECK_CONTEXT" '{
+  jq -n --arg name "$1" --arg ref "$2" --argjson checks "$REQUIRED_CHECKS" '{
     name: $name,
     target: "branch",
     enforcement: "active",
@@ -44,7 +45,7 @@ ruleset_payload() {
       } },
       { type: "required_status_checks", parameters: {
           strict_required_status_checks_policy: true,
-          required_status_checks: [ { context: $check } ]
+          required_status_checks: [ $checks[] as $c | { context: $c } ]
       } }
     ]
   }'
