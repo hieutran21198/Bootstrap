@@ -48,19 +48,27 @@ defense-in-depth.
 
 ## Which tables need a policy
 
-**Needs RLS** — non-null `organization_id`, reached by `writer`/`reader`:
-`staff` and every org-scoped aggregate; per-org config / credentials / feature
-flags; org-scoped outbox / event / read-model tables; soft-delete siblings
-(policies do NOT propagate — each table enables independently).
+**Needs org-keyed RLS** — non-null `organization_id`, reached by
+`writer`/`reader`: `staff` and every org-scoped aggregate; per-org config /
+credentials / feature flags; org-scoped outbox / event / read-model tables;
+soft-delete siblings (policies do NOT propagate — each table enables
+independently).
 
-**No RLS** — `organizations` (the tenant root; chicken-and-egg — gate with
-column-scoped `GRANT`s instead); cross-tenant reference data (currencies, time
-zones); admin-only tables (`admin` bypasses RLS anyway).
+**Needs self-keyed root RLS** — `organizations`. It has no `organization_id`
+because it *is* the tenant root, but ADR-0011 makes it policy-protected on its
+own `id = current_setting('app.organization_id', true)`. Registration binds the
+new org id before inserting, so the self-keyed `WITH CHECK` admits the bootstrap
+insert and every other access stays constrained to the bound org.
+
+**No tenant RLS** — cross-tenant reference data (currencies, time zones) and
+admin-only tables (`admin` bypasses RLS anyway).
 
 ## Canonical migration (org-scoped table)
 
-Goose, run as `admin`. RLS lives in the SAME file as the `CREATE TABLE`. IDs are
-`TEXT` UUIDv7 (ADR-0004) — compare as text, no `::uuid` cast.
+Goose, run as `admin`. RLS should ship with table creation when possible; if
+hardening an existing/unapplied table, keep the `ENABLE`/`FORCE` and policies in
+one focused migration. IDs are `TEXT` UUIDv7 (ADR-0004) — compare as text, no
+`::uuid` cast.
 
 ```sql
 -- +goose Up
@@ -69,55 +77,119 @@ ALTER TABLE staff ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff FORCE  ROW LEVEL SECURITY;
 
 CREATE POLICY tenant_isolation_staff ON staff
-    AS PERMISSIVE FOR ALL TO writer, reader
-    USING      (current_setting('app.scope', true) = 'system'
-                OR organization_id = current_setting('app.organization_id', true))
-    WITH CHECK (current_setting('app.scope', true) = 'system'
-                OR organization_id = current_setting('app.organization_id', true));
+    AS PERMISSIVE
+    FOR ALL
+    TO writer, reader
+    USING      (organization_id = current_setting('app.organization_id', true))
+    WITH CHECK (organization_id = current_setting('app.organization_id', true));
+
+CREATE POLICY system_read_staff ON staff
+    AS PERMISSIVE
+    FOR SELECT
+    TO system_reader
+    USING (
+        current_setting('app.scope', true) = 'system'
+        AND (
+            current_setting('app.organization_allowlist', true) = '*'
+            OR organization_id = ANY (
+                string_to_array(current_setting('app.organization_allowlist', true), ',')
+            )
+        )
+    );
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
+DROP POLICY IF EXISTS system_read_staff ON staff;
 DROP POLICY IF EXISTS tenant_isolation_staff ON staff;
 ALTER TABLE staff NO FORCE ROW LEVEL SECURITY;
 ALTER TABLE staff DISABLE  ROW LEVEL SECURITY;
 -- +goose StatementEnd
 ```
 
-Two scopes on one axis (ADR-0008): an `organization` actor binds
-`app.organization_id`; a `system` actor (cross-tenant jobs / future back-office,
-**still `NOBYPASSRLS`** — never run as `admin`) binds `app.scope = system`. An
-unbound tx matches neither branch and fails closed. Gate *who* may bind `system`
-at the app layer — RLS only enforces the data boundary. The portal is
-tenant-facing and uses `organization` scope only; `system` entry points are planned.
+Two scopes on one axis (ADR-0008), with ADR-0009's safer split:
+
+- `organization` scope binds `app.organization_id` and uses tenant-facing
+  `writer`/`reader` policies. These policies have **no** `system` OR-branch;
+  setting `app.scope='system'` on a tenant connection must match nothing and
+  fail closed.
+- `system` scope is read-only today. It uses the dedicated `system_reader`
+  `NOBYPASSRLS` role plus a separate `FOR SELECT` policy and binds
+  `app.scope='system'` with `app.organization_allowlist`. The allowlist is `*`
+  for all tenants or a comma-separated UUIDv7 list; missing allowlist is zero
+  rows, never implicit all-tenants.
+
+Self-keyed tenant-root policy for `organizations` (ADR-0011) mirrors the same
+split but compares the row's `id` instead of `organization_id`:
+
+```sql
+ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organizations FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation_organizations ON organizations
+    AS PERMISSIVE
+    FOR ALL
+    TO writer, reader
+    USING      (id = current_setting('app.organization_id', true))
+    WITH CHECK (id = current_setting('app.organization_id', true));
+
+CREATE POLICY system_read_organizations ON organizations
+    AS PERMISSIVE
+    FOR SELECT
+    TO system_reader
+    USING (
+        current_setting('app.scope', true) = 'system'
+        AND (
+            current_setting('app.organization_allowlist', true) = '*'
+            OR id = ANY (
+                string_to_array(current_setting('app.organization_allowlist', true), ',')
+            )
+        )
+    );
+```
 
 Also required in the same file:
 
-- `organization_id TEXT NOT NULL` and `CREATE INDEX idx_<table>_organization_id` —
-  the policy filters on it; confirm with `EXPLAIN (ANALYZE, BUFFERS)`.
-- No per-table `GRANT`s: `writer`/`reader` already hold schema-wide CRUD/SELECT
-  plus `ALTER DEFAULT PRIVILEGES` from the postgres devenv module. Add explicit
-  `GRANT`s only for a column-scoped exception (e.g. locking down `organizations`).
+- For org-keyed tables: `organization_id TEXT NOT NULL` and
+  `CREATE INDEX idx_<table>_organization_id` — the policy filters on it; confirm
+  with `EXPLAIN (ANALYZE, BUFFERS)`. For `organizations`, the primary-key `id`
+  is the policy key.
+- No per-table `GRANT`s for `writer`/`reader`: they already hold schema-wide
+  CRUD/SELECT plus `ALTER DEFAULT PRIVILEGES` from the postgres devenv module.
+  `system_reader` is SELECT-only and still must be paired with an explicit
+  per-table system read policy before it can see rows.
 
 ## Binding chokepoint (don't reinvent)
 
 Writes flow through `UnitOfWork.DoOrganizationTransaction(ctx, orgID, handler)`
-(`services/portal/internal/infra/postgres/uow/uow.go`); reads through
+(`services/portal/internal/infra/postgres/uow/uow.go`); tenant reads through
 `ReadStore.DoOrganizationQuery` (`.../readstore/readstore.go`). Both validate the
 id and call `bindOrganizationRLS` (`set_config(..., true)`) as the first
 statement. The org id is a REQUIRED parameter — there is no org-less write path.
 Connect gormx with the `writer`/`reader` DSN, never `admin`.
 
+System reads flow through `ReadStore.DoSystemQuery(ctx, cap, handler)` and are
+implemented, not planned. The caller must pass an unforgeable
+`query.SystemReadCapability`; the read store rejects invalid/zero capabilities,
+then `bindSystemRLS` sets `app.scope='system'` and `app.organization_allowlist`
+transaction-locally from the capability target. There is deliberately no
+`DoSystemTransaction`; system writes need a future ADR, role, and capability.
+
 ## Isolation test (must run as writer/reader)
 
-Against a `writer`/`reader` connection — never `admin`, or the policy is a silent
-no-op:
+Against a `writer`/`reader` connection for tenant scope, and against
+`system_reader` for system-scope reads — never `admin`, or the policy is a
+silent no-op:
 
 1. Assert `SELECT rolsuper OR rolbypassrls ... = false`.
 2. org A inserts a row; org B must see 0.
 3. Cover: unset-GUC fails closed (0 rows); `WITH CHECK` rejects a foreign-org
    `Create`; cross-org UPDATE/DELETE affect 0 rows; `FORCE` applies to the owner;
    an invalid id is rejected (`organization.ErrEmptyID`) before any row is touched.
+4. For system reads, setting `app.scope='system'` on `writer`/`reader` must still
+   return 0 rows; `system_reader` must require both `app.scope='system'` and
+   `app.organization_allowlist`; missing allowlist returns 0 rows, `*` returns all
+   opted-in rows, and a UUIDv7 list returns only those organizations.
 
 ## Migration workflow
 
@@ -148,5 +220,7 @@ used, no table left `ENABLE`d without a policy).
 - pgx prepared-plan + `IMMUTABLE` footgun — <https://github.com/jackc/pgx/issues/2007>
 - This workspace — roles: `packages/nix/core/services/postgres/default.nix` ·
   two-scope model: ADR-0008 (`docs/adrs/0008-tenant-scoped-unit-of-work-rls.md`) ·
+  safe system reads: ADR-0009 (`docs/adrs/0009-safe-system-scope-rls.md`) ·
+  self-keyed org-root RLS: ADR-0011 (`docs/adrs/0011-org-root-rls-hardening.md`) ·
   chokepoints: `uow.go`, `readstore.go` · ports: `app/command/port.go`,
   `app/query/port.go` · typed UUIDv7 IDs: ADR-0004
