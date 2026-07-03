@@ -63,3 +63,4 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | 0013 | [Use Plannotator OpenCode plugin for orchestrated plan review](0013-use-plannotator-opencode-for-plan-review.md) | Accepted |
 | 0014 | [Add a Security Reviewer agent](0014-security-reviewer-agent.md) | Accepted |
 | 0015 | [Automated Go security scanning](0015-automated-security-scanning.md) | Accepted |
+| 0016 | [Use git worktrees for parallel AI-agent sessions](0016-use-git-worktrees-for-parallel-ai-agent-sessions.md) | Accepted |

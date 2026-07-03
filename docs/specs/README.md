@@ -74,7 +74,6 @@ Then cross-link: the spec's `Tracks` field points at the ADR (or ticket) that au
 
 ## Index
 
-_No specs yet._
-
 | Spec | Status | Tracks |
 | ---- | ------ | ------ |
+| [Parallel agent worktrees](parallel-agent-worktrees.md) | Accepted | [ADR-0016](../adrs/0016-use-git-worktrees-for-parallel-ai-agent-sessions.md) |

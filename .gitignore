@@ -35,6 +35,11 @@ go.work
 ## Local docker-compose env (deploy/local/.env holds ZITADEL_MASTERKEY + secrets)
 deploy/local/.env
 
+# Git worktrees (parallel AI-agent sessions; see docs/conventions/git/worktrees.md)
+## managed worktree tree + per-worktree port-offset marker (.worktreeinclude stays tracked)
+.worktrees/
+.worktree-offset
+
 # environment variables
 .env*
 

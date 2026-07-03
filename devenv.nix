@@ -5,6 +5,9 @@
     };
   };
   core = {
+    worktree = {
+      enable = true;
+    };
     ai = {
       claude = {
         enable = true;

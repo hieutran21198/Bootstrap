@@ -5,7 +5,7 @@ Workspace-wide rules for how we branch, commit, review, and release with Git. Ea
 > **Scope**: every contributor and automated agent working in this repository — all branches, commits, and pull requests against `origin`.
 > **Status**: Active
 > **Decided by**: [ADR-0012](../../adrs/0012-git-workflow-and-conventions.md)
-> **Last reviewed**: 2026-07-01
+> **Last reviewed**: 2026-07-04
 
 ## Index
 
@@ -15,6 +15,7 @@ Workspace-wide rules for how we branch, commit, review, and release with Git. Ea
 | 2   | [Commit messages](commit-messages.md)        | Conventional Commits `<type>(<scope>): <subject>`, seeded by the `.gitmessage` template.        |
 | 3   | [Merge vs rebase](merge-vs-rebase.md)        | Squash-merge PRs into `main`; rebase only local, unshared branches to stay current.             |
 | 4   | [Pull requests](pull-requests.md)            | PR title = commit header; body from the PR template; reviewer checklist is the approval bar.    |
+| 5   | [Parallel-agent worktrees](worktrees.md)     | One agent session per Git worktree under `.worktrees/<slug>`; create/remove with `ws-worktree`; per-worktree `.worktree-offset` port offset. |
 
 ## Enforcement (how these rules are checked)
 
@@ -29,6 +30,7 @@ These conventions are enforced by tooling, not just review:
 ## See also
 
 - [ADR-0012](../../adrs/0012-git-workflow-and-conventions.md) — the decision that established this topic.
+- [ADR-0016](../../adrs/0016-use-git-worktrees-for-parallel-ai-agent-sessions.md) — the decision behind the [parallel-agent worktree rule](worktrees.md).
 - [Workspace conventions index](../README.md) — sibling topics.
 - [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) — the commit grammar `commitizen` enforces.
 - [`.gitmessage`](../../../.gitmessage) · [`.github/PULL_REQUEST_TEMPLATE.md`](../../../.github/PULL_REQUEST_TEMPLATE.md) — the templates these rules wire in.

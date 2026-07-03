@@ -7,15 +7,9 @@
 {
   options.core.git = {
     enable = lib.mkEnableOption "Git";
-  };
-  config =
-    let
-      opts = config.core.git;
-
-      # git-guard: the Go CLI that validates this workspace's Git conventions
-      # (docs/conventions/git/). Shared by the hooks below and the PR-validation
-      # CI workflow so the rules never drift between local and CI.
-      gitGuardPkg = pkgs.buildGoModule {
+    gitGuardPackage = config.core.utils.makePackageOption {
+      readOnly = true;
+      default = pkgs.buildGoModule {
         pname = "git-guard";
         version = "0.1.0";
 
@@ -28,6 +22,13 @@
         '';
         meta.mainProgram = "git-guard";
       };
+      description = "git-guard package shared by Git hooks and worktree tooling.";
+    };
+  };
+  config =
+    let
+      opts = config.core.git;
+      gitGuardPkg = opts.gitGuardPackage;
     in
     lib.mkIf opts.enable {
       packages = [
