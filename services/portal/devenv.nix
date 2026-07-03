@@ -62,6 +62,16 @@
             admin.password = secrets.POSTGRES_ADMIN_PASSWORD;
             writer.password = secrets.POSTGRES_WRITER_PASSWORD;
             reader.password = secrets.POSTGRES_READER_PASSWORD;
+            # The RLS migrations (staff_rls, organizations_rls) define a
+            # `system_read_*` policy `TO system_reader` (ADR-0009), so the role
+            # must exist for migrations to apply even though the tenant-facing
+            # portal never binds the `system` scope at runtime. Enabling it here
+            # only provisions the login role + SELECT grant; cross-tenant
+            # visibility still comes solely from the policy.
+            systemReader = {
+              enable = true;
+              password = secrets.POSTGRES_SYSTEM_READER_PASSWORD;
+            };
           };
         };
     };
