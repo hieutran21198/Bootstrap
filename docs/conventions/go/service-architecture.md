@@ -116,6 +116,7 @@ type Staff struct {
 ```
 
 Convention to mitigate the loss of safety:
+
 - **Name foreign-ID fields with the aggregate name baked in** — `ownerStaffID`, `organizationID`. Never plain `id` for a foreign key.
 - **At command-handler call sites**, cast at the boundary: `staff.ID(org.OwnerStaffID())`. The cast is the explicit type-transition.
 
@@ -355,16 +356,16 @@ type TransactionalUnitOfWork interface {
 
 #### One tenant-scoped entry point
 
-| Call                                                                          | Behavior                                                                                       |
-| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `uow.DoOrganizationTransaction(ctx, orgID, func(ctx, utx) error { ... })`      | Validates `orgID`, binds RLS (`set_config('app.organization_id', …, true)`), runs the closure in one transaction; every writer reached through `utx` is filtered to `orgID` |
+| Call                                                                      | Behavior                                                                                                                                                                    |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `uow.DoOrganizationTransaction(ctx, orgID, func(ctx, utx) error { ... })` | Validates `orgID`, binds RLS (`set_config('app.organization_id', …, true)`), runs the closure in one transaction; every writer reached through `utx` is filtered to `orgID` |
 
 There is intentionally **no auto-commit / org-less write path**. A single-aggregate write is just a one-line closure (see [Command handlers](#command-handlers)). For a service that is genuinely **not** multi-tenant and needs no RLS, the org-less `DoTransaction` variant is documented in [Unit of Work implementation](#unit-of-work-implementation) and kept commented out in `uow.go`.
 
 #### Handler dependency choice
 
 - Depend on **`UnitOfWork`** to start a tenant-scoped transaction.
-- Depend on **`TransactionalUnitOfWork`** if the handler MUST run *inside* an already-open transaction (e.g., a sub-step composed by another handler). The narrower type is a compile-time invariant — it has no way to open a new transaction or escape the tenant scope.
+- Depend on **`TransactionalUnitOfWork`** if the handler MUST run _inside_ an already-open transaction (e.g., a sub-step composed by another handler). The narrower type is a compile-time invariant — it has no way to open a new transaction or escape the tenant scope.
 
 ---
 

@@ -20,15 +20,14 @@ services/portal/
 ├── docs/            # service-scoped docs: adrs / specs / findings / debt (see docs/README.md)
 ├── cmd/
 │   ├── http/
-│   │   ├── command/ # write-side HTTP binary (planned — dir only)
-│   │   └── query/   # read-side HTTP binary (planned — dir only)
+│   │   └── query/   # read-side HTTP binary stub (placeholder package main; no main yet)
 │   └── migrate/     # migration CLI (up/down/status) — main.go (exists)
-├── config/          # service config loader (use packages/go/env)
+├── config/          # service config loader (planned; use packages/go/env)
 └── internal/
     ├── app/
     │   ├── command/ # write-side use cases + UnitOfWork port
     │   └── query/   # read-side use cases + read-model ports
-    ├── delivery/http/
+    ├── delivery/http/ # planned/empty
     │   ├── command/ # HTTP handlers → app/command
     │   └── query/   # HTTP handlers → app/query
     ├── domain/<aggregate>/   # pure domain, one package per aggregate (organization, staff)
@@ -37,7 +36,9 @@ services/portal/
         ├── repo/        # Writer / Reader implementations (one file per aggregate)
         ├── readstore/   # read-side query-model stores
         └── uow/         # UnitOfWork implementation
-# infra/zitadel/ — planned (ADR-0006, Proposed); not yet created
+# infra/zitadel/ — planned: the ONLY package that imports zitadel-go or reads urn:zitadel:* claims;
+#   expose app-facing auth ports per convention (ADR-0006 Accepted;
+#   contract in docs/conventions/auth/oidc-provider-integration.md)
 ```
 
 ## WHERE TO LOOK
@@ -54,9 +55,9 @@ services/portal/
 | Postgres repo                             | `internal/infra/postgres/repo/<aggregate>.go`                                       |
 | Read model / query-side store             | `internal/infra/postgres/readstore/<name>.go`                                       |
 | Transaction boundary                      | `internal/infra/postgres/uow/`                                                      |
-| Database migration (SQL)                  | `internal/infra/postgres/migrations/` (scaffold via `migrate-new <name>`)            |
-| Migration CLI                             | `cmd/migrate/` (run with `migrate-up` / `migrate-down` / `migrate-status`)           |
-| Service binary entrypoint                 | `cmd/migrate/main.go` (exists); `cmd/http/{command,query}/main.go` (planned)         |
+| Database migration (SQL)                  | `internal/infra/postgres/migrations/` (scaffold via `migrate-new <name>`)           |
+| Migration CLI                             | `cmd/migrate/` (run with `migrate-up` / `migrate-down` / `migrate-status`)          |
+| Service binary entrypoint                 | `cmd/migrate/main.go` (exists); `cmd/http/query/main.go` stub (placeholder, does not compile yet); `cmd/http/command/` planned — dir absent |
 | Service configuration                     | `config/` (use `bootstrap/packages/go/env`)                                         |
 | Portal-specific doc                       | `docs/` (adrs/specs/findings/debt) — see [docs/README.md](docs/README.md)           |
 
@@ -88,15 +89,15 @@ services/portal/
 - Postgres implementation lives in `internal/infra/postgres/uow/uow.go`.
 - **Every write is tenant-scoped.** `UnitOfWork` exposes a single entry point, `DoOrganizationTransaction(ctx, id organization.ID, handler)`: it validates `id` (`idgen.Validate`), binds the org to the connection for Row-Level Security via `set_config('app.organization_id', …, true)` (transaction-local) in `bindOrganizationRLS`, then runs `handler` with a tx-scoped `TransactionalUnitOfWork`. Writers reached through it are filtered to that one organization; the closure commits or rolls back as one unit.
 - There is **no scope-less / auto-commit write path** — RLS requires every write to declare a scope. The scope-less `DoTransaction` is left commented out in `uow.go` for non-multi-tenant systems only.
-- **Two RLS scopes ([ADR-0008](../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md))**: `organization` (bound to one tenant) and `system` (cross-tenant). The portal is **tenant-facing** — a tenant manages itself — so it uses the `organization` scope exclusively (implemented above) and never binds `system`. The `system` scope is for cross-tenant background jobs and a future separate back-office service; its entry point (e.g. `DoSystemTransaction`) + the `app.scope`-aware policy are **planned**, not yet in code. Both scopes run under `NOBYPASSRLS` roles — `system` widens the policy via `app.scope = system`, it does not bypass RLS.
-- RLS policy authoring + the GUC contract (`app.scope` / `app.organization_id`) are documented in the `rls-patterns` skill (`packages/nix/core/ai/skills/db-rls-patterns/`).
+- **Two RLS scopes ([ADR-0008](../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md), [ADR-0009](../../docs/adrs/0009-safe-system-scope-rls.md), [ADR-0011](../../docs/adrs/0011-org-root-rls-hardening.md))**: `organization` (bound to one tenant) and `system` (cross-tenant). Organization-scoped writes are implemented above. The read-side `system` scope is implemented in this service; the write-side system entry point (`DoSystemTransaction`) is still planned. Both scopes run under `NOBYPASSRLS` roles — `system` widens policy via `app.scope = system`, it does not bypass RLS.
+- RLS policy authoring + the GUC contract (`app.scope` / `app.organization_id`) are documented in the `rls-patterns` skill (`packages/nix/core/ai/skills/rls-patterns/`).
 
 ### Read Store
 
 - Interface lives in `internal/app/query/port.go` (`ReadStore` + the accessor surface `TransactionalReadStore` + the `TransactionalReadStoreHandler` closure type).
 - Postgres implementation lives in `internal/infra/postgres/readstore/readstore.go`.
-- **Every read is tenant-scoped too.** `ReadStore` mirrors the write side: a single entry point, `DoOrganizationQuery(ctx, id organization.ID, handler)`, validates `id`, binds the same `app.organization_id` GUC (transaction-local), then runs `handler` with a tx-scoped `TransactionalReadStore`. Readers reached through it are filtered to that one organization.
-- There is **no scope-less read path** — an unbound read fails closed (zero rows) against a `FORCE`d policy, so reads must be RLS-bound just like writes. The portal only ever binds the `organization` scope; the `system`-scope read path (a planned `DoSystemQuery`) belongs to cross-tenant consumers, not this service — see [ADR-0008](../../docs/adrs/0008-tenant-scoped-unit-of-work-rls.md).
+- **Every read is RLS-scoped too.** Organization reads use `DoOrganizationQuery(ctx, id organization.ID, handler)`: it validates `id`, binds transaction-local `app.organization_id`, and does not set `app.scope`; then it runs `handler` with a tx-scoped `TransactionalReadStore`. Readers reached through it are filtered to that one organization.
+- **System-scope reads are implemented here.** `ReadStore.DoSystemQuery(ctx, capability, handler)` accepts an unforgeable `query.SystemReadCapability` produced by `SystemScopeAuthorizer`, derives the `app.organization_allowlist` GUC (`*` or comma-joined UUIDv7 ids) from the capability inside `bindSystemRLS`, binds `app.scope='system'` + that allowlist, then runs the same tx-scoped reader surface for cross-tenant read models. There is still **no scope-less read path** — unbound reads fail closed against `FORCE`d RLS policies.
 
 ### Postgres repo
 
@@ -109,6 +110,7 @@ services/portal/
 - Do not call repos directly from `delivery/` — route through `app/{command,query}`.
 - Do not mix command and query handlers in the same package.
 - Do not put SQL, GORM tags, or Zitadel SDK calls in `domain/`.
+- Do not import `github.com/zitadel/zitadel-go/...` — or use a `urn:zitadel:…` claim key — outside planned `internal/infra/zitadel/`. Per ADR-0006 and [OIDC provider integration](../../docs/conventions/auth/oidc-provider-integration.md), `app`/`delivery` should depend on slim app-facing auth ports, not provider SDKs or provider claim keys.
 - Do not create a single `cmd/http/main.go` that hosts both sides — the two-binary split is intentional.
 - Do not return `*gorm.DB` or `*sql.Tx` from `app/` code — UoW encapsulates the transaction handle.
 - Do not give domain aggregates pointer references to other aggregates — use UUID strings.

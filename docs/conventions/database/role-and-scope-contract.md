@@ -2,7 +2,7 @@
 
 > **Scope**: every service that opens an application connection to the workspace Postgres database (`services/**`), and the shared DB helpers in `packages/go/**` (`gormx`, `migrate`).
 > **Status**: Active
-> **Decided by**: [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md)
+> **Decided by**: [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md), [ADR-0011](../../adrs/0011-org-root-rls-hardening.md)
 > **Last reviewed**: 2026-06-29
 
 **Rule.** Connect application traffic as the `NOBYPASSRLS` `writer` (commands) or `reader` (queries) role, never `admin`, and bind exactly one transaction-local scope GUC — `app.organization_id` for the `organization` scope, `app.scope = system` for the `system` scope — as the first statement of every transaction.
@@ -25,6 +25,7 @@
 
 - **Bind first, inside a transaction.** Validate any tenant id as a UUIDv7 (`idgen.Validate`) before binding; bind the scope as the first statement; run the rest of the unit of work in the same transaction. There is no scope-less runtime path — an unbound transaction matches no policy branch and returns zero rows.
 - **`system` widens, it does not bypass.** Both scopes run under the `NOBYPASSRLS` app roles; `system` satisfies the policy via `app.scope = system`, so cross-tenant access is still constrained and auditable by the same `FORCE`d policy. Never reach for `admin`/`BYPASSRLS` to "just see everything".
+- **The tenant root is policy-protected too.** `organizations` has no `organization_id` (it *is* the tenant), but it is **not** an RLS exemption: it carries a `FORCE`d policy keyed on the row's own `id = current_setting('app.organization_id', true)` ([ADR-0011](../../adrs/0011-org-root-rls-hardening.md)). The `organization` scope binds the same `app.organization_id` GUC for the root table as for org-scoped tables — registration binds the new org's id before inserting its root row, so the self-keyed `WITH CHECK` admits the bootstrap insert while every other access stays constrained to the bound org.
 - For the policy SQL, migration workflow, and worked `staff` example, follow the [`rls-patterns` skill](../../../tools/ai/skills/rls-patterns/SKILL.md) — this rule fixes the *names and roles*; the skill is the *how-to*.
 
 **Examples.**
@@ -62,6 +63,7 @@ adminDB.Find(&staff)                        // admin bypasses RLS entirely
 
 - [Database conventions index](README.md)
 - [ADR-0008](../../adrs/0008-tenant-scoped-unit-of-work-rls.md) — the decision that established RLS authority and the two scopes.
+- [ADR-0011](../../adrs/0011-org-root-rls-hardening.md) — the tenant-root (`organizations`) self-keyed RLS hardening.
 - [`rls-patterns` skill](../../../tools/ai/skills/rls-patterns/SKILL.md) — policy authoring, migration workflow, worked `staff` example.
 - [Service architecture § Unit of Work](../go/service-architecture.md#unit-of-work) — the Go-side UoW / Read Store that binds the scope.
 - [Portal database schema](../../../services/portal/docs/specs/database-schema.md) — the portal data dictionary that applies this contract per table.

@@ -24,6 +24,7 @@ Inside `package X`, identifiers are accessed as `X.Identifier`. A file `Y_X.go` 
 ### Apply
 
 When creating a new `.go` file:
+
 1. Identify the primary type or concept the file contains.
 2. Name it `<concept>.go`. Lowercase, underscores only for compound concepts with no single-word name.
 3. Confirm the file name does not end in `_<package>.go`.
@@ -135,21 +136,25 @@ func New(db *gorm.DB) *UnitOfWork { ... }
 ### Apply
 
 **Sentinel error**:
+
 ```go
 var ErrInvalidEmail = errors.New("invalid email")
 ```
 
 **Wrapping with context**:
+
 ```go
 return "", fmt.Errorf("%w: %q", ErrInvalidEmail, raw)
 ```
 
 **Caller comparison**:
+
 ```go
 if errors.Is(err, ErrInvalidEmail) { ... }
 ```
 
 **Typed error for inspection**:
+
 ```go
 type NotFoundError struct{ UUID string }
 func (e NotFoundError) Error() string { return fmt.Sprintf("organization %q not found", e.UUID) }
@@ -200,6 +205,7 @@ return fmt.Errorf("name validation failed: %s", err)      // %s instead of %w
 ### Rule
 
 Group imports in three blocks, separated by blank lines:
+
 1. Standard library
 2. Third-party (any non-stdlib, non-bootstrap)
 3. Local (`bootstrap/...`)

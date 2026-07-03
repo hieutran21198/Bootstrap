@@ -15,11 +15,12 @@ Architecture views **stitch** the decisions and designs together — they link t
 
 [TEMPLATE.md](TEMPLATE.md) is the skeleton for **one view**: front matter (`Status`, `Authors`, `Last reviewed`, `Tracks`), then **Purpose / Diagram / Components / Boundaries / Open questions / References**, with an "exists today vs planned" annotation.
 
-| View | Question it answers | Status |
-| ---- | ------------------- | ------ |
-| [system-overview.md](system-overview.md) | What are the components, their responsibilities and boundaries, and the external dependencies? | Accepted |
-| [request-flow.md](request-flow.md) | How does a request traverse delivery → app → infra → database, and where is the tenant scope bound? | Accepted |
-| [deployment-topology.md](deployment-topology.md) | How is the system deployed and wired locally (Postgres, ZITADEL, the reverse proxy)? | Accepted |
+| View                                             | Question it answers                                                                                 | Status           |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------- | ---------------- |
+| [system-overview.md](system-overview.md)         | What are the components, their responsibilities and boundaries, and the external dependencies?      | Accepted         |
+| [request-flow.md](request-flow.md)               | How does a request traverse delivery → app → infra → database, and where is the tenant scope bound? | Accepted         |
+| [deployment-topology.md](deployment-topology.md) | How is the system deployed and wired locally (Postgres, ZITADEL, the reverse proxy)?                | Accepted         |
+
 
 ## Layout
 

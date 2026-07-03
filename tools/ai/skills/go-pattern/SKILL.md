@@ -143,6 +143,12 @@ func Validate[T StringID](id T) error { ... } // call at boundaries only
   zero values persist; `RowsAffected == 0` → `NotFoundError`; `errors.Is(err,
   gorm.ErrRecordNotFound)` on reads; `toRow`/`fromRow` helpers cast `string ↔ ID` at the SQL
   boundary.
+- **OIDC is a neutral port too (ADR-0006).** The identity provider is an adapter: a **slim**
+  `Authenticator` interface (+ a neutral `Principal`) lives beside `UnitOfWork`/`ReadStore` in
+  `app/{command,query}/port.go`; `infra/zitadel` is the **only** package that imports
+  `zitadel-go`. Never import the SDK — or a `urn:zitadel:…` claim key — in `app`/`domain`/`delivery`;
+  keep token strategy (JWT vs introspection) behind the port. See
+  `docs/conventions/auth/oidc-provider-integration.md`.
 
 ## Errors
 
@@ -189,6 +195,8 @@ modern-idiom rules above, which no linter can see.
   0005 (collection repos) · 0008 (tenant-scoped UoW + RLS) — `docs/adrs/`
 - Conventions: `docs/conventions/go/{code-style,service-architecture,single-responsibility,creating-new-package}.md`
   + `docs/conventions/go/templates/{stateful,stateless}.go.tmpl`
+  + cross-topic: `docs/conventions/auth/oidc-provider-integration.md` (neutral OIDC port),
+  `docs/conventions/database/role-and-scope-contract.md` (RLS roles + scope GUCs)
 - Canonical code: `packages/go/{idgen,env,gormx,migrate,server/echox}` ·
   `services/portal/internal/{domain,app/command,infra/postgres}`
 - Related skill: `rls-patterns` (row-level security, the UoW binding chokepoint)

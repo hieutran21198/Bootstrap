@@ -53,8 +53,10 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | 0003 | [DDD + CQRS + Hexagonal architecture for services](0003-service-architecture.md)   | Accepted |
 | 0004 | [Typed aggregate IDs with UUIDv7](0004-typed-aggregate-ids-uuidv7.md)              | Accepted |
 | 0005 | [Collection-style repositories](0005-collection-style-repositories.md)             | Accepted |
-| 0006 | [Zitadel as the identity and auth provider](0006-zitadel-identity-auth.md)         | Proposed |
+| 0006 | [Zitadel as the identity and auth provider](0006-zitadel-identity-auth.md)         | Accepted |
 | 0007 | [Manage the developer environment with Nix + devenv](0007-nix-devenv-developer-environment.md) | Accepted |
 | 0008 | [RLS tenant isolation with organization and system scopes](0008-tenant-scoped-unit-of-work-rls.md) | Accepted |
-| 0009 | [Safe system-scope RLS: separate role, capability gate, read-only first](0009-safe-system-scope-rls.md) | Proposed |
+| 0009 | [Safe system-scope RLS: separate role, capability gate, read-only first](0009-safe-system-scope-rls.md) | Accepted |
 | 0010 | [Architecture is its own top-level docs track](0010-architecture-as-lifecycle-track.md) | Accepted |
+| 0011 | [Org-root RLS hardening with a self-binding registration insert](0011-org-root-rls-hardening.md) | Accepted |
+| 0012 | [Git workflow, commit, and pull-request conventions](0012-git-workflow-and-conventions.md) | Accepted |

@@ -80,13 +80,13 @@ The cross-tenant `system` scope is **not** on the tenant-facing path above. Per 
 
 ## Open questions
 
-- Where exactly does token→org-id extraction live once ZITADEL integration lands — delivery middleware or an app-layer auth port? Owner: portal — resolve with the ZITADEL integration ([ADR-0006](../adrs/0006-zitadel-identity-auth.md)).
+- _None open._ (Resolved by the [ZITADEL auth spec](../../services/portal/docs/specs/zitadel-auth.md): token→org-id extraction lives in **delivery middleware** — an `infra/zitadel` auth adapter verifies the token and produces an `organization.ID` it places in the request context; the handler passes that id to the UoW/ReadStore, which remains the single place the `app.organization_id` scope is bound. Middleware extracts; the UoW binds.)
 
 ## Implementation plan
 
 - [x] Document the intended request flow (this view).
 - [ ] Land HTTP delivery binaries so the proxy→handler hops exist.
-- [ ] Wire ZITADEL token verification → org-id extraction.
+- [ ] Wire ZITADEL token verification → org-id extraction (designed in the [ZITADEL auth spec](../../services/portal/docs/specs/zitadel-auth.md); extraction in delivery middleware, binding stays in the UoW/ReadStore).
 - [ ] Land the RLS policy migration so the binding actually filters.
 - [ ] Update this view if the chokepoint or auth boundary moves — bump `Last reviewed`.
 
