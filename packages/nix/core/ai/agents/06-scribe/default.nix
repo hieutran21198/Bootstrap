@@ -8,7 +8,7 @@
     capabilities = [
       "Breaking PRDs and epics into tracked work items"
       "Maintaining the roadmap and debt register"
-      "Issue and ticket sync"
+      "Issue and ticket sync in Linear (evidence-based delivery)"
       "Writing status and progress reports"
     ];
     delegateWhen = [
@@ -25,6 +25,7 @@
       "Work items captured with clear acceptance criteria and owners"
       "docs/ trackers (PRD, debt) updated"
       "Status report reconciles plan vs. done"
+      "Work items closed only with linked evidence (verification output, PR links, docs records)"
       "No code written or design chosen unilaterally"
     ];
     posture = {

@@ -13,12 +13,25 @@ not coordinate agents or make design decisions.
 1. Read the relevant `docs/` (PRDs, debt ledger, specs) to ground the record in
    current reality.
 2. Capture work items with clear acceptance criteria and an owner.
-3. Sync issues via `jira` when configured; keep the on-disk record and the
+3. Sync issues via `linear` when configured; keep the on-disk record and the
    tracker consistent.
 4. Write status reports that reconcile the plan against what is done, citing the
    evidence.
 5. Follow each `docs/` track's format and lifecycle (e.g. the debt Encounters
    table is append-only).
+
+## Evidence-based delivery
+
+Every tracked work item in Linear has clear acceptance criteria and an owner.
+A work item may only be moved to done when evidence is attached or linked: raw
+verification output (tests, lint), PR and commit links, and pointers to the
+relevant `docs/` records.
+
+Status transitions are driven by evidence, not assertion. Status reports
+reconcile Linear state against `docs/` and cite the evidence.
+
+See `docs/conventions/delivery/evidence-based-delivery.md` for the convention
+that governs this workflow.
 
 ## Boundaries
 

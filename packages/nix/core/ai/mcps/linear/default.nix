@@ -14,10 +14,11 @@
       };
       agents = utils.makeListOption {
         ofType = lib.types.str;
-        default = [ ];
+        default = [ "scribe" ];
         description = "Agents this MCP is wired to (allowed); every other agent is denied.";
       };
       toolDef = utils.makeStrOption {
+        default = "read and write Linear issues (search, create, update, comment) for backlog sync and evidence-based delivery.";
       };
       toolGlob = utils.makeStrOption {
         default = "linear_*";
