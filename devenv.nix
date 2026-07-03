@@ -11,6 +11,40 @@
       };
       opencode = {
         enable = true;
+        settings = {
+          agent = {
+            orchestrator = {
+              model = "anthropic/claude-opus-4-8";
+              variant = "xhigh";
+            };
+            researcher = {
+              model = "opencode-go/minimax-m3";
+            };
+            explorer = {
+              model = "opencode-go/minimax-m3";
+            };
+            architect = {
+              model = "openai/gpt-5.5";
+              variant = "xhigh";
+            };
+            backend-engineer = {
+              model = "openai/gpt-5.5";
+              variant = "low";
+            };
+            release-engineer = {
+              model = "openai/gpt-5.5";
+              variant = "low";
+            };
+            frontend-engineer = {
+              model = "openai/gpt-5.5";
+              variant = "low";
+            };
+            scrible = {
+              model = "anthropic/claude-sonnet-5";
+              variant = "high";
+            };
+          };
+        };
       };
       skills = {
         init-deep.enable = true;
@@ -19,6 +53,16 @@
       };
       mcps = {
         context7.apiKey = config.secretspec.secrets.CONTEXT_SEVEN_API_KEY;
+      };
+      agents = {
+        orchestrator.enable = true;
+        researcher.enable = true;
+        explorer.enable = true;
+        architect.enable = true;
+        backend-engineer.enable = true;
+        release-engineer.enable = true;
+        frontend-engineer.enable = true;
+        scribe.enable = true;
       };
     };
     workspace = {
@@ -38,6 +82,8 @@
         "docs/glossary" = "Canonical terms and definitions";
         "docs/findings" = "Debugging investigations and research findings";
         "docs/debt" = "Technical debt register with encounter ledger";
+        "docs/wiki" =
+          "Informal quick-reference notes (agent team, cheatsheets) outside the 8 formal doc tracks";
 
         "packages" = "Public shared packages for the workspace";
 

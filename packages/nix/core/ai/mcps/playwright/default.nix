@@ -12,6 +12,17 @@
       enable = utils.makeBoolOption {
         default = true;
       };
+      agents = utils.makeListOption {
+        ofType = lib.types.str;
+        default = [ "frontend-engineer" ];
+        description = "Agents this MCP is wired to (allowed); every other agent is denied.";
+      };
+      toolDef = utils.makeStrOption {
+        default = "drive a real browser (navigate, click, snapshot, evaluate) for browser-verified UI QA and polish.";
+      };
+      toolGlob = utils.makeStrOption {
+        default = "playwright_*";
+      };
     };
   config =
     let
@@ -19,46 +30,16 @@
       opencodeOpts = config.core.ai.opencode;
     in
     lib.mkIf opts.enable {
-      core.ai.agents = {
-        researcher.permission = {
-          "playwright_*" = "deny";
-        };
-        orchestrator.permission = {
-          "playwright_*" = "deny";
-        };
-        architecturer.permission = {
-          "playwright_*" = "deny";
-        };
-        designer.permission = {
-          "playwright_*" = "deny";
-        };
-        explorer.permission = {
-          "playwright_*" = "deny";
-        };
-        worker = {
-          permission = {
-            "playwright_*" = "allow";
-          };
-          mcps = [ "playwright" ];
-          toolDefs = {
-            "playwright" = "use to get official library documentation.";
-          };
-        };
-      };
       opencode = lib.mkIf opencodeOpts.enable {
-        settings = {
-          mcp = {
-            "playwright" = {
-              type = "local";
-              command = [
-                "npx"
-                "-y"
-                "@playwright/mcp"
-                "--browser"
-                "chrome"
-              ];
-            };
-          };
+        settings.mcp.playwright = {
+          type = "local";
+          command = [
+            "npx"
+            "-y"
+            "@playwright/mcp"
+            "--browser"
+            "chrome"
+          ];
         };
       };
     };

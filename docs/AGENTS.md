@@ -1,26 +1,34 @@
 # docs/
 
 ## OVERVIEW
-Workspace-wide (**global**) documentation — standards and records shared across services, the shared Go/Nix packages, and deployment. Seven tracks, each with a distinct lifecycle and its own `TEMPLATE.md` + `README.md`. `adrs/`, `conventions/`, `findings/`, and `architecture/` carry content; `specs/`, `glossary/`, and `debt/` are infrastructured but empty.
+Workspace-wide (**global**) documentation — standards and records shared across services, the shared Go/Nix packages, and deployment. Eight formal tracks, each with a distinct lifecycle and its own `TEMPLATE.md` + `README.md`. `adrs/`, `conventions/`, `findings/`, `architecture/`, `prds/`, and `debt/` carry content; `specs/` and `glossary/` are template-only.
 
-**Two-tier model.** This tree is global. Service-only docs live under `services/<name>/docs/` (e.g. [../services/portal/docs/](../services/portal/docs/)), which mirrors the `adrs / specs / findings / debt` tracks but defers all format + lifecycle authority to here. Rule of thumb: if another service would inherit it, it's global (here); if it dies with one service, it's service-local. `conventions/` and `glossary/` are global-only — never redefine a term or rule in a service tree; link to it.
+**Two-tier model.** This tree is global. Service-only docs live under `services/<name>/docs/` (e.g. [../services/portal/docs/](../services/portal/docs/)), which mirrors the `prds / adrs / specs / findings / debt` tracks but defers all format + lifecycle authority to here. Rule of thumb: if another service would inherit it, it's global (here); if it dies with one service, it's service-local. `conventions/` and `glossary/` are global-only — never redefine a term or rule in a service tree; link to it.
 
 ## STRUCTURE
 ```
 docs/
+├── prds/          # product + domain intent (WHAT/WHY, solution-free — upstream of ADRs/specs)
 ├── adrs/          # decisions (append-only, numbered)
 ├── architecture/  # what the system is right now (living reference, system-wide)
 ├── specs/         # feature designs (living per spec)
 ├── conventions/   # workspace-wide rules (living, by topic)
-│   └── go/        # Go-specific conventions + templates
+│   ├── go/        # Go-specific conventions + templates
+│   ├── git/       # branch / commit / PR workflow rules
+│   ├── auth/      # auth/OIDC integration contracts
+│   └── database/  # database role + RLS scope contracts
 ├── glossary/      # canonical terms (living, atomic per term)
 ├── findings/      # investigations & evidence (append-only, dated)
-└── debt/          # technical debt register (living record + append-only ledger)
+├── debt/          # technical debt register (living record + append-only ledger)
+└── wiki/          # informal quick-reference notes outside the 8 formal tracks
 ```
 
 ## WHERE TO LOOK
 | Need | Location |
 |------|----------|
+| Product/domain intent (WHAT/WHY) | `prds/` |
+| PRD format | [prds/TEMPLATE.md](prds/TEMPLATE.md) |
+| PRD authoring policy | [prds/README.md](prds/README.md) |
 | Why we chose X over Y | `adrs/` |
 | ADR format | [adrs/TEMPLATE.md](adrs/TEMPLATE.md) |
 | ADR authoring policy | [adrs/README.md](adrs/README.md) |
@@ -31,6 +39,9 @@ docs/
 | Convention format | [conventions/TEMPLATE.md](conventions/TEMPLATE.md) |
 | Convention authoring policy | [conventions/README.md](conventions/README.md) |
 | Go package governance | [conventions/go/](conventions/go/) |
+| Git workflow rules | [conventions/git/](conventions/git/) |
+| Auth/OIDC integration | [conventions/auth/](conventions/auth/) |
+| DB role & RLS scope contract | [conventions/database/](conventions/database/) |
 | How a feature is designed | `specs/` |
 | Spec format | [specs/TEMPLATE.md](specs/TEMPLATE.md) |
 | Spec authoring policy | [specs/README.md](specs/README.md) |
@@ -46,6 +57,9 @@ docs/
 | Service-only docs (e.g. portal) | [../services/portal/docs/](../services/portal/docs/) |
 
 ## CONVENTIONS
+
+### PRDs
+Filename: `<capability>.md` or `<area>/<capability>.md`, no numbering, kebab-case. Front matter fields: `Status`, `Authors`, `Last reviewed`, `Realized by`. One capability per file; **requirements only** — no technology, design, or decision (those are `specs/` and `adrs/`). Required sections in order: Problem / Context, Users & personas, Requirements (EARS — `WHEN … THE SYSTEM SHALL …`), Non-goals, Domain intent, Alternatives considered, Open questions, Realized by, References. Status transitions: `Draft` → `Accepted` → `Delivered` → `Superseded by prds/<other>.md` or `Deprecated`. Living per PRD; bump `Last reviewed` on every material edit. **`Draft → Accepted` gate**: no open `[NEEDS CLARIFICATION]` marker, no leaked "how", every domain term defined in `glossary/` or nominated under Domain intent. Material intent change after `Delivered` supersedes with a new PRD. Downstream ADRs/specs set `Tracks: prds/<x>.md`; this PRD lists them under `Realized by` (the reverse link).
 
 ### ADRs
 Filename: `NNNN-kebab-case-title.md`. Title is short, decisive, and reads as a result ("use-go-workspaces", not "should-we-use-go-workspaces"). One decision per ADR. Required sections in order: Context, Decision, Consequences, Alternatives considered, References. Status transitions: `Proposed` → `Accepted` → `Superseded by ADR-NNNN` or `Deprecated`.
@@ -72,6 +86,11 @@ Filename: `<topic>-<desc>.md` or `<area>/<topic>-<desc>.md`, kebab-case; no numb
 - Editing the body of an accepted ADR; supersede it instead.
 - Putting design discussion or specs inside an ADR; specs live in `specs/`.
 - Putting decisions inside a spec; decisions live in `adrs/` and the spec's `Tracks` field points at them.
+- Putting a chosen technology or solution design in a PRD; the "how" lives in `specs/` and the decision in `adrs/`. A PRD is requirements only.
+- Restating a PRD's requirements inside a spec or ADR instead of linking them via `Tracks` / `Realized by`.
+- Defining a term canonically in a PRD; the glossary is the single source — a PRD only nominates candidates and links out.
+- Promoting a PRD from `Draft` to `Accepted` while `[NEEDS CLARIFICATION]` markers remain.
+- Editing a `Delivered` PRD in place for a material intent change; supersede with a new PRD instead.
 - Putting a system-wide view (component map, request flow, topology) in `specs/`; those are living references and live in `architecture/`. A spec is one feature's design with a finish line.
 - Skipping status transitions on ADRs, specs, findings, or debt items.
 - Listing every imaginable option in Alternatives; include only those seriously weighed.
