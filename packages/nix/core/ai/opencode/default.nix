@@ -21,7 +21,19 @@
           agent = {
             explore.enabled = false;
           };
-          plugin = [ "compound-engineering@git+https://github.com/EveryInc/compound-engineering-plugin.git" ];
+          plugin = [
+            "compound-engineering@git+https://github.com/EveryInc/compound-engineering-plugin.git"
+            [
+              "@plannotator/opencode@latest"
+              {
+                workflow = "plan-agent";
+                planningAgents = [
+                  "plan"
+                  "orchestrator"
+                ];
+              }
+            ]
+          ];
         }
         // settings;
       };
