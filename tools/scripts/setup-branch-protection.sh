@@ -37,7 +37,7 @@ ruleset_payload() {
       { type: "deletion" },
       { type: "non_fast_forward" },
       { type: "pull_request", parameters: {
-          required_approving_review_count: 1,
+          required_approving_review_count: 0,
           dismiss_stale_reviews_on_push: true,
           require_code_owner_review: false,
           require_last_push_approval: false,
