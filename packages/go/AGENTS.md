@@ -10,8 +10,8 @@ Shared Go library module (`bootstrap/packages/go`). SRP-stateful governance per 
 packages/go/
 ├── env/                # env-var loaders + typed parser (pre-governance, function-based)
 ├── errorsx/            # structured, transport-neutral error type (SRP-stateless; Code/Error/FieldError)
-├── aws/                # AWS service wrapper.
-│   └── ssmx/           # AWS system managed secrets manager wrapper.
+├── aws/                # AWS service wrappers.
+│   └── ssmx/           # AWS Systems Manager Parameter Store loader; structural env.Loader.
 ├── gormx/              # gorm v2 wrapper (SRP-stateful)
 │   ├── postgres/       # postgres dialector (gorm.io/driver/postgres) — SRP-stateless
 │   └── sqlite/         # sqlite dialector (pure Go, no CGO) — SRP-stateless
@@ -69,5 +69,6 @@ func New(ctx context.Context, cfg Config) (*Target, error) {
 
 - **Two SRP sub-shapes** (see [`single-responsibility.md`](../../docs/conventions/go/single-responsibility.md)): _stateful_ = `Config` / target / `New` (above) — `gormx`, `migrate`, `echox`; _stateless_ = pure funcs + types with no constructable target — `idgen` (`NewFor[T]` / `Validate[T]`), the gormx dialectors, `errorsx` (structured `Error` / `Code` / `FieldError`). Classify with [`creating-new-package.md`](../../docs/conventions/go/creating-new-package.md) before adding code.
 - `env/` predates governance; it uses a function-based design. No exception granted to new packages.
+- `aws/ssmx` is an adapter port and does not follow the Config/target/New shape: it deliberately exposes thin `New(getter, prefix)` + `NewFromEnv(ctx, prefix)` constructors, has no `Config`, calls AWS SDK `service/ssm` `GetParametersByPath`, and satisfies `env.Loader` structurally without importing `env`.
 - `idgen` (typed aggregate IDs, [ADR-0004](../../docs/adrs/0004-typed-aggregate-ids-uuidv7.md)) is the canonical stateless example; `migrate` wraps `pressly/goose` behind the stateful shape.
 - New packages go here without moving `go.mod`. Run `go mod tidy` from this directory after adding dependencies.
