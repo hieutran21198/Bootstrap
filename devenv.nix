@@ -13,6 +13,12 @@
         enable = true;
         settings = {
           agent = {
+            plan = {
+              disabled = true;
+            };
+            build = {
+              disabled = true;
+            };
             orchestrator = {
               model = "anthropic/claude-opus-4-8";
               variant = "xhigh";
@@ -27,13 +33,16 @@
               model = "openai/gpt-5.5";
               variant = "xhigh";
             };
+            security-reviewer = {
+              model = "openai/gpt-5.5";
+              variant = "xhigh";
+            };
             backend-engineer = {
               model = "openai/gpt-5.5";
               variant = "low";
             };
             release-engineer = {
-              model = "openai/gpt-5.5";
-              variant = "low";
+              model = "opencode-go/deepseek-v4-flash";
             };
             frontend-engineer = {
               model = "openai/gpt-5.5";
@@ -63,6 +72,7 @@
         release-engineer.enable = true;
         frontend-engineer.enable = true;
         scribe.enable = true;
+        security-reviewer.enable = true;
       };
     };
     workspace = {
@@ -115,6 +125,9 @@
       go = {
         enable = true;
         golangci-lint = {
+          enable = true;
+        };
+        govulncheck = {
           enable = true;
         };
         go-work = {

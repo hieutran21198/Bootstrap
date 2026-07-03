@@ -1,0 +1,34 @@
+name: vulncheck
+
+# Automated Go dependency-vulnerability scanning with govulncheck.
+# Per ADR-0015: reachability-aware checks against vuln.go.dev on every
+# push to the default branch and every pull request.
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vulncheck-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  vulncheck:
+    name: Govulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          # Read Go version from the workspace root; govulncheck traverses
+          # all modules bound by go.work (./packages/go, ./services/portal,
+          # ./tools) via ./...
+          go-version-file: go.work
+          go-package: ./...

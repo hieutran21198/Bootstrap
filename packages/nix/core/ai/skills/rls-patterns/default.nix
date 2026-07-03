@@ -16,7 +16,10 @@
       };
       agents = utils.makeListOption {
         ofType = lib.types.str;
-        default = [ "backend-engineer" ];
+        default = [
+          "backend-engineer"
+          "security-reviewer"
+        ];
         description = "Agents this skill is available to (allowed); every other agent is denied.";
       };
     };

@@ -8,6 +8,7 @@
   imports = [
     ./go-work/default.nix
     ./golangci-lint/default.nix
+    ./govulncheck/default.nix
   ];
   options.core.toolchains.go = {
     enable = lib.mkEnableOption "Enable the core toolchain module for the development environment.";
