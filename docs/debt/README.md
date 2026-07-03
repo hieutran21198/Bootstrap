@@ -136,3 +136,4 @@ When the debt bites you in real work:
 | ---------------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
 | [agent-orchestration-no-delegation.md](agent-orchestration-no-delegation.md) | Open   | Medium   | 1    | unassigned |
 | [docs-traceability-no-validator.md](docs-traceability-no-validator.md)       | Open   | Low      | 1    | unassigned |
+| [database/organizations-missing-rls-policy.md](database/organizations-missing-rls-policy.md) | Open   | High     | 1    | portal     |
