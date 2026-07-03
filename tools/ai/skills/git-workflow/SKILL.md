@@ -17,6 +17,7 @@ convention file wins.
 - Creating a branch, committing, merging, or rebasing.
 - Cutting or patching a release.
 - Opening or reviewing a pull request.
+- Running a parallel agent session in its own Git worktree.
 
 ## The one-paragraph model
 
@@ -33,6 +34,35 @@ hotfixes are **cherry-picked** from `main` onto the release branch.
 - `release/<semver>` or `release/<sprint>-<semver>` (e.g. `release/1.4.0`, `release/s12-1.4.0`).
 - Optional issue key suffix: `feature/1234-tenant-invite`.
 - **Never commit directly on `main` or `release/*`** — the `branch-protect` hook blocks it.
+
+## Worktrees (parallel agent sessions)
+
+Run each parallel agent session in its own Git worktree so agents never share a
+dirty tree, a branch, or a local service port. Authority:
+[`docs/conventions/git/worktrees.md`](../../../docs/conventions/git/worktrees.md).
+
+- **One session = one worktree = one branch.** Create it with `ws-worktree`,
+  never raw `git worktree add` — the tool writes the port-offset marker, guards
+  `.gitignore`, and copies your gitignored env files:
+  ```bash
+  ws-worktree feature/tenant-invite   # new .worktrees/feature-tenant-invite off main
+  cd .worktrees/feature-tenant-invite
+  direnv allow                        # regenerate directory-local env + agent config
+  codegraph init                      # this worktree's own code index
+  opencode                            # start the agent in this directory
+  ```
+- **Branch names are git-guard-valid and non-protected.** `ws-worktree` shells to
+  `git-guard branch-name` / `git-guard branch-protect`, so `main` and `release/*`
+  are rejected as work branches. Use `--ref <ref>` / `--pr <number>` to base a new
+  compliant branch on an existing ref or PR.
+- **Ports are offset automatically.** Each worktree carries a `.worktree-offset`
+  marker (main = base, +10 per worktree), so portal Postgres and the docs server
+  run concurrently without collision. Don't hand-edit or delete the marker.
+- **Clean up explicitly — never `rm -rf`:**
+  ```bash
+  ws-worktree --remove feature/tenant-invite   # then: git worktree prune
+  ```
+  Removal frees the port slot for reuse; it does not delete the branch.
 
 ## Commits (Conventional Commits 1.0.0)
 
@@ -96,3 +126,4 @@ you, fix the message/branch — do not reach for `--no-verify`.
 - `git push --force` (use `--force-with-lease`) or rebasing a shared/protected/merged branch.
 - Bypassing hooks with `--no-verify` to dodge a convention.
 - A vague PR title (`updates`, `wip`) — it becomes the squash commit on `main`.
+- Sharing one branch across two worktrees, or `rm -rf`-ing a worktree instead of `ws-worktree --remove` + `git worktree prune`.

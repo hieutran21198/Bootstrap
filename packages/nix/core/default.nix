@@ -7,6 +7,7 @@
     ./secrets/default.nix
     ./services/default.nix
     ./workspace/default.nix
+    ./worktree/default.nix
     ./toolchains/default.nix
   ];
   options.core = {

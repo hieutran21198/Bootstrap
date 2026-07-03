@@ -40,6 +40,9 @@
     };
   };
   core = {
+    worktree = {
+      enable = true;
+    };
     services = {
       postgres =
         let

@@ -1,4 +1,7 @@
-{ ... }:
+{ config, ... }:
+let
+  docsPort = 3000 + config.core.worktree.portOffset;
+in
 {
   languages = {
     javascript = {
@@ -17,7 +20,7 @@
     };
     docs-dev = {
       exec = ''
-        cd "$WORKSPACE_ROOT" && npm run start -- "$@"
+        cd "$WORKSPACE_ROOT" && npm run start -- --port ${toString docsPort} "$@"
       '';
       description = "Run the workspace docs site in dev mode (hot reload)";
     };
@@ -29,12 +32,15 @@
     };
     docs-serve = {
       exec = ''
-        cd "$WORKSPACE_ROOT" && npm run serve -- "$@"
+        cd "$WORKSPACE_ROOT" && npm run serve -- --port ${toString docsPort} "$@"
       '';
       description = "Serve the built workspace docs site locally";
     };
   };
   core = {
+    worktree = {
+      enable = true;
+    };
     ai = {
       claude = {
         enable = true;

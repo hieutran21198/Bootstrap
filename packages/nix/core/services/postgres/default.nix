@@ -9,6 +9,7 @@ let
 
   # TCP host for connection info (fallback to localhost when using unix sockets)
   connHost = if cfg.listenAddress != "" then cfg.listenAddress else "localhost";
+  actualPort = cfg.port + config.core.worktree.portOffset;
 
   # Idempotent role creation — safe across re-initialisation
   createRoleSQL = name: password: ''
@@ -137,7 +138,7 @@ in
       enable = true;
       package = cfg.package;
       listen_addresses = cfg.listenAddress;
-      port = cfg.port;
+      port = actualPort;
 
       # Database owned by admin (or default $USER when admin is disabled)
       initialDatabases = [
@@ -220,7 +221,7 @@ in
     env = lib.mkMerge [
       {
         POSTGRES_HOST = connHost;
-        POSTGRES_PORT = toString cfg.port;
+        POSTGRES_PORT = toString actualPort;
         POSTGRES_DATABASE = cfg.database;
       }
       (lib.optionalAttrs cfg.roles.admin.enable {
@@ -247,7 +248,7 @@ in
         cat <<EOF
         # PostgreSQL Service Information
         Database: ${cfg.database}
-        Listen:   ${connHost}:${toString cfg.port}
+        Listen:   ${connHost}:${toString actualPort}
         Roles:
         ''\t${lib.optionalString cfg.roles.admin.enable "admin  (${cfg.roles.admin.name}) — superuser, database owner"}
         ''\t${lib.optionalString cfg.roles.writer.enable "writer (${cfg.roles.writer.name}) — CRUD (SELECT, INSERT, UPDATE, DELETE)"}
@@ -255,7 +256,7 @@ in
         ''\t${lib.optionalString cfg.roles.systemReader.enable "system_reader (${cfg.roles.systemReader.name}) — cross-tenant SELECT via system scope (NOBYPASSRLS, ADR-0009)"}
         Connection (structural env vars):
         ''\tPOSTGRES_HOST=${connHost}
-        ''\tPOSTGRES_PORT=${toString cfg.port}
+        ''\tPOSTGRES_PORT=${toString actualPort}
         ''\tPOSTGRES_DATABASE=${cfg.database}
         ''\t${lib.optionalString cfg.roles.admin.enable "POSTGRES_ADMIN_USER=${cfg.roles.admin.name}  POSTGRES_ADMIN_PASSWORD=***"}
         ''\t${lib.optionalString cfg.roles.writer.enable "POSTGRES_WRITER_USER=${cfg.roles.writer.name}  POSTGRES_WRITER_PASSWORD=***"}
