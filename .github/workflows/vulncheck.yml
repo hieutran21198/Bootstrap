@@ -16,8 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  vulncheck:
-    name: govulncheck
+  govulncheck:
+    name: govulncheck (go.work modules)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,8 +25,16 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: packages/go/go.mod
-      - name: Run govulncheck
+          go-version-file: go.work
+      - name: Run govulncheck on all workspace modules
         run: |
+          set -euo pipefail
           go install golang.org/x/vuln/cmd/govulncheck@latest
-          govulncheck ./...
+          failed=0
+          for dir in $(go list -m -f '{{.Dir}}'); do
+            echo "=== govulncheck: $dir ==="
+            if ! (cd "$dir" && govulncheck ./...); then
+              failed=1
+            fi
+          done
+          exit "$failed"
