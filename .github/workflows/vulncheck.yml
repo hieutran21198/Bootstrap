@@ -25,7 +25,15 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.work
+          go-version-file: services/portal/go.mod
+      - name: Reconstruct go.work (gitignored; Nix-generated locally)
+        run: |
+          set -euo pipefail
+          go work init
+          for gomod in $(find . -name go.mod -not -path '*/vendor/*'); do
+            go work use "$(dirname "$gomod")"
+          done
+          cat go.work
       - name: Run govulncheck on all workspace modules
         run: |
           set -euo pipefail
