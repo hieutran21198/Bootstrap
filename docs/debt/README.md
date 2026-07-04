@@ -137,3 +137,6 @@ When the debt bites you in real work:
 | [agent-orchestration-no-delegation.md](agent-orchestration-no-delegation.md) | Open   | Medium   | 1    | unassigned |
 | [docs-traceability-no-validator.md](docs-traceability-no-validator.md)       | Open   | Low      | 1    | unassigned |
 | [database/organizations-missing-rls-policy.md](database/organizations-missing-rls-policy.md) | Open   | High     | 1    | portal     |
+| [api-codegen-no-drift-check.md](api-codegen-no-drift-check.md)               | Open   | Medium   | 0    | unassigned |
+| [git-no-presubmit-pr-title-validation.md](git-no-presubmit-pr-title-validation.md) | Open | Medium | 1    | unassigned |
+| [docs-agents-stale-adr-range.md](docs-agents-stale-adr-range.md)             | Open   | Low      | 1    | unassigned |
