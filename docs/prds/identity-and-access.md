@@ -3,7 +3,7 @@
 > **Status**: Accepted
 > **Authors**: Minh Hieu Tran <hieu.tran21198@gmail.com>
 > **Last reviewed**: 2026-07-01
-> **Realized by**: ADR-0013 *(planned — two-population topology)*, `services/portal/docs/specs/identity-provisioning.md` *(planned)*, `docs/architecture/auth-topology.md` *(planned)*, `glossary/{actor,platform-staff,tenant-staff,tenant-customer,external-identity,domain-record}.md` *(planned)*
+> **Realized by**: ADR-0013 *(planned — two-population topology)*, `services/portal/docs/specs/identity-provisioning.md` *(planned)*, `docs/wiki/architecture/auth-topology.md` *(planned)*, `glossary/{actor,platform-staff,tenant-staff,tenant-customer,external-identity,domain-record}.md` *(planned)*
 
 > **PRD rule — requirements only.** This document defines *who* the system must identify, *which* of them authenticate, and *which responsibilities* belong to the identity provider versus the application. It treats an external identity provider (ZITADEL, per [ADR-0006](../adrs/0006-zitadel-identity-auth.md)) as the chosen **direction** but does **not** specify its organizations, projects, applications, claims, tokens, or the application's storage/isolation mechanism — those are decisions (`adrs/`) and designs (`specs/`).
 

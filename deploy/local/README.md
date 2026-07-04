@@ -6,7 +6,7 @@ to the production deployment, which targets **AWS via Terraform** (planned — s
 [Scope](#scope)).
 
 > **Decision & context**: [ADR-0006 — Zitadel as the identity and auth provider](../../docs/adrs/0006-zitadel-identity-auth.md).
-> **Live topology**: [docs/architecture/deployment-topology.md](../../docs/architecture/deployment-topology.md).
+> **Live topology**: [docs/wiki/architecture/deployment-topology.md](../../docs/wiki/architecture/deployment-topology.md).
 > This README is the *how to run it*; the ADR is the *why*, the architecture view is the *what it is*.
 
 ## Scope
@@ -143,7 +143,7 @@ docker compose up -d --wait
 ## See also
 
 - [ADR-0006](../../docs/adrs/0006-zitadel-identity-auth.md) — the decision to self-host ZITADEL.
-- [docs/architecture/deployment-topology.md](../../docs/architecture/deployment-topology.md) — the live topology view.
-- [docs/architecture/system-overview.md](../../docs/architecture/system-overview.md) — where identity sits in the system.
+- [docs/wiki/architecture/deployment-topology.md](../../docs/wiki/architecture/deployment-topology.md) — the live topology view.
+- [docs/wiki/architecture/system-overview.md](../../docs/wiki/architecture/system-overview.md) — where identity sits in the system.
 - [`docker-compose.yaml`](docker-compose.yaml) · [`.env.example`](.env.example) — the files this runbook operates.
 - [ZITADEL docker compose guide](https://zitadel.com/docs/self-hosting/deploy/compose) — upstream reference.

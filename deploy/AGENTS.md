@@ -10,7 +10,7 @@ Deployment environments root with its **own devenv** (`devenv.nix` + `devenv.yam
 |------|----------|
 | Run / operate the local ZITADEL stack | [local/README.md](local/README.md) — the operator runbook |
 | Why ZITADEL | [ADR-0006](../docs/adrs/0006-zitadel-identity-auth.md) |
-| What the deployment looks like | [docs/architecture/deployment-topology.md](../docs/architecture/deployment-topology.md) |
+| What the deployment looks like | [docs/wiki/architecture/deployment-topology.md](../docs/wiki/architecture/deployment-topology.md) |
 | Auth/OIDC integration contract | [docs/conventions/auth/](../docs/conventions/auth/) |
 | Future AWS/Terraform work | `deploy/` (planned; Terraform toolchain module exists at `packages/nix/core/toolchains/terraform/`, not yet enabled) |
 

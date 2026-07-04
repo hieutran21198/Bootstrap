@@ -1,6 +1,6 @@
 # 0010. Architecture is its own top-level docs track
 
-- **Status**: Accepted
+- **Status**: Superseded by ADR-0020
 - **Date**: 2026-06-29
 - **Deciders**: Minh Hieu Tran <hieu.tran21198@gmail.com>
 - **Supersedes**: -
