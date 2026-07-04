@@ -9,7 +9,8 @@ tools/
 ├── ai/
 │   └── skills/     # git-workflow / go-pattern / init-deep / rls-patterns skill bodies
 ├── generators/
-│   └── ws-tree/    # directory listing tool that injects .info metadata (Go binary)
+│   ├── ws-tree/    # directory listing tool that injects .info metadata (Go binary)
+│   └── ws-worktree/ # managed git worktrees (.worktrees/<slug>): create/ref/pr/list/remove + port offsets
 ├── scripts/        # setup-branch-protection.sh GitHub ruleset helper
 ├── validators/
 │   └── git-guard/  # git rules CLI (hooks + CI single source of truth)
@@ -29,7 +30,8 @@ tools/
 | Nix devenv module (lint, hooks, Go toolchain) | Nix core modules under `packages/nix/` -- consult the sibling AGENTS guide |
 
 ## CONVENTIONS
-- Generators: each is its own `package main` under `generators/<name>/`; compiled + injected into dev shell as a Nix package -- see `ws-tree` in `packages/nix/core/workspace/default.nix`
+- Generators: each is its own `package main` under `generators/<name>/`; compiled + injected into dev shell as a Nix package -- see `ws-tree` in `packages/nix/core/workspace/default.nix`, `ws-worktree` in `packages/nix/core/worktree/default.nix`
+- `ws-worktree` delegates branch validation to `git-guard` (`branch-name` / `branch-protect`) -- git rules stay single-source; its `.worktreeinclude` file (repo root) lists gitignored files copied into new worktrees (simple `filepath.Match` globs + exact paths); behavior contract: `docs/specs/parallel-agent-worktrees.md`
 - Validators follow the `git-guard` shape: `package main`, subcommand dispatcher in `main.go`, domain split into peer files, and per-validator `*_test.go`.
 - Git rules are defined once in `validators/git-guard/` and shared by hooks + CI (no regex duplication). Subcommands: `commit-msg`, `commit-range`, `pr-title`, `branch-name`, `branch-protect`; ADR-0012.
 - `scripts/setup-branch-protection.sh` is the idempotent GitHub ruleset applier (`gh` + `jq`): squash-only, delete-branch-on-merge, PR+review+passing-CI on `main`/`release/**`; ADR-0012.

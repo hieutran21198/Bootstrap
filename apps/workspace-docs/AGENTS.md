@@ -19,7 +19,7 @@ apps/workspace-docs/
 │   ├── pages/index.tsx      # homepage
 │   └── css/custom.css       # Infima theme customizations
 ├── static/                  # static assets
-├── devenv.nix               # JS/npm + core.ai slim + markdown toolchain
+├── devenv.nix               # JS/npm + core.worktree + core.ai slim + markdown toolchain
 └── package.json             # npm scripts: start/build/serve/typecheck
 ```
 
@@ -42,6 +42,7 @@ apps/workspace-docs/
 - Links in source docs stay repo-relative so they work on GitHub and in-repo. `plugins/remark-repo-links.mjs` rewrites them at build time to in-tree site routes or to `github.com` blob/tree URLs for repo files outside rendered doc trees; source docs are never modified.
 - New top-level doc trees require a new `@docusaurus/plugin-content-docs` instance, sidebar wiring, and a `docRoots` entry in `docusaurus.config.ts`.
 - Use npm scripts directly (`start`, `build`, `serve`, `typecheck`) or the scoped devenv wrappers (`docs-dev`, `docs-build`, `docs-serve`).
+- `docs-dev` / `docs-serve` bind port `3000 + core.worktree.portOffset` so parallel worktrees don't collide; raw `npm run start` stays on the default 3000.
 
 ## ANTI-PATTERNS
 
