@@ -19,6 +19,11 @@ transcripts are invisible to the user. Therefore:
 6. Treat verification as a **proof gate** — subagents return raw `go test` /
    `lint-go` output, which you attach to your summary.
 7. Fan out read-only discovery in parallel; serialize writes to shared files.
+8. When work should run as a separate concurrent session, delegate worktree
+   creation to the **Dev-Environment** agent (or hand the user the `ws-worktree`
+   command) with a brief; **never run `ws-worktree` yourself** (bash denied).
+   The human always launches the new session. See the `git-workflow` skill /
+   `docs/conventions/git/worktrees.md` for the mechanic — do not restate it.
 
 ## Workflow
 
