@@ -1,7 +1,7 @@
 # docs/
 
 ## OVERVIEW
-Workspace-wide (**global**) documentation — standards and records shared across services, the shared Go/Nix packages, and deployment. Eight formal tracks, each with a distinct lifecycle and its own `TEMPLATE.md` + `README.md`. `adrs/`, `conventions/`, `findings/`, `architecture/`, `prds/`, and `debt/` carry content; `specs/` and `glossary/` are template-only.
+Workspace-wide (**global**) documentation — standards and records shared across services, the shared Go/Nix packages, and deployment. Eight formal tracks plus informal `wiki/`; each track has a distinct lifecycle and its own `TEMPLATE.md` (format) + `README.md` (authoring policy). Every track carries content except `glossary/` (still template-only).
 
 **Two-tier model.** This tree is global. Service-only docs live under `services/<name>/docs/` (e.g. [../services/portal/docs/](../services/portal/docs/)), which mirrors the `prds / adrs / specs / findings / debt` tracks but defers all format + lifecycle authority to here. Rule of thumb: if another service would inherit it, it's global (here); if it dies with one service, it's service-local. `conventions/` and `glossary/` are global-only — never redefine a term or rule in a service tree; link to it.
 
@@ -14,9 +14,11 @@ docs/
 ├── specs/         # feature designs (living per spec)
 ├── conventions/   # workspace-wide rules (living, by topic)
 │   ├── go/        # Go-specific conventions + templates
-│   ├── git/       # branch / commit / PR workflow rules
+│   ├── git/       # branch / commit / PR workflow rules (incl. worktrees)
+│   ├── api/       # REST API contract rules (contract-first OpenAPI, ADR-0018)
 │   ├── auth/      # auth/OIDC integration contracts
-│   └── database/  # database role + RLS scope contracts
+│   ├── database/  # database role + RLS scope contracts
+│   └── delivery/  # evidence-based delivery rules for Linear (ADR-0017)
 ├── glossary/      # canonical terms (living, atomic per term)
 ├── findings/      # investigations & evidence (append-only, dated)
 ├── debt/          # technical debt register (living record + append-only ledger)
@@ -24,36 +26,25 @@ docs/
 ```
 
 ## WHERE TO LOOK
+Per-track format lives in `<track>/TEMPLATE.md`; authoring policy (and, for debt, escalation rules) in `<track>/README.md`.
+
 | Need | Location |
 |------|----------|
 | Product/domain intent (WHAT/WHY) | `prds/` |
-| PRD format | [prds/TEMPLATE.md](prds/TEMPLATE.md) |
-| PRD authoring policy | [prds/README.md](prds/README.md) |
 | Why we chose X over Y | `adrs/` |
-| ADR format | [adrs/TEMPLATE.md](adrs/TEMPLATE.md) |
-| ADR authoring policy | [adrs/README.md](adrs/README.md) |
 | What the system is right now | `architecture/` |
-| Architecture view format | [architecture/TEMPLATE.md](architecture/TEMPLATE.md) |
-| Architecture authoring policy | [architecture/README.md](architecture/README.md) |
 | Workspace-wide rules | `conventions/` |
-| Convention format | [conventions/TEMPLATE.md](conventions/TEMPLATE.md) |
-| Convention authoring policy | [conventions/README.md](conventions/README.md) |
 | Go package governance | [conventions/go/](conventions/go/) |
-| Git workflow rules | [conventions/git/](conventions/git/) |
+| Git workflow / worktree rules | [conventions/git/](conventions/git/) |
+| REST API contract rules | [conventions/api/](conventions/api/) |
 | Auth/OIDC integration | [conventions/auth/](conventions/auth/) |
 | DB role & RLS scope contract | [conventions/database/](conventions/database/) |
+| Evidence-based delivery (Linear) | [conventions/delivery/](conventions/delivery/) |
 | How a feature is designed | `specs/` |
-| Spec format | [specs/TEMPLATE.md](specs/TEMPLATE.md) |
-| Spec authoring policy | [specs/README.md](specs/README.md) |
 | What a term means here | `glossary/` |
-| Glossary entry format | [glossary/TEMPLATE.md](glossary/TEMPLATE.md) |
-| Glossary authoring policy | [glossary/README.md](glossary/README.md) |
 | What an investigation found | `findings/` |
-| Finding format | [findings/TEMPLATE.md](findings/TEMPLATE.md) |
-| Finding authoring policy | [findings/README.md](findings/README.md) |
 | What debt we still owe | `debt/` |
-| Debt entry format | [debt/TEMPLATE.md](debt/TEMPLATE.md) |
-| Debt authoring policy & escalation rules | [debt/README.md](debt/README.md) |
+| Informal notes (agent team, cheatsheets) | `wiki/` |
 | Service-only docs (e.g. portal) | [../services/portal/docs/](../services/portal/docs/) |
 
 ## CONVENTIONS

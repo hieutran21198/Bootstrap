@@ -1,8 +1,8 @@
 # Bootstrap
 
-A greenfield Go monorepo scaffold managed by [Nix](https://nixos.org/) + [devenv](https://devenv.sh/). Three Go modules bound via [`go.work`](go.work); toolchain, shell environment, linters, pre-commit hooks, documentation conventions, and AI agents are all defined as code under [`packages/nix/`](packages/nix/).
+A greenfield Go monorepo scaffold managed by [Nix](https://nixos.org/) + [devenv](https://devenv.sh/). Three Go modules bound via [`go.work`](go.work); toolchain, shell environment, linters, pre-commit hooks, and AI agents are all defined as code under [`packages/nix/`](packages/nix/). Documentation conventions live under [`docs/conventions/`](docs/conventions/).
 
-> **Early-stage.** Some product folders (`apps/`, parts of `tools/`) are still `.gitkeep` placeholders — treat them as placement contracts. `packages/go/`, `services/portal/internal/`, and `deploy/local/` now carry real code; the value is in the conventions enforced by tooling.
+> `packages/go/`, `services/portal/internal/`, `deploy/local/`, and `tools/` now carry real code; the value is in the conventions enforced by tooling.
 
 ## Quick start
 
@@ -15,17 +15,18 @@ direnv allow            # one-time consent; auto-enters the dev shell on every c
 ws-info                 # workspace overview (auto-runs on shell entry)
 ```
 
-Provisions: Go `1.26.3` + delve + gopls + `golangci-lint v2.12.2`, AWS CLI + aws-vault, markdownlint, [`prek`](https://github.com/j178/prek) pre-commit runner, commitizen, secret scanners (`ripsecrets`, `trufflehog`, `detect-aws-credentials`, `detect-private-keys`). No `Makefile`, no `setup.sh` — devenv scripts are the runner.
+Provisions: Go `1.26.4` + delve + gopls + `golangci-lint v2.12.2`, AWS CLI + aws-vault, [`prek`](https://github.com/j178/prek) pre-commit runner, `commitizen` + `git-guard` (commit/branch enforcement, ADR-0012), `ws-worktree`, secret scanners (`ripsecrets`, `trufflehog`, `detect-aws-credentials`, `detect-private-keys`). No `Makefile`, no `setup.sh` — devenv scripts are the runner.
 
-`secretspec` is wired to the `protonpass` provider on the `development` profile in [`devenv.yaml`](devenv.yaml); change the provider there if you use something else. The default [`secretspec.toml`](secretspec.toml) declares no secrets, so shell entry works out of the box.
+`secretspec` is wired to the `dotenv://.env.local` provider on the `local` profile in [`devenv.yaml`](devenv.yaml); change the provider there if you use something else. Secret declarations live in tracked [`secretspec.toml`](secretspec.toml) — the `local` profile declares no additional secrets, so values are read from the untracked `.env.local` and shell entry works out of the box.
 
 ## Layout
 
 ```
 bootstrap/
-├── apps/                   # platform-specific apps                        (scaffold)
+├── apps/
+│   └── workspace-docs/     # Docusaurus docs site (own devenv; renders root + portal docs)
 ├── deploy/                 # infra defs + deploy/local (ZITADEL docker-compose)
-├── docs/                   # GLOBAL docs: adrs / architecture / specs / conventions / glossary / findings / debt
+├── docs/                   # GLOBAL docs: prds / adrs / architecture / specs / conventions / glossary / findings / debt / wiki
 ├── packages/
 │   ├── go/                 # shared Go module (env, gormx, idgen, migrate, server/echox)
 │   └── nix/                # devenv modules (core/ mandatory, extra/ opt-in)
@@ -33,9 +34,10 @@ bootstrap/
 ├── tools/
 │   ├── ai/skills/          # AI agent skill bodies (plain SKILL.md; Nix readFile-links them)
 │   ├── generators/
-│   │   └── ws-tree/        # tree + inline .info description renderer
-│   ├── scripts/            # dev helper scripts                            (scaffold)
-│   └── validators/         # workspace / arch validators                   (scaffold)
+│   │   ├── ws-tree/        # tree + inline .info description renderer
+│   │   └── ws-worktree/    # parallel-agent worktree manager
+│   ├── scripts/            # dev helper scripts (setup-branch-protection.sh)
+│   └── validators/         # workspace / arch validators (git-guard)
 ├── devenv.nix              # workspace name + module enablement
 ├── devenv.yaml             # imports packages/nix
 └── go.work                 # binds packages/go, services/portal, tools (Nix-generated symlink)
@@ -46,7 +48,8 @@ Every populated subtree has its own `AGENTS.md` — terse knowledge base for hum
 | Path                                                   | Covers                                                  |
 | ------------------------------------------------------ | ------------------------------------------------------- |
 | [AGENTS.md](AGENTS.md)                                 | Canonical project knowledge base — start here for depth |
-| [docs/AGENTS.md](docs/AGENTS.md)                       | ADRs, architecture, specs, conventions, glossary, findings, debt |
+| [docs/AGENTS.md](docs/AGENTS.md)                       | Eight formal doc tracks (prds, adrs, architecture, specs, conventions, glossary, findings, debt) + informal wiki |
+| [apps/workspace-docs/AGENTS.md](apps/workspace-docs/AGENTS.md) | Docusaurus docs site wiring + conventions            |
 | [packages/go/AGENTS.md](packages/go/AGENTS.md)         | Shared Go library governance (SRP per-package)          |
 | [packages/nix/AGENTS.md](packages/nix/AGENTS.md)       | Nix devenv module conventions + opencode/claude AI setup |
 | [services/portal/AGENTS.md](services/portal/AGENTS.md) | Clean Architecture + CQRS module layout                 |
@@ -75,12 +78,12 @@ Available after entering the shell (i.e. any `cd` into the repo with direnv enab
 
 ## Conventions
 
-- **Whitespace**: [`.editorconfig`](.editorconfig) (Nix-generated symlink) — Go uses tabs (`indent_size = 4`); all others 2-space; `trim_trailing_whitespace = true` and `insert_final_newline = true` universally.
+- **Whitespace**: [`.editorconfig`](.editorconfig) (Nix-generated symlink) — Go uses tabs (`indent_size = 4`); all others 2-space; `insert_final_newline = true` universally. Markdown preserves trailing spaces; all other files trim them.
 - **Go module path**: `bootstrap/<segment>/<module>`. No domain prefix; the workspace name _is_ the prefix.
-- **Go version**: `1.26.3` across all `go.mod` + `go.work`. Match when adding modules.
-- **Folder descriptions**: Add the path to `core.workspace.treeInfos` in the owning [`devenv.nix`](devenv.nix) (root or a service) — it generates the `.info` row `ws-tree` inlines. It writes **descriptions only**; create the directory and its `.gitkeep` yourself.
-- **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) via `commitizen` ran by [`prek`](https://github.com/j178/prek).
-- **Documentation is two-tier**: workspace-wide standards live in root [`docs/`](docs/) (seven tracks — adrs/architecture/specs/conventions/glossary/findings/debt, each with its own `TEMPLATE.md` + `README.md`); service-only docs live under `services/<name>/docs/` (e.g. [services/portal/docs/](services/portal/docs/)). ADRs are append-only and numbered; architecture/specs/conventions/glossary are living; findings are append-only after `Resolved`; debt has an append-only _Encounters_ ledger. The [`architecture/`](docs/architecture/) track is the living, system-wide view of what the running system is. See [docs/AGENTS.md](docs/AGENTS.md) for per-track rules.
+- **Go version**: `1.26.4` across all `go.mod` + `go.work`. Match when adding modules.
+- **Folder descriptions**: Add the path to `core.workspace.treeInfos` in the owning [`devenv.nix`](devenv.nix) (root, service, or app) — it generates the `.info` row `ws-tree` inlines (descriptions only).
+- **Commits**: [Conventional Commits](https://www.conventionalcommits.org/). Format via `commitizen` template + stricter scope/type rules enforced by `git-guard` in local hooks and CI (ADR-0012).
+- **Documentation is two-tier**: workspace-wide standards live in root [`docs/`](docs/) (eight formal tracks — prds/adrs/architecture/specs/conventions/glossary/findings/debt, each with its own `TEMPLATE.md` + `README.md`, plus informal [`wiki/`](docs/wiki/)); service-only docs live under `services/<name>/docs/` (e.g. [services/portal/docs/](services/portal/docs/)). ADRs are append-only and numbered; architecture/specs/conventions/glossary are living; findings are append-only after `Resolved`; debt has an append-only _Encounters_ ledger. The [`architecture/`](docs/architecture/) track is the living, system-wide view of what the running system is. See [docs/AGENTS.md](docs/AGENTS.md) for per-track rules.
 - **Local-only (gitignored)**: `.opencode/`, `.claude/`, `.codex/`, `.omo/`, `.codegraph/` — per-developer agent config + caches.
 - **File size cap**: 1 MB (`check-added-large-files --maxkb=1024`).
 
@@ -109,7 +112,6 @@ Edit the Nix source, run `direnv reload`, and the artifact regenerates.
 - **Artifact**: `.golangci.yml` at the repo root is a **read-only symlink** into the Nix store, regenerated on every shell entry. Gitignored.
 - **Set**: standard linters (`errcheck`, `govet`, `ineffassign`, `staticcheck`, `unused`) plus `bodyclose`, `errorlint`, `gocritic`, **`gocyclo`**, `gosec`, `misspell`, `nakedret`, `nilerr`, `nolintlint`, `prealloc`, `revive`, `unconvert`, `unparam`, `usestdlibvars`.
 - **govet shadow analyzer** enabled. **`gocyclo` threshold**: 15.
-- **Formatters**: `gofumpt` + `goimports` (`-local bootstrap/`).
 - **Runner**: `lint-go` iterates over every module declared in `core.toolchains.go.go-work.mods`, skips modules with no Go packages, and exits non-zero on the first failure.
 
 To change lint rules:

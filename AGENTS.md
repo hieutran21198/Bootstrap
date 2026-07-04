@@ -1,6 +1,6 @@
-**Generated:** 2026-07-03T02:47:50Z
-**Commit:** c2d1b69
-**Branch:** feature/git-conventions-enforcement
+**Generated:** 2026-07-04T05:16:56Z
+**Commit:** 4c71d6c
+**Branch:** main
 
 ## OVERVIEW
 A greenfield Go monorepo managed by Nix and devenv. Three Go modules are bound via go.work; the value lives in conventions enforced by tooling, docs, and generated shell wiring.
@@ -11,14 +11,14 @@ bootstrap/
 ├── apps/
 │   └── workspace-docs/  # Docusaurus docs site (own devenv; renders root + portal docs)
 ├── deploy/              # deployment devenv + deploy/local ZITADEL docker-compose
-├── docs/                # GLOBAL docs: ADRs / architecture / specs / conventions / glossary / findings / debt / wiki
+├── docs/                # GLOBAL docs: PRDs / ADRs / architecture / specs / conventions / glossary / findings / debt / wiki
 ├── packages/
 │   ├── go/              # shared Go module (env, errorsx, aws/ssmx, gormx, idgen, migrate, echox)
 │   └── nix/             # Nix devenv modules (core/ mandatory, extra/ opt-in)
 ├── services/portal/     # Clean Arch + CQRS service (domain/app/infra built; delivery/config/zitadel planned)
 ├── tools/               # workspace tooling Go module
 │   ├── ai/skills/       # git-workflow / go-pattern / init-deep / rls-patterns skill bodies
-│   ├── generators/ws-tree/   # tree + .info description inliner
+│   ├── generators/      # ws-tree (tree + .info inliner), ws-worktree (managed worktrees)
 │   ├── scripts/         # setup-branch-protection.sh GitHub ruleset helper
 │   └── validators/git-guard/ # git rule validator used by hooks + CI
 ├── devenv.nix           # workspace name + core.workspace.treeInfos + module toggles
@@ -32,6 +32,9 @@ bootstrap/
 | Add workspace-wide ADR / convention | `docs/adrs/`, `docs/conventions/` | See [docs/AGENTS.md](docs/AGENTS.md) for per-track format + lifecycle |
 | See/update the system architecture | `docs/architecture/` | Living, system-wide views (overview, request flow, deployment topology) — see [docs/architecture/README.md](docs/architecture/README.md), ADR-0010 |
 | Git workflow / commit rules | `docs/conventions/git/`, `tools/validators/git-guard/` | ADR-0012; git-guard is the single source of truth |
+| Parallel agent worktrees | `docs/conventions/git/worktrees.md` | ADR-0016; `ws-worktree` CLI; spec: `docs/specs/parallel-agent-worktrees.md` |
+| REST API contract rules | `docs/conventions/api/` | ADR-0018; contract-first OpenAPI, oapi-codegen → `delivery/http` |
+| Evidence-based delivery (Linear) | `docs/conventions/delivery/` | ADR-0017; Done requires linked evidence |
 | Auth / OIDC integration contract | `docs/conventions/auth/` | Provider-specific claims stay behind infra adapters |
 | DB role & RLS scope contract | `docs/conventions/database/` | GUC + role contract for tenant/system scopes |
 | Render/browse docs site | `apps/workspace-docs/` | Docusaurus app; use `docs-dev` in its devenv shell |
@@ -67,12 +70,13 @@ bootstrap/
 | query.SystemReadCapability | struct | services/portal/internal/app/query/system_scope.go:88 | unforgeable cross-tenant read capability |
 | postgres.NewMigrator | func | services/portal/internal/infra/postgres/migrate.go:29 | embedded goose migrations |
 | ws-tree main | func | tools/generators/ws-tree/main.go:31 | tree + `.info` description inliner |
+| ws-worktree run | func | tools/generators/ws-worktree/main.go:75 | managed-worktree CLI (create/ref/pr/list/remove + port offsets) |
 | git-guard main | func | tools/validators/git-guard/main.go:24 | git rules CLI for hooks + CI |
 
 ## CONVENTIONS
 - **Whitespace**: `.editorconfig` (Nix-generated) — Go uses tabs; all others 2-space indent; Markdown preserves trailing spaces
 - **Go module paths**: `bootstrap/<segment>/<module>` — no domain prefix; workspace name is the prefix
-- **Go version**: `1.26.3` pinned across all `go.mod` + `go.work`; match when adding modules
+- **Go version**: `1.26.4` pinned across all `go.mod` + `go.work`; match when adding modules
 - **Folder descriptions**: add the path to `core.workspace.treeInfos` in the owning `devenv.nix` (root, service, app) — generates the `.info` row `ws-tree` inlines (descriptions only)
 - **Commits**: Conventional Commits and branch rules are enforced by `tools/validators/git-guard` and Nix-wired hooks (ADR-0012)
 - **Docs are two-tier**: workspace-wide standards in root [`docs/`](docs/); service-only docs in `services/<name>/docs/` (e.g. [services/portal/docs/](services/portal/docs/)). ADRs append-only; conventions living — see [docs/AGENTS.md](docs/AGENTS.md)
@@ -89,6 +93,7 @@ bootstrap/
 - `enterShell` auto-runs `ws-info` on every `cd` with direnv enabled
 - `ws-tree` reads `.info` for inline descriptions in tree output
 - Each service/app can own its devenv and `treeInfos` (`services/portal/`, `apps/workspace-docs/`)
+- Managed worktrees live in `.worktrees/<slug>` with a `.worktree-offset` marker; `core.worktree` shifts ports (portal Postgres 5432+offset, docs 3000+offset)
 
 ## COMMANDS
 ```bash
@@ -97,6 +102,8 @@ ws-info          # workspace overview (auto-runs on shell entry)
 ws-tree          # tree + inline .info descriptions
 go-info          # Go toolchain version + env
 lint-go          # golangci-lint across all go.work modules (--fix to auto-fix)
+govuln-scan      # govulncheck across every go.work module
+ws-worktree      # managed git worktrees (.worktrees/<slug>) for parallel agent sessions
 devenv shell     # explicit shell entry
 ```
 Scoped devenv shells add local commands: `services/portal` has `migrate-up` / `migrate-down` / `migrate-status` / `migrate-new` / `pg-info`; `apps/workspace-docs` has `docs-install` / `docs-dev` / `docs-build` / `docs-serve`.
@@ -105,4 +112,4 @@ Scoped devenv shells add local commands: `services/portal` has `migrate-up` / `m
 - Real content now spans `apps/workspace-docs/`, `deploy/local/`, `tools/validators/`, `tools/scripts/`, `packages/go/`, and `services/portal/internal/`.
 - `services/portal/internal/` has substantial domain/app/infra code; `delivery/http`, `config/`, and `infra/zitadel/` are still planned/empty.
 - `packages/nix/extra/` — optional Nix modules (currently `dev-container`); not imported by `core`, opt in via root `devenv.yaml`.
-- ADRs currently run 0001–0012.
+- ADRs currently run 0001–0019.
