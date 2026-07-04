@@ -77,5 +77,6 @@ Then cross-link: the rule's `Decided by` points at the ADR; the ADR's _Reference
 | [go/](go/)             | Templates + decision tree for Go packages across `packages/`, `services/`, `tools/`, `apps/`                                          | 2    |
 | [database/](database/) | Connection role (`admin`/`writer`/`reader`) + RLS scope GUC contract (`app.scope`, `app.organization_id`)                             | 1    |
 | [auth/](auth/)         | Slim provider-neutral OIDC port in `app/{command,query}/port.go`; identity-provider SDK (`zitadel-go`) confined to `infra/<provider>` | 1    |
+| [api/](api/)           | Contract-first REST with hand-authored OpenAPI as source of truth, generated via `oapi-codegen` (Echo v4) at `internal/delivery/http/...` | 1    |
 | [git/](git/)           | `main`-trunk branch & release workflow, Conventional Commits, squash-merge vs rebase, and pull-request + review rules                 | 4    |
 | [delivery/](delivery/) | Evidence-based delivery — every Linear work item carries acceptance criteria, an owner, and linked evidence before it may close       | 1    |
