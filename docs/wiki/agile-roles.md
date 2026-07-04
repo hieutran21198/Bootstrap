@@ -1,6 +1,6 @@
 # Agile Roles — Practitioner → Responsibility → Owner (RACI)
 
-> Informal quick-reference (outside the 8 formal `docs/` tracks). How agile
+> Informal quick-reference (outside the seven formal `docs/` tracks). How agile
 > practitioner roles map onto this workspace's agent roster **plus the human**.
 > This is the *role/responsibility* view; [`agent-team.md`](agent-team.md) is the
 > *capability/posture* view (tool wiring). The machine source of truth is the
@@ -31,7 +31,7 @@ human.
 | 5 | CI/CD & release coordination | Release Manager / Engineer | **`release-engineer`** (CI/CD mechanics, git-hook/branch-protection wiring, versioning/tagging/changelog, `deploy/` config) | `backend-engineer` (build/tooling) | **Human** (release go/no-go) |
 
 Track homes: #1 → [`../prds/`](../prds/) (EARS); #2 → [`../adrs/`](../adrs/),
-[`../specs/`](../specs/), [`../architecture/`](../architecture/). On #5 the agent
+[`../specs/`](../specs/), [`architecture/`](architecture/). On #5 the agent
 **executes** release mechanics but does **not** authorize the release.
 
 ## Delivery / doer roles (the rest of the team)
