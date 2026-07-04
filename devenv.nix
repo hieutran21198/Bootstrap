@@ -23,7 +23,7 @@
               disabled = true;
             };
             orchestrator = {
-              model = "anthropic/claude-fable-5";
+              model = "anthropic/claude-opus-4-8";
               variant = "high";
             };
             researcher = {
