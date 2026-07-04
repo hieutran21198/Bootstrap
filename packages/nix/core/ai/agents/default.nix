@@ -9,5 +9,6 @@
     ./06-scribe/default.nix
     ./07-release-engineer/default.nix
     ./08-security-reviewer/default.nix
+    ./09-dev-environment/default.nix
   ];
 }

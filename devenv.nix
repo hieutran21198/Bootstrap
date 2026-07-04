@@ -55,6 +55,9 @@
             scribe = {
               model = "opencode-go/qwen3.7-plus";
             };
+            dev-environment = {
+              model = "opencode-go/qwen3.7-plus";
+            };
           };
         };
       };
@@ -80,6 +83,7 @@
         frontend-engineer.enable = true;
         scribe.enable = true;
         security-reviewer.enable = true;
+        dev-environment.enable = true;
       };
     };
     workspace = {

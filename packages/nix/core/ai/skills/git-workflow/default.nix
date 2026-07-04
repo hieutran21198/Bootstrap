@@ -21,6 +21,7 @@
           "release-engineer"
           "frontend-engineer"
           "scribe"
+          "dev-environment"
         ];
         description = "Agents this skill is available to (allowed); every other agent is denied.";
       };
