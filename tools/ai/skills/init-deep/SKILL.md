@@ -173,8 +173,8 @@ section order, line budgets, and table shapes.
   `services/<name>/AGENTS.md` and `services/<name>/docs/` cover service-local rules.
   The docs model is two-tier: workspace-wide in root `docs/`; service-owned under
   `services/<name>/docs/`. Per the architect ruling, this workspace tracks knowledge in
-  eight formal tracks (adrs, architecture, conventions, debt, findings, glossary, prds,
-  specs) plus `wiki/` for informal content.
+seven formal tracks (adrs, conventions, debt, findings, glossary, prds, specs) plus
+`wiki/` for informal content (including architecture views per ADR-0020).
 - Check existence before edits. Existing `AGENTS.md` → `Edit`/refresh; missing
   `AGENTS.md` → `Write` only if approved as CREATE in the dry-run gate.
 - Do not touch other skills, agent prompts, generated opencode/Claude artifacts, or Nix
