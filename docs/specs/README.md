@@ -70,7 +70,7 @@ $EDITOR "docs/specs/${AREA}/${FEATURE}.md"
 
 Then cross-link: the spec's `Tracks` field points at the ADR (or ticket) that authorised the work; the ADR's _References_ points back at the spec. Add the spec to the Index below.
 
-> **Note**: system-architecture views moved to their own top-level track at [`docs/architecture/`](../architecture/README.md) ([ADR-0010](../adrs/0010-architecture-as-lifecycle-track.md)). Specs are now per-feature designs only.
+> **Note**: system-architecture views now live in the informal wiki at [`docs/wiki/architecture/`](../wiki/architecture/README.md) ([ADR-0020](../adrs/0020-move-architecture-views-into-wiki.md)). Specs are per-feature designs only.
 
 ## Index
 

@@ -57,7 +57,7 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | 0007 | [Manage the developer environment with Nix + devenv](0007-nix-devenv-developer-environment.md) | Accepted |
 | 0008 | [RLS tenant isolation with organization and system scopes](0008-tenant-scoped-unit-of-work-rls.md) | Accepted |
 | 0009 | [Safe system-scope RLS: separate role, capability gate, read-only first](0009-safe-system-scope-rls.md) | Accepted |
-| 0010 | [Architecture is its own top-level docs track](0010-architecture-as-lifecycle-track.md) | Accepted |
+| 0010 | [Architecture is its own top-level docs track](0010-architecture-as-lifecycle-track.md) | Superseded by ADR-0020 |
 | 0011 | [Org-root RLS hardening with a self-binding registration insert](0011-org-root-rls-hardening.md) | Accepted |
 | 0012 | [Git workflow, commit, and pull-request conventions](0012-git-workflow-and-conventions.md) | Accepted |
 | 0013 | [Use Plannotator OpenCode plugin for orchestrated plan review](0013-use-plannotator-opencode-for-plan-review.md) | Accepted |
@@ -65,3 +65,6 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | 0015 | [Automated Go security scanning](0015-automated-security-scanning.md) | Accepted |
 | 0016 | [Use git worktrees for parallel AI-agent sessions](0016-use-git-worktrees-for-parallel-ai-agent-sessions.md) | Accepted |
 | 0017 | [Evidence-based delivery](0017-evidence-based-delivery.md) | Accepted |
+| 0018 | [Contract-first REST API with OpenAPI and oapi-codegen](0018-contract-first-rest-api.md) | Accepted |
+| 0019 | [Add a Dev-Environment agent](0019-dev-environment-agent.md) | Accepted |
+| 0020 | [Move architecture views into the wiki](0020-move-architecture-views-into-wiki.md) | Accepted |

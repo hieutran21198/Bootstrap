@@ -3,7 +3,7 @@
 > **Status**: Accepted
 > **Authors**: Minh Hieu Tran <hieu.tran21198@gmail.com>
 > **Last reviewed**: 2026-07-01
-> **Realized by**: ADR-0013 *(planned — two-population topology)*, `docs/architecture/system-overview.md` + `docs/architecture/auth-topology.md` *(planned)*, portal & backoffice service specs *(planned)*
+> **Realized by**: ADR-0013 *(planned — two-population topology)*, `docs/wiki/architecture/system-overview.md` + `docs/wiki/architecture/auth-topology.md` *(planned)*, portal & backoffice service specs *(planned)*
 
 > **PRD rule — requirements only.** This document defines the **product boundary** between the two operational surfaces and what each is for. It names no service topology, deployment shape, framework, or storage mechanism — those are decisions (`adrs/`) and designs (`specs/`).
 

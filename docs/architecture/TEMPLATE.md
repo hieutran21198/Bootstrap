@@ -1,3 +1,5 @@
+> **Retired by [ADR-0020](../adrs/0020-move-architecture-views-into-wiki.md).** Do not create new files from this template. System-wide architecture views now live in [`../wiki/architecture/`](../wiki/architecture/) as informal wiki pages with no formal template or status lifecycle. This file remains only so historic links resolve.
+
 # <View title>
 
 > **Status**: Accepted
