@@ -32,7 +32,7 @@ bootstrap/
 │   └── nix/                # devenv modules (core/ mandatory, extra/ opt-in)
 ├── services/portal/        # Clean Arch + CQRS service (+ its own docs/)
 ├── tools/
-│   ├── ai/skills/          # AI agent skill bodies (plain SKILL.md; Nix readFile-links them)
+│   ├── ai/skills/          # project-specific AI skill bodies (plain SKILL.md; generic skills are inlined in packages/nix/core/ai/skills/)
 │   ├── generators/
 │   │   ├── ws-tree/        # tree + inline .info description renderer
 │   │   └── ws-worktree/    # parallel-agent worktree manager
@@ -100,7 +100,7 @@ All are Nix-store symlinks regenerated on `direnv reload`. Gitignored.
 | `.editorconfig`           | [packages/nix/core/workspace/default.nix](packages/nix/core/workspace/default.nix) (`core.workspace.editorConfig` plus per-toolchain contributions) |
 | `.claude/settings.json`, `CLAUDE.md` | [packages/nix/core/ai/default.nix](packages/nix/core/ai/default.nix) when `core.ai.claude.enable = true` (`CLAUDE.md` is just `@AGENTS.md`)             |
 | `.opencode/agents/<NAME>.md` | per-agent files rendered by [packages/nix/core/ai/default.nix](packages/nix/core/ai/default.nix) from `core.ai.agents` + the capability wiring, when `core.ai.opencode.enable = true` |
-| `.claude/skills/<name>/SKILL.md`, `.opencode/skills/<name>/SKILL.md` | enabled skills under [packages/nix/core/ai/skills/](packages/nix/core/ai/skills/) — each enabled `core.ai.skills.*` links its `SKILL.md` into the shared catalog (`.claude/` when `core.ai.claude.enable`, `.opencode/` when `core.ai.opencode.enable`); per-agent access is gated in the rendered agent files via each skill's `agents` allow-list. Project-specific skill bodies are authored as plain markdown under [`tools/ai/skills/<name>/SKILL.md`](tools/ai/skills/) and read via `builtins.readFile` (see [ADR-0007 §4](docs/adrs/0007-nix-devenv-developer-environment.md)) |
+| `.claude/skills/<name>/SKILL.md`, `.opencode/skills/<name>/SKILL.md` | enabled skills under [packages/nix/core/ai/skills/](packages/nix/core/ai/skills/) — each enabled `core.ai.skills.*` links its `SKILL.md` into the shared catalog (`.claude/` when `core.ai.claude.enable`, `.opencode/` when `core.ai.opencode.enable`); per-agent access is gated in the rendered agent files via each skill's `agents` allow-list. **Two authoring modes:** project-specific skill bodies are authored as plain markdown under [`tools/ai/skills/<name>/SKILL.md`](tools/ai/skills/) and read via `builtins.readFile` (currently `rls-patterns`); generic, reusable skills inline the body string directly in their Nix module at `packages/nix/core/ai/skills/<name>/default.nix` (currently `git-workflow`, `go-pattern`, `init-deep`). See [ADR-0007 §4](docs/adrs/0007-nix-devenv-developer-environment.md) |
 
 Edit the Nix source, run `direnv reload`, and the artifact regenerates.
 

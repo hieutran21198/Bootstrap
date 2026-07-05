@@ -17,7 +17,7 @@ bootstrap/
 │   └── nix/             # Nix devenv modules (core/ mandatory, extra/ opt-in)
 ├── services/portal/     # Clean Arch + CQRS service (domain/app/infra built; delivery/config/zitadel planned)
 ├── tools/               # workspace tooling Go module
-│   ├── ai/skills/       # git-workflow / go-pattern / init-deep / rls-patterns skill bodies
+│   ├── ai/skills/       # rls-patterns skill body (generic skills are inlined in packages/nix/core/ai/skills/)
 │   ├── generators/      # ws-tree (tree + .info inliner), ws-worktree (managed worktrees)
 │   ├── scripts/         # setup-branch-protection.sh GitHub ruleset helper
 │   └── validators/git-guard/ # git rule validator used by hooks + CI
@@ -46,7 +46,8 @@ bootstrap/
 | Add shared Go library | `packages/go/` | See [packages/go/AGENTS.md](packages/go/AGENTS.md) for SRP governance |
 | Add workspace CLI tool | `tools/generators/<name>/` or `tools/validators/<name>/` | See [tools/AGENTS.md](tools/AGENTS.md) |
 | Configure AI agents | `packages/nix/core/ai/opencode/` | opencode agents + `max`/`slim` profiles |
-| Add/edit an AI skill body | `tools/ai/skills/<name>/SKILL.md` | Current bodies: `git-workflow`, `go-pattern`, `init-deep`, `rls-patterns` |
+| Add/edit a project-specific AI skill body | `tools/ai/skills/<name>/SKILL.md` | Currently only `rls-patterns`; Nix module readFile-links it |
+| Add/edit a generic/reusable AI skill body | `packages/nix/core/ai/skills/<name>/default.nix` | Inline the body string in the `content` option's `default`; currently `git-workflow`, `go-pattern`, `init-deep` |
 
 ## CODE MAP
 | Symbol | Type | Location | Role |
