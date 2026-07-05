@@ -47,7 +47,6 @@ in
       };
       opencode = {
         enable = true;
-        profile = "slim";
       };
     };
     workspace = {

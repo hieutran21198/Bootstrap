@@ -45,7 +45,7 @@ bootstrap/
 | Add Go code to portal | `services/portal/internal/` | See [services/portal/AGENTS.md](services/portal/AGENTS.md) |
 | Add shared Go library | `packages/go/` | See [packages/go/AGENTS.md](packages/go/AGENTS.md) for SRP governance |
 | Add workspace CLI tool | `tools/generators/<name>/` or `tools/validators/<name>/` | See [tools/AGENTS.md](tools/AGENTS.md) |
-| Configure AI agents | `packages/nix/core/ai/opencode/` | opencode agents + `max`/`slim` profiles |
+| Configure AI agents | `packages/nix/core/ai/opencode/` | opencode agents + per-agent model selection via `core.ai.opencode.settings.agent.<name>.model` |
 | Add/edit a project-specific AI skill body | `tools/ai/skills/<name>/SKILL.md` | Currently only `rls-patterns`; Nix module readFile-links it |
 | Add/edit a generic/reusable AI skill body | `packages/nix/core/ai/skills/<name>/default.nix` | Inline the body string in the `content` option's `default`; currently `git-workflow`, `go-pattern`, `init-deep` |
 

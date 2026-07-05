@@ -37,7 +37,7 @@ packages/nix/
 
 ## CONVENTIONS
 
-- **Enable gating**: each module declares `options.<name>.enable` (possibly nested) and wraps its `config` in `lib.mkIf cfg.enable`. Consumers flip flags under `core.* = { ... }` in their `devenv.nix`. Root enables `ai` (agents 00–09 + linear/github MCPs), `git`, `worktree`, `toolchains.{go,markdown,aws}`, `workspace`; portal enables `worktree`, `services.postgres` (+ `systemReader`), `workspace`; workspace-docs enables `worktree`, `ai` (opencode `slim` profile), `workspace`, `toolchains.markdown`.
+- **Enable gating**: each module declares `options.<name>.enable` (possibly nested) and wraps its `config` in `lib.mkIf cfg.enable`. Consumers flip flags under `core.* = { ... }` in their `devenv.nix`. Root enables `ai` (agents 00–09 + linear/github MCPs), `git`, `worktree`, `toolchains.{go,markdown,aws}`, `workspace`; portal enables `worktree`, `services.postgres` (+ `systemReader`), `workspace`; workspace-docs enables `worktree`, `ai` (opencode with per-agent model selection), `workspace`, `toolchains.markdown`.
 - **Option helpers**: build options through `config.core.utils.*` (`makeStrOption`, `makeIntOption`, `makeEnumOption`, `makeListOption`, `makeAttrsOption`, `makePackageOption`, `failWhen`) instead of raw `lib.mkOption`. `core.utils` is read-only, defined in `utils/default.nix`, consumed e.g. by `ai/opencode/agents/default.nix`.
 - **Module dir naming**: descriptive names, no numeric prefix (the `tools/_nixenv/` numbering convention is retired).
 - **Generated artifacts** — gitignored Nix-store symlinks, never hand-edit; regenerate on `direnv reload`:
