@@ -14,6 +14,7 @@
       "ws-info and ws-tree workspace introspection"
       "Devenv/Nix dev-environment module toggles and shell ergonomics"
       "Edits to packages/nix/ dev-environment modules and tools/ wiring"
+      ".sdlc/<task-slug>/ scratch folder cleanup after durable content is routed"
     ];
     delegateWhen = [
       "A parallel agent session needs its own isolated worktree"
@@ -22,6 +23,7 @@
       "Devenv/Nix module toggles, direnv, or shell ergonomics need adjustment"
       "codegraph indexing needs setup or guidance"
       "Workspace info or tree output needs interpretation"
+      "A closed task's .sdlc scratch folder needs cleanup after durable content is routed"
     ];
     avoidWhen = [
       "Application Go/domain logic or service implementation (Backend-Engineer)"
