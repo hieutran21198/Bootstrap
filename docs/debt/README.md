@@ -140,3 +140,4 @@ When the debt bites you in real work:
 | [api-codegen-no-drift-check.md](api-codegen-no-drift-check.md)               | Open   | Medium   | 0    | unassigned |
 | [git-no-presubmit-pr-title-validation.md](git-no-presubmit-pr-title-validation.md) | Open | Medium | 1    | unassigned |
 | [docs-agents-stale-adr-range.md](docs-agents-stale-adr-range.md)             | Open   | Low      | 1    | unassigned |
+| [agent-roster-docs-drift.md](agent-roster-docs-drift.md)                     | Open   | Low      | 1    | unassigned |
