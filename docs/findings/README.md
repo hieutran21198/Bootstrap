@@ -85,3 +85,4 @@ Heavy evidence (profiles, traces, raw logs) goes under `${DATE}-${TITLE}.assets/
 | ---------- | -------------------------------------------------------------------------------- | -------- | -------- |
 | 2026-06-26 | [claude-code-agent-configuration](2026-06-26-claude-code-agent-configuration.md) | Resolved | —        |
 | 2026-07-03 | [govulncheck-go-stdlib-vulns](2026-07-03-govulncheck-go-stdlib-vulns.md)         | Resolved | ADR-0015 |
+| 2026-07-05 | [selective-staging-destroyed-uncommitted-changes](2026-07-05-selective-staging-destroyed-uncommitted-changes.md) | Resolved | PR #22   |

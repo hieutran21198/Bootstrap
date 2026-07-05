@@ -78,6 +78,25 @@ on top by the renderer.
 - `architect` and `scribe` may `edit` (they author docs/records) but not run
   `bash`; only the engineers get `bash`.
 
+## Prompt-review heuristic: verb vs. tool posture
+
+When reviewing an agent's prompt, `PROMPT.md`, or a convention that assigns an
+agent an action, audit every imperative verb against that agent's tool
+posture (the table above). A verb the agent's denied tools cannot execute is a
+latent human-friction bug: nothing errors at review time — the instruction
+just silently degrades to "ask the human" the first time it actually fires.
+Rewrite the verb as routing ("delegate `X` to `<agent-with-capability>`")
+instead of a first-person action the agent cannot take.
+
+**Found**: an earlier orchestrator prompt and draft of
+[artifact-mediated-communication.md](../conventions/agents/artifact-mediated-communication.md)
+told the orchestrator/Scribe to *delete* the `.sdlc/` scratch folder at task
+close, though both deny `bash` outright (see the posture table above) and
+have no shell access to do it. Discovered in the user's live dogfood round; fixed
+in PR #21 (`fix/sdlc-cleanup-executor`): the convention's "Delete scratch at
+close" rule now routes the deletion brief to a Dev-Environment agent with
+shell access instead.
+
 ## Notes
 
 - **`frontend-engineer` is thin**: `apps/workspace-docs/` is now a real,
