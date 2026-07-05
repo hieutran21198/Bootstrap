@@ -7,7 +7,9 @@
       enable = lib.mkEnableOption "Enable opencode";
       settings = utils.makeAttrsOption {
         ofType = lib.types.anything;
-        default = { };
+        default = {
+
+        };
       };
       plugins = {
         handoff-audit-log = {
@@ -27,11 +29,6 @@
       opencode = {
         enable = true;
         settings = {
-          agent = {
-            explore.disable = true;
-            plan.disable = true;
-            build.disable = true;
-          };
           plugin = [
             "compound-engineering@git+https://github.com/EveryInc/compound-engineering-plugin.git"
             [
