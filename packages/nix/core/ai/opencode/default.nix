@@ -28,7 +28,9 @@
         enable = true;
         settings = {
           agent = {
-            explore.enabled = false;
+            explore.disable = true;
+            plan.disable = true;
+            build.disable = true;
           };
           plugin = [
             "compound-engineering@git+https://github.com/EveryInc/compound-engineering-plugin.git"
