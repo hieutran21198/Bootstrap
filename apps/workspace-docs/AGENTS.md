@@ -19,7 +19,7 @@ apps/workspace-docs/
 │   ├── pages/index.tsx      # homepage
 │   └── css/custom.css       # Infima theme customizations
 ├── static/                  # static assets
-├── devenv.nix               # JS/npm + core.worktree + core.ai slim + markdown toolchain
+├── devenv.nix               # JS/npm + core.worktree + core.ai (per-agent models) + markdown toolchain
 └── package.json             # npm scripts: start/build/serve/typecheck
 ```
 
