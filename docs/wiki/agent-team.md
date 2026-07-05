@@ -15,6 +15,12 @@ goal, routes each slice to the right subagent via a **Delegation Brief**, keeps
 the plan/decision index, and enforces `writer ≠ reviewer`. See
 [`docs/debt/agent-orchestration-no-delegation.md`](../debt/agent-orchestration-no-delegation.md).
 
+All inter-agent hand-offs are artifact-mediated — context travels only through
+orchestrator-routed Delegation Briefs and Completion Reports backed by disk-path inputs per the convention; scratch deliberation in `.sdlc/` is
+worktree-local and deleted at task close
+([convention](../conventions/agents/artifact-mediated-communication.md),
+[ADR-0021](../adrs/0021-artifact-mediated-agent-communication-and-sdlc-scratch-workspace.md)).
+
 ## How wiring works
 
 - **Posture** (agent-owned): each agent declares its intrinsic built-in-tool
@@ -88,4 +94,5 @@ on top by the renderer.
 - Per-agent instructions: `PROMPT.md` beside each agent module in [`packages/nix/core/ai/agents/`](../../packages/nix/core/ai/agents/) (default for the overridable `instructions` option)
 - Capability wiring: [`.../mcps/`](../../packages/nix/core/ai/mcps/) · [`.../skills/`](../../packages/nix/core/ai/skills/) (each module's `agents` allow-list)
 - Renderer (permission + default-deny + `<tools>`): [`packages/nix/core/ai/default.nix`](../../packages/nix/core/ai/default.nix)
+- Artifact-mediated communication + `.sdlc/` scratch workspace: [`../conventions/agents/artifact-mediated-communication.md`](../conventions/agents/artifact-mediated-communication.md) · [ADR-0021](../adrs/0021-artifact-mediated-agent-communication-and-sdlc-scratch-workspace.md)
 - Delegation debt / protocol rationale: [`docs/debt/agent-orchestration-no-delegation.md`](../debt/agent-orchestration-no-delegation.md)

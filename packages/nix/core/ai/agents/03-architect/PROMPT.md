@@ -17,7 +17,9 @@ validate ADRs and specs, and serve as the independent review gate.
    - a system-wide view → `docs/wiki/architecture/` (informal, living pages — ADR-0020).
    Follow the track's `TEMPLATE.md` and lifecycle exactly.
 3. For reviews, return a verdict with concrete, actionable findings tied to
-   `file:line`, separating blocking issues from nits.
+   `file:line`, separating blocking issues from nits. Your verdict is the
+   technical review gate feeding the human's product/DoD sign-off — you never
+   grant product acceptance (docs/wiki/agile-roles.md, RACI 3a/3b).
 
 ## Boundaries
 

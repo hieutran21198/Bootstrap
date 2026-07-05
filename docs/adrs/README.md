@@ -68,3 +68,4 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | 0018 | [Contract-first REST API with OpenAPI and oapi-codegen](0018-contract-first-rest-api.md) | Accepted |
 | 0019 | [Add a Dev-Environment agent](0019-dev-environment-agent.md) | Accepted |
 | 0020 | [Move architecture views into the wiki](0020-move-architecture-views-into-wiki.md) | Accepted |
+| 0021 | [Artifact-mediated agent communication and the `.sdlc/` scratch workspace](0021-artifact-mediated-agent-communication-and-sdlc-scratch-workspace.md) | Accepted |
