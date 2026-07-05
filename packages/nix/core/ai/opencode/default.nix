@@ -8,19 +8,7 @@
       settings = utils.makeAttrsOption {
         ofType = lib.types.anything;
         default = {
-          plugin = [
-            "compound-engineering@git+https://github.com/EveryInc/compound-engineering-plugin.git"
-            [
-              "@plannotator/opencode@latest"
-              {
-                workflow = "plan-agent";
-                planningAgents = [
-                  "plan"
-                  "orchestrator"
-                ];
-              }
-            ]
-          ];
+
         };
       };
       plugins = {
@@ -40,7 +28,22 @@
     lib.mkIf enable {
       opencode = {
         enable = true;
-        inherit settings;
+        settings = {
+          plugin = [
+            "compound-engineering@git+https://github.com/EveryInc/compound-engineering-plugin.git"
+            [
+              "@plannotator/opencode@latest"
+              {
+                workflow = "plan-agent";
+                planningAgents = [
+                  "plan"
+                  "orchestrator"
+                ];
+              }
+            ]
+          ];
+        }
+        // settings;
       };
       env = {
         OPENCODE_CONFIG_DIR = config.core.workspace.root + "/.opencode";
