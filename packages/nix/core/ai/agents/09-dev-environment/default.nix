@@ -2,7 +2,6 @@
 {
   config.core.ai.agents.dev-environment = {
     mode = "subagent";
-    model = "opencode-go/qwen3.7-plus";
     role = "Dev-Environment";
     lane = "Local Dev & Workspace Tooling";
     description = "The Dev-Environment agent owns the local-dev and workspace-tooling lane: worktree lifecycle (ws-worktree create/list/remove and .worktree-offset), devenv/Nix module toggles, direnv and shell ergonomics, local .env/secret bootstrap, codegraph init guidance, ws-info/ws-tree usage, and dev-environment edits under packages/nix/.";

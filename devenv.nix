@@ -22,13 +22,23 @@
         settings = {
           # Sonnet 5 high is the project manager nearly opus 4.8 with 1/2 price.
           agent = {
+            explore = {
+              disable = true;
+            };
+            plan = {
+              disable = true;
+            };
+            build = {
+              disable = true;
+            };
+
             # Opus 4.8, Fable 5 - hell level, more slower, over-kill for daily
             # tasks.
             # Turns it on when making redesign system - reviewing gorvernance.
             orchestrator = {
               # claude > kimi > glm
-              model = "anthropic/claude-sonnet-5";
-              variant = "high";
+              model = "anthropic/claude-opus-4-8";
+              variant = "xhigh";
             };
 
             researcher = {

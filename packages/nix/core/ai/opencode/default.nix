@@ -7,7 +7,21 @@
       enable = lib.mkEnableOption "Enable opencode";
       settings = utils.makeAttrsOption {
         ofType = lib.types.anything;
-        default = { };
+        default = {
+          plugin = [
+            "compound-engineering@git+https://github.com/EveryInc/compound-engineering-plugin.git"
+            [
+              "@plannotator/opencode@latest"
+              {
+                workflow = "plan-agent";
+                planningAgents = [
+                  "plan"
+                  "orchestrator"
+                ];
+              }
+            ]
+          ];
+        };
       };
       plugins = {
         handoff-audit-log = {
@@ -26,27 +40,7 @@
     lib.mkIf enable {
       opencode = {
         enable = true;
-        settings = {
-          agent = {
-            explore.disable = true;
-            plan.disable = true;
-            build.disable = true;
-          };
-          plugin = [
-            "compound-engineering@git+https://github.com/EveryInc/compound-engineering-plugin.git"
-            [
-              "@plannotator/opencode@latest"
-              {
-                workflow = "plan-agent";
-                planningAgents = [
-                  "plan"
-                  "orchestrator"
-                ];
-              }
-            ]
-          ];
-        }
-        // settings;
+        inherit settings;
       };
       env = {
         OPENCODE_CONFIG_DIR = config.core.workspace.root + "/.opencode";
