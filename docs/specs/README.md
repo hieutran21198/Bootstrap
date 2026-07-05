@@ -76,4 +76,5 @@ Then cross-link: the spec's `Tracks` field points at the ADR (or ticket) that au
 
 | Spec | Status | Tracks |
 | ---- | ------ | ------ |
+| [Handoff audit log](handoff-audit-log.md) | Accepted | [ADR-0021](../adrs/0021-artifact-mediated-agent-communication-and-sdlc-scratch-workspace.md) |
 | [Parallel agent worktrees](parallel-agent-worktrees.md) | Accepted | [ADR-0016](../adrs/0016-use-git-worktrees-for-parallel-ai-agent-sessions.md) |

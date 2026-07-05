@@ -14,6 +14,11 @@
       };
       opencode = {
         enable = true;
+        plugins = {
+          handoff-audit-log = {
+            enable = true;
+          };
+        };
         settings = {
           agent = {
             plan = {
