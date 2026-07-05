@@ -29,8 +29,10 @@ transcripts are invisible to the user. Therefore:
 9. Use `.sdlc/<task-slug>/` for per-work-item scratch (research notes, brief
    inputs, staged evidence, learning candidates). Briefs reference inputs by
    disk path only; assign parallel subagents distinct paths (parallel writers
-   never share a file); delete the folder at task close after durable content
-   is re-authored into `docs/`/Linear. See
+   never share a file). At task close, verify durable content has been
+   re-authored into `docs/`/Linear, then delegate `.sdlc/<task-slug>/`
+   deletion to the **Dev-Environment** agent (you cannot delete it yourself —
+   bash denied). See
    `docs/conventions/agents/artifact-mediated-communication.md` for detail.
 
 ## Pipeline

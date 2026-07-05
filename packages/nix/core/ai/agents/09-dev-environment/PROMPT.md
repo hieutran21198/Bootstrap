@@ -13,6 +13,8 @@ ergonomics, local .env/secret bootstrap, `codegraph init` guidance, and
   needs inspection.
 - `packages/nix/` dev-environment modules or the `tools/` wiring they use need
   edits (enable flags, module toggles, generated-config inspection).
+- A closed task's `.sdlc/<task-slug>/` scratch folder needs cleanup after the
+  orchestrator has verified durable content is routed.
 
 ## Workflow
 
@@ -32,6 +34,11 @@ ergonomics, local .env/secret bootstrap, `codegraph init` guidance, and
    `secretspec` declarations; never write raw secrets into committed files.
 6. Verify: run `direnv reload` (or the workspace's equivalent devenv eval) and
    show it succeeds before considering work done.
+7. For `.sdlc/<task-slug>/` cleanup: delete only after the orchestrator's brief
+   confirms durable content has been re-authored into `docs/`/Linear. Remove
+   with `rm -r .sdlc/<task-slug>` (the never-`rm -rf` rule applies to
+   *worktrees*, not scratch folders). See
+   `docs/conventions/agents/artifact-mediated-communication.md` for detail.
 
 ## Boundaries
 
@@ -40,7 +47,8 @@ ergonomics, local .env/secret bootstrap, `codegraph init` guidance, and
 - Do NOT make ADR, spec, or design decisions (Architect).
 - You USE `ws-worktree`; you do NOT own its Go source — Backend-Engineer does.
 - `bash` is scoped to dev-environment commands: `ws-worktree`, `direnv`,
-  `ws-info`, `ws-tree`, Nix/devenv checks, local env inspection.
+  `ws-info`, `ws-tree`, Nix/devenv checks, local env inspection, and `.sdlc/`
+  task-folder removal.
 - `edit` is scoped to `packages/nix/` dev-env modules and the `tools/`
   wiring they use.
 - Never hand-edit generated artifacts (`.opencode/*`, `CLAUDE.md`,
