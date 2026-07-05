@@ -128,6 +128,16 @@ The pipeline touches two authoritative stores:
 Neither blindly overwrites the other. The ownership rules and sync protocol are
 in [`jira-linear-sync.md`](jira-linear-sync.md) (Rules 1-3).
 
+**`.sdlc/` is not a third source of truth.** During active work, agents exchange
+context through artifact-mediated hand-offs
+([convention](../conventions/agents/artifact-mediated-communication.md),
+[ADR-0021](../adrs/0021-artifact-mediated-agent-communication-and-sdlc-scratch-workspace.md)).
+Per-work-item deliberation artifacts live in `.sdlc/<task-slug>/` — a
+gitignored, worktree-local scratch workspace that is deleted at task close.
+Durable records are always born in `docs/` or attached as evidence on the Linear
+task; scratch promotion means re-authoring into the proper track format, not
+moving a scratch file into `docs/`.
+
 ## Operating rules
 
 ### Rule 4 — Every task must trace back
@@ -185,4 +195,5 @@ An agent may recommend; a human decides. The full RACI lives in
 - RACI: [`agile-roles.md`](agile-roles.md)
 - Agent capabilities + posture: [`agent-team.md`](agent-team.md)
 - Two-sources-of-truth sync (Rules 1-3): [`jira-linear-sync.md`](jira-linear-sync.md)
+- Agent artifact-mediated communication + `.sdlc/` scratch workspace: [`../conventions/agents/artifact-mediated-communication.md`](../conventions/agents/artifact-mediated-communication.md) · [ADR-0021](../adrs/0021-artifact-mediated-agent-communication-and-sdlc-scratch-workspace.md)
 - Architecture views: [`architecture/`](architecture/)
