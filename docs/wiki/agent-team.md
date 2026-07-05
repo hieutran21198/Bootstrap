@@ -9,7 +9,7 @@
 > [`ai/default.nix`](../../packages/nix/core/ai/default.nix) turns those into
 > `.opencode/agents/*.md`. Keep this table in sync with them.
 
-The workspace runs one **primary** agent (the orchestrator) plus seven
+The workspace runs one **primary** agent (the orchestrator) plus nine
 **subagents**. The orchestrator does not bulk-implement inline — it decomposes a
 goal, routes each slice to the right subagent via a **Delegation Brief**, keeps
 the plan/decision index, and enforces `writer ≠ reviewer`. See
@@ -24,9 +24,10 @@ worktree-local and deleted at task close
 ## How wiring works
 
 - **Posture** (agent-owned): each agent declares its intrinsic built-in-tool
-  baseline. `explorer`/`researcher` are read-only (`edit`/`bash` denied);
-  engineers are read-write; the orchestrator has `edit`/`bash` denied and `task`
-  allowed to force delegation.
+  baseline. `explorer`/`researcher`/`security-reviewer` are read-only
+  (`edit`/`bash` denied); engineers and `dev-environment` are read-write within
+  their lanes; the orchestrator has `edit`/`bash` denied and `task` allowed to
+  force delegation.
 - **Skills & MCPs** (capability-owned): each skill/MCP module declares an
   `agents` allow-list (default in the module, overridable in `devenv.nix`). The
   renderer grants the capability to those agents and **denies it to every other
@@ -47,6 +48,8 @@ worktree-local and deleted at task close
 | **frontend-engineer**      | Implement/refactor `apps/` UI; browser-verified polish (_`apps/workspace-docs/` is a real Docusaurus site; UI-heavy app work is still thin_)    | UI builds & renders; playwright QA passes; matches design; tests green                                                                                                                               | codegraph, playwright (edit + bash)      | git-workflow                           |
 | **release-engineer**       | CI/CD + release coordination: GitHub Actions, git-hook/branch-protection wiring (calls git-guard), versioning/tagging/changelog, deploy/ config | CI green; hooks + branch protection enforce ADR-0012 via git-guard (no duplicated rules); release/CI commands return raw proof; no product/architecture/release-authority decision made unilaterally | codegraph (edit + bash)                  | git-workflow                           |
 | **scribe**                 | Break PRDs/epics into tracked work items; maintain roadmap, debt register, and status; sync issues; write/triage tickets and status reports     | Work items w/ acceptance criteria + owners; `docs/` trackers updated; reconciles plan vs. done; no code or design                                                                                    | jira¹ (edit docs, no bash)               | git-workflow                           |
+| **security-reviewer**      | Independent security/authz review for DB-touching changes: RLS policies, tenant/system scope, role/GUC contracts, `SystemReadCapability` usage  | Verdict with concrete findings tied to evidence; ADR-0008/0009/0011 invariants checked; missing verification called out; no edits or commands                                                         | codegraph (review-only; no edit/bash)    | rls-patterns                           |
+| **dev-environment**        | Local-dev and workspace-tooling lane: `ws-worktree`, port offsets, devenv/Nix toggles, direnv/local env bootstrap, codegraph setup, `.sdlc/` cleanup | Worktrees/env are prepared or cleaned correctly; generated artifacts remain Nix-owned; local secrets are not leaked; `direnv`/devenv verification is reported                                         | edit + bash (dev-env scoped)             | git-workflow                           |
 
 ¹`jira` is wired to `scribe` but its MCP server is disabled by default
 (`core.ai.mcps.jira.enable = false`); it only appears once enabled.
@@ -68,15 +71,17 @@ on top by the renderer.
 | **frontend-engineer**      | allow  | allow  | —      | —                        |
 | **release-engineer**       | allow  | allow  | —      | —                        |
 | **scribe**                 | allow  | deny   | —      | —                        |
+| **security-reviewer**      | deny   | deny   | —      | —                        |
+| **dev-environment**        | allow  | allow  | —      | —                        |
 
 - `—` = not declared, so the agent inherits opencode's default. Unset built-ins
   (`read`, `glob`, `grep`, `list`, and by default `webfetch`/`websearch`) stay
   **allowed** — every agent can read and search.
-- Read-only agents (`explorer`, `researcher`) and the `orchestrator` deny `edit`
-  and `bash`; the orchestrator additionally allows `task` (to delegate) — which
-  is what stops it from implementing inline.
+- Read-only agents (`explorer`, `researcher`, `security-reviewer`) and the
+  `orchestrator` deny `edit` and `bash`; the orchestrator additionally allows
+  `task` (to delegate) — which is what stops it from implementing inline.
 - `architect` and `scribe` may `edit` (they author docs/records) but not run
-  `bash`; only the engineers get `bash`.
+  `bash`; the engineers and `dev-environment` get `bash` for their lanes.
 
 ## Prompt-review heuristic: verb vs. tool posture
 
