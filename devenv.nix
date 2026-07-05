@@ -122,7 +122,8 @@
 
         "tools" = "Workspace-wide development tools, generators, validators, and AI agent utilities";
         "tools/ai" = "AI agent prompts, presets, evals, and orchestration helpers";
-        "tools/ai/skills" = "AI agent skills for specific tasks and workflows";
+        "tools/ai/skills" =
+          "Project-specific AI skill bodies (plain SKILL.md; generic/reusable skills are inlined in their Nix module under packages/nix/core/ai/skills/)";
         "tools/generators" = "Code and document generators";
         "tools/validators" = "Workspace structure, documentation, and architecture validators";
         "tools/scripts" = "Development helper scripts not tied to deployment";

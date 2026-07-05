@@ -7,7 +7,7 @@ Workspace-wide tooling. Go module `bootstrap/tools`. Nix devenv modules have **m
 ```
 tools/
 ├── ai/
-│   └── skills/     # git-workflow / go-pattern / init-deep / rls-patterns skill bodies
+│   └── skills/     # rls-patterns skill body (generic skills are inlined in packages/nix/core/ai/skills/)
 ├── generators/
 │   ├── ws-tree/    # directory listing tool that injects .info metadata (Go binary)
 │   └── ws-worktree/ # managed git worktrees (.worktrees/<slug>): create/ref/pr/list/remove + port offsets

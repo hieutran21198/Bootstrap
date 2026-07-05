@@ -235,7 +235,7 @@ The scribe implements the documentation and skill layer against this spec:
 
 - Add `docs/conventions/git/worktrees.md` using the convention template sections: Rule, Rationale, Apply, Examples, Enforcement.
 - Link it from `docs/conventions/git/README.md` and reference ADR-0016.
-- Extend `tools/ai/skills/git-workflow/SKILL.md` with the worktree-per-agent flow: create, `direnv allow`, `codegraph init`, run agent, remove worktree, keep one branch per worktree, use git-guard-valid branch names.
+- Extend `packages/nix/core/ai/skills/git-workflow/default.nix` (the inlined skill body) with the worktree-per-agent flow: create, `direnv allow`, `codegraph init`, run agent, remove worktree, keep one branch per worktree, use git-guard-valid branch names.
 - Add `.worktrees/` and `.worktree-offset` to `.gitignore`.
 - Add the tracked `.worktreeinclude` file shown above.
 

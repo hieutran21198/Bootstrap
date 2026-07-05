@@ -68,9 +68,12 @@ or adding prompt burden.
   the configured `plugin` list to opencode settings.
 - `packages/nix/AGENTS.md` documents the generated-artifact pattern: project AI
   prose is authored under `tools/ai/`, while Nix materializes gitignored
-  `.opencode/` artifacts. Existing skills use `tools/ai/skills/<name>/SKILL.md`
-  as the versioned source and `.opencode/skills/<name>/SKILL.md` as the generated
-  runtime artifact.
+  `.opencode/` artifacts. Project-specific skills use `tools/ai/skills/<name>/SKILL.md`
+  as the versioned source (currently `rls-patterns`); generic/reusable skills
+  inline the body string directly in their Nix module at
+  `packages/nix/core/ai/skills/<name>/default.nix` (currently `git-workflow`,
+  `go-pattern`, `init-deep`). In both cases `.opencode/skills/<name>/SKILL.md` is
+  the generated runtime artifact.
 - Opencode local plugins auto-load from `.opencode/plugins/<name>.ts` or `.js`.
   The documented v1 plugin shape is `export const Foo: Plugin = async (ctx) =>
   ({ ...hooks })`; the plugin init context includes `client`, `project`,
