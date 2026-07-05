@@ -20,48 +20,57 @@
           };
         };
         settings = {
+          # Sonnet 5 high is the project manager nearly opus 4.8 with 1/2 price.
           agent = {
-            plan = {
-              disabled = true;
-            };
-            build = {
-              disabled = true;
-            };
+            # Opus 4.8, Fable 5 - hell level, more slower, over-kill for daily
+            # tasks.
+            # Turns it on when making redesign system - reviewing gorvernance.
             orchestrator = {
-              model = "anthropic/claude-opus-4-8";
+              # claude > kimi > glm
+              model = "anthropic/claude-sonnet-5";
               variant = "high";
             };
+
             researcher = {
-              model = "opencode-go/minimax-m3";
+              model = "opencode-go/qwen3.7-plus";
             };
             explorer = {
-              model = "opencode/deepseek-v4-flash-free";
+              model = "opencode-go/deepseek-v4-flash";
             };
+
+            # GPT 5.5 xhigh, Opus 4.8 xhigh/Fable 5 high is the supreme
+            # commander you call in when the construction site is on fire.
+            #
+            # For daily work: gpt-5.5/Opus 4.8/Fable 5 high
             architect = {
               model = "openai/gpt-5.5";
-              variant = "xhigh";
-            };
-            backend-engineer = {
-              model = "opencode-go/deepseek-v4-pro";
               variant = "high";
             };
             security-reviewer = {
-              model = "openai/gpt-5.5";
-              variant = "xhigh";
+              model = "anthropic/claude-fable-5";
+              variant = "high";
+            };
+
+            backend-engineer = {
+              model = "openai/gpt-5.3-codex-spark";
+              variant = "high";
+            };
+            frontend-engineer = {
+              model = "openai/gpt-5.3-codex-spark";
+              variant = "high";
+            };
+
+            scribe = {
+              model = "anthropic/claude-sonnet-5";
+              variant = "high";
+            };
+            dev-environment = {
+              model = "opencode-go/deepseek-v4-pro";
+              variant = "high";
             };
             release-engineer = {
               model = "opencode-go/deepseek-v4-pro";
               variant = "high";
-            };
-            frontend-engineer = {
-              model = "opencode-go/deepseek-v4-pro";
-              variant = "medium";
-            };
-            scribe = {
-              model = "opencode-go/qwen3.7-plus";
-            };
-            dev-environment = {
-              model = "opencode-go/qwen3.7-plus";
             };
           };
         };
