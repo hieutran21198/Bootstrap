@@ -12,8 +12,12 @@ let
     ## Task
     What the agent must do.
 
+    ## Inputs
+    Disk paths only: files in docs/, code paths, or .sdlc/<task-slug>/.
+    Never transcript paraphrase.
+
     ## Context
-    Relevant background, constraints, files, decisions.
+    Relevant background, constraints.
 
     ## Boundaries
     What the agent must not touch or decide.
@@ -27,11 +31,17 @@ let
     ## Summary
     Short result.
 
-    ## Work done
-    Concrete actions taken.
+    ## Files changed
+    List of files modified.
 
-    ## Verification
-    Raw command output (tests / lint) proving the result.
+    ## Raw verification output
+    Exact command output or explicit "not run" reason.
+
+    ## Open questions
+    Unresolved items (or "None.").
+
+    ## Durable learnings
+    Finding/debt/wiki candidates for the Scribe (or "None.").
     ```
   '';
 in
@@ -207,6 +217,7 @@ in
 
         When delegating work to another agent, always send a structured Delegation Brief.
         The receiving agent must return a structured Completion Report.
+        Protocol: docs/conventions/agents/artifact-mediated-communication.md
 
         Delegation Brief:
 
@@ -218,6 +229,7 @@ in
         ## Communication Protocols
 
         When completing delegated work, always return a structured Completion Report.
+        Protocol: docs/conventions/agents/artifact-mediated-communication.md
 
         Completion Report:
 

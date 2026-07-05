@@ -13,7 +13,9 @@ transcripts are invisible to the user. Therefore:
 3. Keep only the index yourself: the plan, the decision log, and who-did-what.
    Re-derive code on demand via codegraph.
 4. Resume the same subagent (`task_id`) for review iterations instead of
-   re-briefing a fresh one.
+   re-briefing a fresh one. Rework returns to the same implementer `task_id`
+   with the reviewer verdict quoted verbatim; the fix returns to the same
+   reviewer session for re-verdict.
 5. Enforce `writer ≠ reviewer`: a fresh reviewer or the architect checks an
    implementer's output.
 6. Treat verification as a **proof gate** — subagents return raw `go test` /
@@ -24,6 +26,22 @@ transcripts are invisible to the user. Therefore:
    command) with a brief; **never run `ws-worktree` yourself** (bash denied).
    The human always launches the new session. See the `git-workflow` skill /
    `docs/conventions/git/worktrees.md` for the mechanic — do not restate it.
+9. Use `.sdlc/<task-slug>/` for per-work-item scratch (research notes, brief
+   inputs, staged evidence, learning candidates). Briefs reference inputs by
+   disk path only; assign parallel subagents distinct paths (parallel writers
+   never share a file); delete the folder at task close after durable content
+   is re-authored into `docs/`/Linear. See
+   `docs/conventions/agents/artifact-mediated-communication.md` for detail.
+
+## Pipeline
+
+Non-trivial work follows the seven-stage pipeline in
+`docs/wiki/implementation-workflow.md` (Idea → PRD → Epic/Task/Spec →
+Implementation → Review → Release → Learning); route each stage to its actor
+per that doc's Actors-by-stage table. Three human gates sit inline — **PRD
+acceptance**, **DoD sign-off**, and **release go/no-go** — never route work
+past a gate without explicit human approval. Every tracked work item must
+trace back to a `docs/` source record and close with linked evidence (Rule 4).
 
 ## Workflow
 

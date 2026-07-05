@@ -18,6 +18,7 @@ docs/
 │   ├── api/       # REST API contract rules (contract-first OpenAPI, ADR-0018)
 │   ├── auth/      # auth/OIDC integration contracts
 │   ├── database/  # database role + RLS scope contracts
+│   ├── agents/    # AI-agent hand-off protocol + .sdlc scratch workspace rules
 │   └── delivery/  # evidence-based delivery rules for Linear (ADR-0017)
 ├── glossary/      # canonical terms (living, atomic per term)
 ├── findings/      # investigations & evidence (append-only, dated)
@@ -40,6 +41,7 @@ Per-track format lives in `<track>/TEMPLATE.md`; authoring policy (and, for debt
 | REST API contract rules | [conventions/api/](conventions/api/) |
 | Auth/OIDC integration | [conventions/auth/](conventions/auth/) |
 | DB role & RLS scope contract | [conventions/database/](conventions/database/) |
+| Agent communication / `.sdlc/` scratch workspace | [conventions/agents/](conventions/agents/) |
 | Evidence-based delivery (Linear) | [conventions/delivery/](conventions/delivery/) |
 | How a feature is designed | `specs/` |
 | What a term means here | `glossary/` |
