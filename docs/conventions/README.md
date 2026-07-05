@@ -80,3 +80,4 @@ Then cross-link: the rule's `Decided by` points at the ADR; the ADR's _Reference
 | [api/](api/)           | Contract-first REST with hand-authored OpenAPI as source of truth, generated via `oapi-codegen` (Echo v4) at `internal/delivery/http/...` | 1    |
 | [git/](git/)           | `main`-trunk branch & release workflow, Conventional Commits, squash-merge vs rebase, and pull-request + review rules                 | 4    |
 | [delivery/](delivery/) | Evidence-based delivery — every Linear work item carries acceptance criteria, an owner, and linked evidence before it may close       | 1    |
+| [agents/](agents/)     | Artifact-mediated AI-agent hand-offs, review-loop resumption, and `.sdlc/` scratch workspace lifecycle                                | 1    |
