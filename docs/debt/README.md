@@ -142,3 +142,4 @@ When the debt bites you in real work:
 | [docs-agents-stale-adr-range.md](docs-agents-stale-adr-range.md)             | Open   | Low      | 1    | unassigned |
 | [agent-roster-docs-drift.md](agent-roster-docs-drift.md)                     | Open   | Low      | 1    | unassigned |
 | [markdownlint-config-duplication.md](markdownlint-config-duplication.md)     | Open   | Medium   | 1    | unassigned |
+| [agent-permission-map-key-order.md](agent-permission-map-key-order.md)       | Open   | Low      | 1    | unassigned |

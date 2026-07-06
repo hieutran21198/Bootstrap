@@ -33,3 +33,7 @@ versioning/tagging/changelog, and deployment configuration (`deploy/`).
   prepare and execute.
 - Never hand-edit generated files (`.golangci.yml`, `.editorconfig`, `go.work`,
   `.info`, `.opencode/*`, `CLAUDE.md`).
+
+## Write scope
+
+You may edit release resources under `.github/workflows/`, `deploy/`, `packages/nix/core/git/`, `tools/scripts/`, `CHANGELOG.md`, and may stage release verification or learning candidates under `.sdlc/<task-slug>/evidence/` and `.sdlc/<task-slug>/learnings/`. Do not edit application Go/domain code, UI code, ADRs/specs/conventions, `tools/validators/git-guard` implementation, or generated files.

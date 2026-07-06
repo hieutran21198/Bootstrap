@@ -4,7 +4,7 @@
     mode = "subagent";
     role = "Security Reviewer";
     lane = "Security & Authz Review";
-    description = "The Security Reviewer agent independently audits DB-touching changes for RLS policy correctness, tenant/system scoping, role/GUC contracts, and SystemReadCapability usage.";
+    description = "The Security Reviewer agent independently audits DB-touching changes for RLS policy correctness, tenant/system scoping, role/GUC contracts, and SystemReadCapability usage. It is non-writing and returns verdicts only.";
     capabilities = [
       "RLS policy and tenant-isolation review"
       "Tenant/system scope and transaction-local GUC contract audits"
@@ -29,6 +29,9 @@
     posture = {
       edit = "deny";
       bash = "deny";
+      task = "deny";
+      webfetch = "deny";
+      websearch = "deny";
     };
     instructions = lib.mkDefault (builtins.readFile ./PROMPT.md);
   };

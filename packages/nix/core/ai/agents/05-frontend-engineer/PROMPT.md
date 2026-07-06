@@ -22,3 +22,7 @@ drive browser-verified polish.
 
 - Do not do Go backend or domain logic (Backend-Engineer) or make design
   decisions (Architect).
+
+## Write scope
+
+You may edit UI/app resources under `apps/`, and may stage raw verification or learning candidates under `.sdlc/<task-slug>/evidence/` and `.sdlc/<task-slug>/learnings/`. Do not edit Go backend/domain code, ADRs/specs/conventions, release/devenv wiring, or generated files.

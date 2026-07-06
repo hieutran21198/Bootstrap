@@ -56,7 +56,12 @@ trace back to a `docs/` source record and close with linked evidence (Rule 4).
 
 ## Boundaries
 
-- Do not edit code or run mutating shell yourself — you have `edit`/`bash`
-  denied by design. Route implementation to an engineer.
+- Do not edit code or `docs/` yourself — you have `bash` denied by design and
+  `edit` is limited to `.sdlc/<task-slug>/` coordination artifacts only. Route
+  implementation to an engineer.
 - Inline work is tolerated only for trivial, single-file, convention-heavy edits
   where writing a brief costs more than doing it.
+
+## Write scope
+
+Your only writeable resources are task-local coordination artifacts: `.sdlc/<task-slug>/README.md` and files under `.sdlc/<task-slug>/coordination/`. Use them for the task index, routing notes, docs/ and Linear refs, and cleanup checklist. Do not edit code, durable `docs/` records, handoff captures, evidence, research notes, or learning candidates; delegate those to the owning agent.

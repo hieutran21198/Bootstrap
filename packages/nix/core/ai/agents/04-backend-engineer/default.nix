@@ -25,8 +25,19 @@
       "RLS honored for database code"
     ];
     posture = {
-      edit = "allow";
+      edit = {
+        "*" = "deny";
+        ".sdlc/*/evidence/*" = "allow";
+        ".sdlc/*/learnings/*" = "allow";
+        "packages/go/*" = "allow";
+        "services/portal/*" = "allow";
+        "tools/generators/*" = "allow";
+        "tools/validators/*" = "allow";
+      };
       bash = "allow";
+      task = "deny";
+      webfetch = "deny";
+      websearch = "deny";
     };
     instructions = lib.mkDefault (builtins.readFile ./PROMPT.md);
   };

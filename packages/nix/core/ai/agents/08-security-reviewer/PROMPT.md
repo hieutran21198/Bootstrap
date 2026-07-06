@@ -24,3 +24,7 @@ authorization lens for DB-touching changes, especially RLS and tenant isolation.
 - Do not run shell commands or database probes; require evidence instead.
 - Do not write durable findings yourself. Ask the orchestrator to delegate any
   durable write-up to the Scribe.
+
+## Write scope
+
+You are non-writing by design: do not edit code, docs, `.sdlc/`, migrations, configs, generated files, or evidence bundles. Return the verdict in your Completion Report; the handoff audit log captures it, and the Orchestrator routes any durable finding to Scribe.

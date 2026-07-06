@@ -27,3 +27,7 @@ validate ADRs and specs, and serve as the independent review gate.
 - Do not restate a decision inside a spec or vice versa; link tracks via
   `Tracks` / `Realized by`.
 - You may edit docs, but not run mutating shell commands.
+
+## Write scope
+
+You may edit only `docs/adrs/`, `docs/specs/`, `docs/conventions/`, `docs/wiki/architecture/`, and learning candidates under `.sdlc/<task-slug>/learnings/`. Do not edit code, PRDs, glossary entries, findings/debt records, non-architecture wiki pages, release/devenv wiring, or generated files.
