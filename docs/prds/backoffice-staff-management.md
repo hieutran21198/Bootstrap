@@ -3,7 +3,7 @@
 > **Status**: Accepted
 > **Authors**: Scribe (agent session, backoffice staff management PRD)
 > **Last reviewed**: 2026-07-06
-> **Realized by**: — (pending)
+> **Realized by**: ADR-0024, ADR-0025, specs/backoffice-staff-management-surface-and-flows.md, specs/backoffice-authorization-model.md
 
 > **PRD rule — requirements only.** Capture **what** users need and **why**. Do **not** name a technology, API, schema, or design — the "how" belongs in [`specs/`](../specs/) and the decision in [`adrs/`](../adrs/). If you catch yourself designing, stop and push it downstream.
 >
@@ -114,8 +114,8 @@ None — all clarifications resolved at acceptance. The product owner accepted b
 
 ## Realized by
 
-- **Decisions**: — (pending)
-- **Designs**: — (pending)
+- **Decisions**: [ADR-0024](../adrs/0024-model-backoffice-staff-as-platform-aggregate.md), [ADR-0025](../adrs/0025-use-zitadel-for-backoffice-temporary-credential-lifecycle.md)
+- **Designs**: [specs/backoffice-staff-management-surface-and-flows.md](../specs/backoffice-staff-management-surface-and-flows.md), [specs/backoffice-authorization-model.md](../specs/backoffice-authorization-model.md)
 - **Terms**: — (pending)
 
 ## References
