@@ -13,7 +13,7 @@
         default = true;
         description = "Enable the plan utility";
       };
-      planingAgents = utils.makeListOption {
+      planningAgents = utils.makeListOption {
         ofType = lib.types.str;
         default = [ ];
       };
@@ -22,13 +22,13 @@
     let
       opts = config.core.ai.utils.plan;
     in
-    {
+    lib.mkIf opts.enable {
       core.ai.opencode.settings.plugin = [
         [
           "@plannotator/opencode@latest"
           {
             workflow = "plan-agent";
-            inherit (opts) planingAgents;
+            inherit (opts) planningAgents;
           }
         ]
       ];

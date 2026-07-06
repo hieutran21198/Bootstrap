@@ -13,7 +13,10 @@
         enable = true;
       };
       utils = {
-        plan.planingAgents = [ "orchestrator" ];
+        plan.planningAgents = [
+          "plan"
+          "orchestrator"
+        ];
       };
       opencode = {
         enable = true;
