@@ -5,6 +5,14 @@ let
   # ---- pure render helpers ------------------------------------------------
   bullets = xs: lib.concatMapStringsSep "\n" (x: "- ${x}") xs;
 
+  skillDescription =
+    content:
+    let
+      lines = lib.splitString "\n" content;
+      descLine = lib.findFirst (line: lib.hasPrefix "description:" line) "" lines;
+    in
+    if descLine == "" then "" else lib.trim (lib.removePrefix "description:" descLine);
+
   delegationBrief = ''
     ```markdown
     # Delegation brief
@@ -101,7 +109,7 @@ in
 
             # Intrinsic safety baseline over built-in tools (edit/bash/task/…).
             posture = utils.makeAttrsOption {
-              ofType = lib.types.str;
+              ofType = lib.types.either lib.types.str (lib.types.attrsOf lib.types.str);
               default = { };
             };
           };
@@ -141,6 +149,8 @@ in
       agentSkillNames =
         name: lib.filter (n: lib.elem name enabledSkills.${n}.agents) (lib.attrNames enabledSkills);
 
+      skillDesc = name: skillDescription enabledSkills.${name}.content;
+
       # ---- per-agent permission: posture + default-deny over managed caps --
       # A managed MCP/skill is denied for every agent NOT in its allow-list;
       # non-managed tools/skills keep opencode's default. No `*` catch-all.
@@ -176,7 +186,19 @@ in
 
           ## Tools
 
-          ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: d: "- `${n}` — ${d}") td)}
+          ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: d: "- \`${n}\` — ${d}") td)}
+        '';
+
+      skillsSection =
+        name:
+        let
+          sk = agentSkillNames name;
+        in
+        lib.optionalString (sk != [ ]) ''
+
+          ## Skills
+
+          ${lib.concatStringsSep "\n" (map (n: "- \`${n}\` — ${skillDesc n}") sk)}
         '';
 
       renderCard = name: a: ''
@@ -201,7 +223,7 @@ in
         ${bullets (lib.attrNames (agentToolDefs name))}
 
         Skills:
-        ${bullets (agentSkillNames name)}
+        ${bullets (map (n: "${n} — ${skillDesc n}") (agentSkillNames name))}
       '';
 
       registeredAgents = lib.concatStringsSep "\n\n" (
@@ -258,7 +280,9 @@ in
             # ${a.role}
 
             ${a.instructions}
-            ${toolsSection name}${if a.mode == "primary" then primarySection else subagentSection}
+            ${toolsSection name}${skillsSection name}${
+              if a.mode == "primary" then primarySection else subagentSection
+            }
           '';
         }) enabledAgents
       );

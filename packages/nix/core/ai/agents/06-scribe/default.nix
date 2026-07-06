@@ -4,7 +4,7 @@
     mode = "subagent";
     role = "Scribe";
     lane = "Delivery Record";
-    description = "The Scribe agent owns the durable planning record: it breaks PRDs and epics into tracked work items, maintains the roadmap and debt register, syncs issues, and writes status reports. It records and maintains artifacts; it never coordinates other agents or makes design decisions.";
+    description = "The Scribe agent owns the durable planning and delivery record: it drafts PRDs, maintains glossary, findings/debt/wiki records, files and reconciles tracked work items, syncs evidence, and writes status reports. It records and maintains artifacts; it never coordinates other agents or makes design decisions.";
     capabilities = [
       "Breaking PRDs and epics into tracked work items"
       "Maintaining the roadmap and debt register"
@@ -29,8 +29,21 @@
       "No code written or design chosen unilaterally"
     ];
     posture = {
-      edit = "allow";
+      edit = {
+        "*" = "deny";
+        ".sdlc/*/evidence/*" = "allow";
+        ".sdlc/*/learnings/*" = "allow";
+        "docs/debt/*" = "allow";
+        "docs/findings/*" = "allow";
+        "docs/glossary/*" = "allow";
+        "docs/prds/*" = "allow";
+        "docs/wiki/*" = "allow";
+        "docs/wiki/architecture/*" = "deny";
+      };
       bash = "deny";
+      task = "deny";
+      webfetch = "deny";
+      websearch = "deny";
     };
     instructions = lib.mkDefault (builtins.readFile ./PROMPT.md);
   };

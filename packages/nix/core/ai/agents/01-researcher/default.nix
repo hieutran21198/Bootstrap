@@ -4,7 +4,7 @@
     mode = "subagent";
     role = "Researcher";
     lane = "Research";
-    description = "The Researcher agent gathers external, library, and domain knowledge, evaluates options and trade-offs, and synthesizes sourced findings into clear recommendations. Read-only: it investigates, it does not change code.";
+    description = "The Researcher agent gathers external, library, and domain knowledge, evaluates options and trade-offs, and synthesizes sourced findings into clear recommendations. It may write only sourced research/finding artifacts in its allowed .sdlc research paths and docs/findings/; it never changes code.";
     capabilities = [
       "Library, framework, and API documentation lookup"
       "Option and trade-off evaluation"
@@ -26,8 +26,14 @@
       "Makes no code changes"
     ];
     posture = {
-      edit = "deny";
+      edit = {
+        "*" = "deny";
+        ".sdlc/*/research/*" = "allow";
+        ".sdlc/*/learnings/*" = "allow";
+        "docs/findings/*" = "allow";
+      };
       bash = "deny";
+      task = "deny";
       webfetch = "allow";
       websearch = "allow";
     };

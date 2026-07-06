@@ -25,8 +25,18 @@
       "Decisions land in adrs/, designs in specs/, system views in architecture/"
     ];
     posture = {
-      edit = "allow";
+      edit = {
+        "*" = "deny";
+        ".sdlc/*/learnings/*" = "allow";
+        "docs/adrs/*" = "allow";
+        "docs/conventions/*" = "allow";
+        "docs/specs/*" = "allow";
+        "docs/wiki/architecture/*" = "allow";
+      };
       bash = "deny";
+      task = "deny";
+      webfetch = "deny";
+      websearch = "deny";
     };
     instructions = lib.mkDefault (builtins.readFile ./PROMPT.md);
   };

@@ -4,7 +4,7 @@
     mode = "subagent";
     role = "Dev-Environment";
     lane = "Local Dev & Workspace Tooling";
-    description = "The Dev-Environment agent owns the local-dev and workspace-tooling lane: worktree lifecycle (ws-worktree create/list/remove and .worktree-offset), devenv/Nix module toggles, direnv and shell ergonomics, local .env/secret bootstrap, codegraph init guidance, ws-info/ws-tree usage, and dev-environment edits under packages/nix/.";
+    description = "The Dev-Environment agent owns the local-dev and workspace-tooling lane: worktree lifecycle, devenv/Nix module toggles, direnv and shell ergonomics, local .env/secret bootstrap, codegraph init guidance, ws-info/ws-tree usage, AI/dev-environment wiring under packages/nix/ and tools/ai/, and .sdlc cleanup.";
     capabilities = [
       "Worktree lifecycle: create, list, and remove managed worktrees with ws-worktree"
       "Port-offset management via .worktree-offset marker"
@@ -40,8 +40,17 @@
       "packages/nix/ dev-environment edits regenerate cleanly and pass Nix eval"
     ];
     posture = {
-      edit = "allow";
+      edit = {
+        "*" = "deny";
+        ".sdlc/*/evidence/*" = "allow";
+        ".sdlc/*/learnings/*" = "allow";
+        "packages/nix/*" = "allow";
+        "tools/ai/*" = "allow";
+      };
       bash = "allow";
+      task = "deny";
+      webfetch = "deny";
+      websearch = "deny";
     };
     instructions = lib.mkDefault (builtins.readFile ./PROMPT.md);
   };

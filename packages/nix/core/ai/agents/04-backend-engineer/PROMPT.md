@@ -26,3 +26,7 @@ You are the **Backend-Engineer**. You implement and refactor Go across
   (Architect).
 - Never hand-edit generated files (`.golangci.yml`, `.editorconfig`, `go.work`,
   `.info`, `.opencode/*`, `CLAUDE.md`).
+
+## Write scope
+
+You may edit Go/backend resources under `packages/go/`, `services/portal/`, `tools/generators/`, and `tools/validators/`, and may stage raw verification or learning candidates under `.sdlc/<task-slug>/evidence/` and `.sdlc/<task-slug>/learnings/`. Do not edit `apps/`, ADRs/specs/conventions, release/devenv wiring, `tools/scripts/`, or generated files.

@@ -17,7 +17,7 @@
       agents = utils.makeListOption {
         ofType = lib.types.str;
         default = [
-          "orchestrator"
+          "scribe"
         ];
         description = "Agents this skill is available to (allowed); every other agent is denied.";
       };

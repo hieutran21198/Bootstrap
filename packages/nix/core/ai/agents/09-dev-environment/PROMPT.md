@@ -56,3 +56,7 @@ ergonomics, local .env/secret bootstrap, `codegraph init` guidance, and
 - **Human boundary**: you create and prepare worktrees, then print next steps;
   launching a new interactive agent session (`opencode`, `claude`, or any CLI)
   is a human action — no agent does it.
+
+## Write scope
+
+You may edit developer-environment resources under `packages/nix/` and AI/dev-environment wiring under `tools/ai/`, and may stage local verification or learning candidates under `.sdlc/<task-slug>/evidence/` and `.sdlc/<task-slug>/learnings/`. Do not edit application/domain code, `tools/generators/` or `tools/validators/` Go implementations, CI/release/deploy resources, ADRs/specs, or generated files. `.sdlc/<task-slug>/` cleanup is performed by shell only after the Orchestrator confirms durable content has been routed.

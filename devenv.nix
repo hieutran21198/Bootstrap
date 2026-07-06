@@ -95,6 +95,7 @@
         init-deep.enable = true;
         go-pattern.enable = true;
         git-workflow.enable = true;
+        prd-authoring.enable = true;
       };
       mcps = {
         linear = {

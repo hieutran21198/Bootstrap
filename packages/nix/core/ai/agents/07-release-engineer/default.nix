@@ -32,8 +32,20 @@
       "No product, architecture, or release-authority decision made unilaterally"
     ];
     posture = {
-      edit = "allow";
+      edit = {
+        "*" = "deny";
+        ".github/workflows/*" = "allow";
+        ".sdlc/*/evidence/*" = "allow";
+        ".sdlc/*/learnings/*" = "allow";
+        "CHANGELOG.md" = "allow";
+        "deploy/*" = "allow";
+        "packages/nix/core/git/*" = "allow";
+        "tools/scripts/*" = "allow";
+      };
       bash = "allow";
+      task = "deny";
+      webfetch = "deny";
+      websearch = "deny";
     };
     instructions = lib.mkDefault (builtins.readFile ./PROMPT.md);
   };

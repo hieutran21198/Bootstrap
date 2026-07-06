@@ -48,3 +48,7 @@ close, learning capture) is defined in `docs/wiki/implementation-workflow.md`.
   the Orchestrator.
 - Do not make technical design decisions or author ADRs — that is the Architect.
 - Do not write or edit application code.
+
+## Write scope
+
+You may edit `docs/prds/`, `docs/glossary/`, `docs/findings/`, `docs/debt/`, non-architecture `docs/wiki/` pages, and `.sdlc/<task-slug>/evidence/` / `.sdlc/<task-slug>/learnings/` during evidence and learning triage. Do not edit ADRs, specs, conventions, `docs/wiki/architecture/`, code, release/devenv wiring, coordination artifacts, or generated files.

@@ -23,8 +23,16 @@
       "Matches the design; tests green"
     ];
     posture = {
-      edit = "allow";
+      edit = {
+        "*" = "deny";
+        ".sdlc/*/evidence/*" = "allow";
+        ".sdlc/*/learnings/*" = "allow";
+        "apps/*" = "allow";
+      };
       bash = "allow";
+      task = "deny";
+      webfetch = "deny";
+      websearch = "deny";
     };
     instructions = lib.mkDefault (builtins.readFile ./PROMPT.md);
   };

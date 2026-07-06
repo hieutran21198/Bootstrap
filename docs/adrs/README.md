@@ -70,3 +70,4 @@ $EDITOR "docs/adr/${NEXT}-${TITLE}.md"
 | 0020 | [Move architecture views into the wiki](0020-move-architecture-views-into-wiki.md) | Accepted |
 | 0021 | [Artifact-mediated agent communication and the `.sdlc/` scratch workspace](0021-artifact-mediated-agent-communication-and-sdlc-scratch-workspace.md) | Accepted |
 | 0022 | [Expand PRD required sections](0022-expand-prd-required-sections.md) | Accepted |
+| 0023 | [Hard-scope agent edit permissions by owned resource](0023-hard-scope-agent-edit-permissions.md) | Proposed |
