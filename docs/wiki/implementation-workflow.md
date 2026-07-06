@@ -55,7 +55,9 @@ flowchart LR
 ### Feature lifecycle
 
 The sequence diagram walks one feature end-to-end, showing which actor writes
-what, where, at each stage.
+what, where, at each stage. Stage 2's clarification round-trip only runs when
+a blocker (D1-D4) lacks a defensible default; otherwise the Scribe drafts
+straight through with recorded assumptions.
 
 ```mermaid
 sequenceDiagram
@@ -77,6 +79,10 @@ sequenceDiagram
 
     Note over H,REPO: Stage 2 — PRD
     ORC->>SCR: draft PRD
+    SCR-->>ORC: clarification questions (Completion Report)
+    ORC->>H: relay questions
+    H->>ORC: answers
+    ORC->>SCR: resume same session (task_id) with answers
     SCR->>DOCS: write PRD (prds/)
     DOCS-->>H: PRD ready for review
     H->>DOCS: accept PRD
