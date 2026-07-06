@@ -106,6 +106,28 @@ user experience > technical details**.
   standard auth approach, common integration patterns — record them as assumptions instead.
 - Anything that is not a scope/requirement/metric fork.
 
+### In an orchestrated topology
+
+When this skill runs inside a subagent in an orchestrated multi-agent setup,
+the authoring agent cannot prompt the human mid-task. The skill's interactive
+"ask and wait" loop is instead delivered through the **Completion Report**:
+
+- `questions-only` mode returns the 2–3 highest-impact questions (with their
+  recommended defaults) in the Completion Report and **stops** — no draft is
+  written.
+- The **orchestrator** relays the questions to the human, collects answers, and
+   **resumes the same session (`task_id`)** with the answers file as a new input to
+   draft the full PRD.
+- The round-trip triggers whenever the readiness policy would ask and wait — a
+  blocker (D1–D4) is Unknown with no defensible default. "≥2 blockers" is only the
+  threshold for named `questions-only` mode (returning questions without drafting).
+  When defensible defaults exist, the skill drafts straight through with recorded
+  assumptions, and the human gate catches any bad assumption.
+
+All other mechanics — readiness scoring, ≤5-question budget, recommended defaults,
+`[NEEDS CLARIFICATION]` caps, and the remainder of the drafting process — are
+unchanged.
+
 ## PRD writing process
 
 1. **Classify intent.** Confirm this is requirements work. If the prompt is actually asking
@@ -175,10 +197,13 @@ user experience > technical details**.
 7. **Complete the validation checklist** (§Validation checklist). Resolve every CRITICAL
    finding. Remaining `[NEEDS CLARIFICATION]` markers must be ≤3 and non-blocking.
 
-8. **Report**: PRD path on disk, status (`Draft`), checklist results (pass/fail per
-   category), open questions with owners, and the recommended next phase (design/ADR).
-   **Never perform the next phase** — hand off by writing the PRD at the correct path:
-   `docs/prds/<capability>.md` (kebab-case, no numbering).
+8. **Report**: Return a Completion Report. In questions-only mode the report contains
+    the 2–3 clarification questions with recommended defaults (no draft is written; the
+    orchestrator relays the questions and resumes the session (`task_id`) with answers). When
+   drafting, the report contains: PRD path on disk, status (`Draft`), checklist results
+   (pass/fail per category), open questions with owners, and the recommended next phase
+   (design/ADR). **Never perform the next phase** — hand off by writing the PRD at the
+   correct path: `docs/prds/<capability>.md` (kebab-case, no numbering).
 
 ## Requirement writing rules
 
