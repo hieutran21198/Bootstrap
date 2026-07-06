@@ -48,6 +48,7 @@
 **Examples.**
 
 ✓ Good:
+
 ```text
 Linear issue: PORTAL-42  "Implement staff invitation command handler"
   Acceptance criteria:
@@ -67,6 +68,7 @@ Linear issue: PORTAL-42  "Implement staff invitation command handler"
 ```
 
 ✗ Bad:
+
 ```text
 Linear issue: PORTAL-42  "Implement staff invitation command handler"
   Status: Done

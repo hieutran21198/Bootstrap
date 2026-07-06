@@ -6,7 +6,7 @@ Nix devenv modules for the workspace. `core/` = mandatory tooling; `extra/` = op
 
 ## STRUCTURE
 
-```
+```text
 packages/nix/
 ├── devenv.nix                  # imports core/ + extra/
 ├── devenv.yaml                 # nixpkgs input pin (standalone eval)

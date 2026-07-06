@@ -44,7 +44,7 @@ Rule of thumb: **if the same shape of pain hits twice, it earns a debt entry.**
 
 One debt item per file. Group by area when more than a handful exist.
 
-```
+```text
 docs/debt/
 ├── README.md                                # this file — Index and escalation rules
 ├── TEMPLATE.md                              # skeleton for one debt item
@@ -55,7 +55,7 @@ docs/debt/
 
 ## Naming
 
-```
+```text
 docs/debt/<topic>-<short-desc>.md             # top-level
 docs/debt/<area>/<topic>-<short-desc>.md      # grouped
 ```
@@ -141,3 +141,4 @@ When the debt bites you in real work:
 | [git-no-presubmit-pr-title-validation.md](git-no-presubmit-pr-title-validation.md) | Open | Medium | 1    | unassigned |
 | [docs-agents-stale-adr-range.md](docs-agents-stale-adr-range.md)             | Open   | Low      | 1    | unassigned |
 | [agent-roster-docs-drift.md](agent-roster-docs-drift.md)                     | Open   | Low      | 1    | unassigned |
+| [markdownlint-config-duplication.md](markdownlint-config-duplication.md)     | Open   | Medium   | 1    | unassigned |

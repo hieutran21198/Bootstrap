@@ -22,6 +22,7 @@
 **Examples.**
 
 ✓ Good:
+
 ```bash
 # One agent session = one worktree on its own git-guard-valid branch off main.
 ws-worktree feature/tenant-invite         # creates .worktrees/feature-tenant-invite
@@ -37,6 +38,7 @@ git worktree prune
 ```
 
 ✗ Bad:
+
 ```bash
 git worktree add ../scratch main                     # protected branch, outside .worktrees/, no offset marker
 git worktree add .worktrees/dup feature/a --force    # forces a second worktree onto one branch
@@ -44,6 +46,7 @@ rm -rf .worktrees/feature-tenant-invite              # orphans the worktree in g
 ```
 
 **Enforcement.** Tool-assisted, with a manual remainder:
+
 - **`ws-worktree`** shells to `git-guard branch-name` / `git-guard branch-protect` for every target branch, so off-pattern or protected branches fail at creation; it refuses to run unless `.gitignore` contains `.worktrees/` and `.worktree-offset`, and fails loudly on a missing, non-integer, or non-stride-aligned `.worktree-offset` marker.
 - **`git worktree add`** (invoked without `--force`) enforces the one-branch-one-worktree invariant.
 - **Nix** (`core.worktree`, [`packages/nix/core/worktree/default.nix`](../../../packages/nix/core/worktree/default.nix)) fails evaluation on an invalid marker, so a corrupted offset cannot silently mis-port a service.

@@ -80,10 +80,12 @@ or adding prompt burden.
   `directory`, `worktree`, `serverUrl`, Bun's `$`, and
   `experimental_workspace`.
 - The v1 hook contract relevant to this feature is:
+
   ```ts
   "tool.execute.before"?: (input: { tool: string; sessionID: string; callID: string }, output: { args: any }) => Promise<void>
   "tool.execute.after"?:  (input: { tool: string; sessionID: string; callID: string; args: any }, output: { title: string; output: string; metadata: any }) => Promise<void>
   ```
+
 - `callID` is the natural join key between the before/after hooks for one tool
   call. `sessionID` is the parent session for `task` invocations. Task args are
   expected to expose `prompt`, `subagent_type`, and `description`; `task_id` may

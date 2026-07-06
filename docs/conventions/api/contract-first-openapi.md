@@ -22,6 +22,7 @@
 **Examples.**
 
 ✓ Good:
+
 ```text
 services/portal/api/<contract>.yaml
   # Hand-authored OpenAPI source of truth.
@@ -45,6 +46,7 @@ func RegisterRoutes(server *echox.Echox, handler *Handler) {
 ```
 
 ✗ Bad:
+
 ```go
 // internal/app/query/list_staff.go — WRONG.
 // The app layer now depends on generated HTTP DTOs from delivery.

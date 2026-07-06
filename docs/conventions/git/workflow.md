@@ -37,6 +37,7 @@
 **Examples.**
 
 ✓ Good:
+
 ```bash
 # Feature flow: branch off main, PR, squash-merge, auto-deploy to dev.
 git switch main && git pull --rebase origin main
@@ -51,6 +52,7 @@ git cherry-pick -x 9f2c1ab                 # a hotfix already merged to main
 ```
 
 ✗ Bad:
+
 ```bash
 git switch -c feature/x release/1.4.0   # branched off a release, not main
 git switch main && git commit -am "quick fix" && git push   # direct push to main
@@ -58,6 +60,7 @@ git switch release/1.4.0 && git merge main   # dragged all of main into a releas
 ```
 
 **Enforcement.** Layered:
+
 - **Local** (`core.git` hooks, `packages/nix/core/git/default.nix`): `git-guard branch-protect` (pre-commit) blocks direct commits on `main`/`release/*`; `git-guard branch-name` (pre-push) rejects off-pattern branch names.
 - **CI** ([`.github/workflows/pr-validate.yml`](../../../.github/workflows/pr-validate.yml)): validates branch name and PR title on every PR.
 - **Server-side**: a GitHub ruleset on `main` and `release/*` (require a PR + passing checks, block direct/force pushes) — apply it with [`tools/scripts/setup-branch-protection.sh`](../../../tools/scripts/setup-branch-protection.sh) (needs repo admin; ADR-0012 follow-up). Until the ruleset is applied, trunk-only-via-PR is additionally **code-review-enforced**. Release/cherry-pick discipline is review-enforced.

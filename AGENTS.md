@@ -3,10 +3,12 @@
 **Branch:** main
 
 ## OVERVIEW
+
 A greenfield Go monorepo managed by Nix and devenv. Three Go modules are bound via go.work; the value lives in conventions enforced by tooling, docs, and generated shell wiring.
 
 ## STRUCTURE
-```
+
+```text
 bootstrap/
 ├── apps/
 │   └── workspace-docs/  # Docusaurus docs site (own devenv; renders root + portal docs)
@@ -27,6 +29,7 @@ bootstrap/
 ```
 
 ## WHERE TO LOOK
+
 | Task | Location | Notes |
 |------|----------|-------|
 | Add workspace-wide ADR / convention | `docs/adrs/`, `docs/conventions/` | See [docs/AGENTS.md](docs/AGENTS.md) for per-track format + lifecycle |
@@ -50,6 +53,7 @@ bootstrap/
 | Add/edit a generic/reusable AI skill body | `packages/nix/core/ai/skills/<name>/default.nix` | Inline the body string in the `content` option's `default`; currently `git-workflow`, `go-pattern`, `init-deep` |
 
 ## CODE MAP
+
 | Symbol | Type | Location | Role |
 |--------|------|----------|------|
 | env.Loader | interface | packages/go/env/port.go:6 | env-var loader port |
@@ -75,6 +79,7 @@ bootstrap/
 | git-guard main | func | tools/validators/git-guard/main.go:24 | git rules CLI for hooks + CI |
 
 ## CONVENTIONS
+
 - **Whitespace**: `.editorconfig` (Nix-generated) — Go uses tabs; all others 2-space indent; Markdown preserves trailing spaces
 - **Go module paths**: `bootstrap/<segment>/<module>` — no domain prefix; workspace name is the prefix
 - **Go version**: `1.26.4` pinned across all `go.mod` + `go.work`; match when adding modules
@@ -83,6 +88,7 @@ bootstrap/
 - **Docs are two-tier**: workspace-wide standards in root [`docs/`](docs/); service-only docs in `services/<name>/docs/` (e.g. [services/portal/docs/](services/portal/docs/)). ADRs append-only; conventions living — see [docs/AGENTS.md](docs/AGENTS.md)
 
 ## ANTI-PATTERNS (THIS PROJECT)
+
 - **Generated files**: do not hand-edit `.pre-commit-config.yaml`, `.golangci.yml`, `.editorconfig`, `go.work`, `.info`, `.claude/*`, `.opencode/*`, or `CLAUDE.md`
 - **Go import paths**: no vanity domain prefixes; `bootstrap/` is the root
 - **No Makefile / setup.sh / bootstrap.sh**: devenv scripts are the only runner
@@ -90,6 +96,7 @@ bootstrap/
 - **Local-only dirs**: `.opencode/`, `.claude/`, `.codex/`, `.omo/`, `.codegraph/` are gitignored per-developer agent configs/caches — do not commit
 
 ## UNIQUE STYLES
+
 - No numeric prefixes for module dirs in `packages/nix/` — descriptive names only (the numbered `tools/_nixenv/` convention is retired)
 - `enterShell` auto-runs `ws-info` on every `cd` with direnv enabled
 - `ws-tree` reads `.info` for inline descriptions in tree output
@@ -97,6 +104,7 @@ bootstrap/
 - Managed worktrees live in `.worktrees/<slug>` with a `.worktree-offset` marker; `core.worktree` shifts ports (portal Postgres 5432+offset, docs 3000+offset)
 
 ## COMMANDS
+
 ```bash
 direnv allow     # one-time consent; auto-enters dev shell on every cd
 ws-info          # workspace overview (auto-runs on shell entry)
@@ -107,9 +115,11 @@ govuln-scan      # govulncheck across every go.work module
 ws-worktree      # managed git worktrees (.worktrees/<slug>) for parallel agent sessions
 devenv shell     # explicit shell entry
 ```
+
 Scoped devenv shells add local commands: `services/portal` has `migrate-up` / `migrate-down` / `migrate-status` / `migrate-new` / `pg-info`; `apps/workspace-docs` has `docs-install` / `docs-dev` / `docs-build` / `docs-serve`.
 
 ## NOTES
+
 - Real content now spans `apps/workspace-docs/`, `deploy/local/`, `tools/validators/`, `tools/scripts/`, `packages/go/`, and `services/portal/internal/`.
 - `services/portal/internal/` has substantial domain/app/infra code; `delivery/http`, `config/`, and `infra/zitadel/` are still planned/empty.
 - `packages/nix/extra/` — optional Nix modules (currently `dev-container`); not imported by `core`, opt in via root `devenv.yaml`.

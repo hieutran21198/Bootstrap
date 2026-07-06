@@ -26,6 +26,7 @@
 **Examples.**
 
 ✓ Good:
+
 ```go
 // internal/app/command/port.go — the slim OIDC port sits beside UnitOfWork.
 package command
@@ -111,6 +112,7 @@ var _ command.Authenticator = (*Authenticator)(nil)
 ```
 
 ✗ Bad:
+
 ```go
 // internal/delivery/http/command/middleware.go — WRONG.
 // delivery imports zitadel-go and reaches for the provider's claim type directly.

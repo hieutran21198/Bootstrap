@@ -13,8 +13,8 @@
 
 - **Format:**
 
-  ```
-  <type>(<scope>): <subject>
+    ```text
+    <type>(<scope>): <subject>
 
   [optional body]
 
@@ -49,6 +49,7 @@
 **Examples.**
 
 ✓ Good:
+
 ```text
 feat(portal): add tenant invitation flow
 
@@ -57,6 +58,7 @@ is a UUIDv7 so it sorts by issue time and validates at the boundary.
 
 Closes #142
 ```
+
 ```text
 fix(gormx): bind scope GUC transaction-locally
 
@@ -64,6 +66,7 @@ BREAKING CHANGE: New() now requires a *gorm.Config; callers must pass one.
 ```
 
 ✗ Bad:
+
 ```text
 Updated stuff.                     # no type, capitalised, vague, trailing period
 feature: add invites               # "feature" is not an allowed type (use feat)

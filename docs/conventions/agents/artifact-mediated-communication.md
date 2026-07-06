@@ -14,6 +14,7 @@
 - **Route through the orchestrator.** Agents do not create side-channel agreements with sibling agents. The orchestrator owns the index of who did what, which disk artifacts are authoritative inputs, which task IDs are resumed, and which durable records or Linear issues must be updated.
 - **Use disk-path inputs, not transcript summaries.** Every Delegation Brief includes an `Inputs:` field containing only disk paths: files in `docs/`, code paths, or files under `.sdlc/<task-slug>/`. Do not write "as the researcher found" unless the sentence points at the file that contains the research.
 - **Use `.sdlc/<task-slug>/` for deliberation only.** Create one worktree-local scratch folder per work item, preferably using the Linear key, branch slug, or short capability slug; keep `.sdlc/` local-only and gitignored. Recommended layout:
+
   ```text
   .sdlc/<task-slug>/
   ├── README.md       # optional task index: owner, docs/ refs, Linear refs, cleanup checklist
@@ -23,6 +24,7 @@
   ├── evidence/       # raw verification/log bundles staged before Linear attach or docs promotion
   └── learnings/      # finding/debt/wiki candidates awaiting Scribe triage
   ```
+
 - **Treat slugs as identifiers, not locks.** `.sdlc/` is worktree-local: isolation comes from the one-interactive-session-per-checkout invariant, where the main checkout is itself a valid single-session workspace at offset `0` (see [ADR-0016](../../adrs/0016-use-git-worktrees-for-parallel-ai-agent-sessions.md) and [git worktree conventions](../git/worktrees.md)); slug uniqueness is not a concurrency mechanism. Prefer the Linear key as `<task-slug>` so same-task folders across worktrees are recognizably the same work item. Within one session, the orchestrator assigns parallel subagents distinct paths under `.sdlc/<task-slug>/`; parallel writers never share a file.
 - **Keep records born in `docs/`.** Formal PRD, spec, and ADR drafts are never staged in `.sdlc/` for later moving. Create them directly in the proper `docs/` track with the track's draft/proposed status, then promote by status transition. Scratch promotion means re-authoring, not moving a file.
 - **Preserve finding evidence in the finding track.** Heavy investigation evidence may be staged under `.sdlc/<task-slug>/evidence/` while work is active, but once a durable finding exists the heavy evidence belongs in `findings/<file>.assets/` per the findings convention.
@@ -33,6 +35,7 @@
 **Examples.**
 
 ✓ Good:
+
 ```markdown
 # Delegation brief
 
@@ -71,6 +74,7 @@ ok  bootstrap/services/portal/internal/infra/postgres/repo  0.241s
 ```
 
 ✗ Bad:
+
 ```markdown
 # Delegation brief
 

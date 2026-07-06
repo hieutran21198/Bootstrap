@@ -18,11 +18,13 @@
 **Examples.**
 
 ✓ Good:
+
 ```<language>
 // code that follows the rule
 ```
 
 ✗ Bad:
+
 ```<language>
 // code that violates the rule
 ```

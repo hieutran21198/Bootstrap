@@ -40,6 +40,7 @@
 **Examples.**
 
 ✓ Good:
+
 ```bash
 # Stay current on a private feature branch, then re-publish safely.
 git fetch origin && git rebase origin/main
@@ -48,6 +49,7 @@ git push --force-with-lease origin feature/tenant-invite
 ```
 
 ✗ Bad:
+
 ```bash
 git switch main && git merge feature/x && git push   # direct merge, bypasses PR
 git rebase origin/main                                # on a shared branch others pulled

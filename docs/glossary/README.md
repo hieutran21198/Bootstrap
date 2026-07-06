@@ -21,7 +21,7 @@ The shape borrows from the *ubiquitous language* glossaries of Domain-Driven Des
 
 One term per file, kebab-case, navigable via the Index below.
 
-```
+```text
 docs/glossary/
 ├── README.md           # this file — Index
 ├── TEMPLATE.md         # skeleton for one term
@@ -30,7 +30,7 @@ docs/glossary/
 
 ## Naming
 
-```
+```text
 docs/glossary/<term>.md
 ```
 

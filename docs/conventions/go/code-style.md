@@ -33,7 +33,7 @@ When creating a new `.go` file:
 
 #### ✓ Good
 
-```
+```text
 packages/go/env/env.go                                          # contains Loader, FileLoader, OSLoader, Parse
 packages/go/gormx/postgres/postgres.go                          # contains Config, Postgres, New
 packages/go/server/echox/echox.go                               # contains Config, Echox, New
@@ -47,7 +47,7 @@ services/portal/internal/domain/staff/email.go                  # contains the E
 
 #### ✗ Bad
 
-```
+```text
 packages/go/env/env_loader.go                                   # _loader stutter
 services/portal/internal/infra/postgres/repo/organization_repo.go  # _repo duplicates package name
 services/portal/internal/infra/postgres/repo/staff_repo.go         # same

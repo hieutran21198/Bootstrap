@@ -97,11 +97,14 @@ func Validate[T StringID](id T) error { ... } // call at boundaries only
 - **No-stutter filenames:** `organization.go`, not `organization_repo.go`; `port.go`, not
   `ports.go`; one concept per file. (Lint can't catch this yet — reviewers must.)
 - **Compile-time interface assertion at the bottom of every adapter file:**
+
   ```go
   var _ organization.Writer = (*OrganizationWriter)(nil)
   ```
+
   It fails the build the instant a method signature drifts.
 - **Prove conformance without importing the port** (structural typing, the `ssmx` trick):
+
   ```go
   var _ interface {
       Load(context.Context) (map[string]string, error)
@@ -129,6 +132,7 @@ func Validate[T StringID](id T) error { ... } // call at boundaries only
   a row keyed on `T.ID()` and returns a typed `NotFoundError` on no match.
 - **Unit of Work (ADR-0008)** is the write chokepoint — a two-struct pattern. Every write
   runs inside it, even single-aggregate ones; there is **no scope-less write path**:
+
   ```go
   return u.db.Transaction(func(tx *gorm.DB) error {
       if err := idgen.Validate(id); err != nil { return organization.ErrEmptyID }
@@ -136,6 +140,7 @@ func Validate[T StringID](id T) error { ... } // call at boundaries only
       return handler(ctx, newTxUnitOfWork(tx))
   })
   ```
+
   (RLS binding lives in the `rls-patterns` skill — bind per-transaction, `is_local=true`.)
 - **Repository** (`repo/<aggregate>.go`): a **private** `xxxRow` struct owns the `gorm` tags
   (never put tags on the aggregate); `TableName()` overrides the plural default; take a
@@ -157,10 +162,12 @@ func Validate[T StringID](id T) error { ... } // call at boundaries only
   `fmt.Errorf("%w: <detail>", ErrXxx)`.
 - **Typed error when callers need fields:** a **value-receiver** struct so both `T{}` and
   `*T` satisfy `error` and work with `errors.As`:
+
   ```go
   type NotFoundError struct{ ID ID }
   func (e NotFoundError) Error() string { return fmt.Sprintf("organization %q not found", string(e.ID)) }
   ```
+
 - Handle each error once: match-and-branch, wrap-and-return, or log-and-degrade — never both.
 
 ## Testing (stdlib only)
@@ -175,6 +182,7 @@ func Validate[T StringID](id T) error { ... } // call at boundaries only
   foo_test` for cross-package/API tests. Integration tests (`TestRLS…`) live under
   `infra/postgres/` and `t.Skipf` when their env vars are absent.
 - **Pin a generic return type at compile time** (fails to build if the API widens to `string`):
+
   ```go
   func requireTestID(id testID) testID { return id }
   // ... got := requireTestID(idgen.NewFor[testID]())
