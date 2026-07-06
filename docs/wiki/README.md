@@ -26,6 +26,9 @@ track and link back.
   docs and the Jira/Linear tracker stay in sync as two sources of truth.
 - [`prd-authoring.md`](prd-authoring.md) — PRD principles and a plain-language
   stakeholder intake form that feeds formal PRD authoring.
+- [`rls-bootstrap-read-pattern.md`](rls-bootstrap-read-pattern.md) — the RLS
+  bootstrap-read problem (an identity-resolution lookup can't require the
+  identity it resolves) and the reusable `backoffice_authn` answer.
 
 ### Subfolders
 
