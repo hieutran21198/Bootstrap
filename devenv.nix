@@ -12,6 +12,9 @@
       claude = {
         enable = true;
       };
+      utils = {
+        plan.planingAgents = [ "orchestrator" ];
+      };
       opencode = {
         enable = true;
         plugins = {
