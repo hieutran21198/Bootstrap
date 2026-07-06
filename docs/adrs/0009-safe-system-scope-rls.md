@@ -16,7 +16,7 @@
 
 ADR-0008's planned implementation widens visibility with a **single policy** carrying an `OR` branch, bound to the **same** `writer`/`reader` roles the tenant-facing portal uses:
 
-```
+```text
 current_setting('app.scope', true) = 'system' OR organization_id = current_setting('app.organization_id', true)
 ```
 

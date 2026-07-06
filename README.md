@@ -34,7 +34,7 @@ Provisions: Go `1.26.4` + delve + gopls + `golangci-lint v2.12.2`, AWS CLI + aws
 
 ## Layout
 
-```
+```text
 bootstrap/
 ├── apps/
 │   └── workspace-docs/     # Docusaurus docs site (own devenv; renders root + portal docs)

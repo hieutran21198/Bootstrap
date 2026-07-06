@@ -13,7 +13,7 @@
 
 ✓ Examples from this workspace — in the SRP category:
 
-```
+```text
 packages/go/env/                # environment-variable loading           (stateless)
 packages/go/server/echox/       # Echo HTTP server with timeouts + slog  (stateful)
 packages/go/gormx/              # GORM wrapper                            (stateful)
@@ -26,13 +26,13 @@ Each name is one noun, one responsibility.
 
 ✗ Examples NOT in the SRP category — hand-roll instead:
 
-```
+```text
 services/portal/    # multi-axis service module (handlers + DB + auth + business logic)
 ```
 
 ✗ Examples that should NOT exist regardless of category — dumping grounds by name:
 
-```
+```text
 packages/go/util/      # "util" is not a responsibility
 packages/go/common/    # ditto
 packages/go/helpers/   # ditto

@@ -48,7 +48,7 @@
             };
 
             researcher = {
-              model = "opencode-go/qwen3.7-plus";
+              model = "opencode-go/minimax-m3";
             };
             explorer = {
               model = "opencode-go/deepseek-v4-flash";

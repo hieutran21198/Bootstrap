@@ -44,6 +44,7 @@ dirty tree, a branch, or a local service port. Authority:
 - **One session = one worktree = one branch.** Create it with `ws-worktree`,
   never raw `git worktree add` — the tool writes the port-offset marker, guards
   `.gitignore`, and copies your gitignored env files:
+
   ```bash
   ws-worktree feature/tenant-invite   # new .worktrees/feature-tenant-invite off main
   cd .worktrees/feature-tenant-invite
@@ -51,6 +52,7 @@ dirty tree, a branch, or a local service port. Authority:
   codegraph init                      # this worktree's own code index
   opencode                            # start the agent in this directory
   ```
+
 - **Branch names are git-guard-valid and non-protected.** `ws-worktree` shells to
   `git-guard branch-name` / `git-guard branch-protect`, so `main` and `release/*`
   are rejected as work branches. Use `--ref <ref>` / `--pr <number>` to base a new
@@ -59,14 +61,16 @@ dirty tree, a branch, or a local service port. Authority:
   marker (main = base, +10 per worktree), so portal Postgres and the docs server
   run concurrently without collision. Don't hand-edit or delete the marker.
 - **Clean up explicitly — never `rm -rf`:**
+
   ```bash
   ws-worktree --remove feature/tenant-invite   # then: git worktree prune
   ```
+
   Removal frees the port slot for reuse; it does not delete the branch.
 
 ## Commits (Conventional Commits 1.0.0)
 
-```
+```text
 <type>(<scope>): <subject>
 
 [optional body]
@@ -85,12 +89,15 @@ dirty tree, a branch, or a local service port. Authority:
 
 - **Into `main`: squash-merge via PR only.** No direct merge, no direct push. The squash commit message must be a clean Conventional Commit (usually the PR title).
 - **Rebase only a local, unshared branch** to stay current:
+
   ```bash
   git fetch origin && git rebase origin/main
   git push --force-with-lease origin <branch>   # never bare --force
   ```
+
 - **Do NOT rebase** a branch that is shared/pushed-and-others-use-it, protected (`main`, `release/*`), or already merged.
 - **Release branches take fixes by cherry-pick**, never `git merge main`:
+
   ```bash
   git switch release/1.4.0 && git fetch origin
   git cherry-pick -x <sha>        # sha already merged to main

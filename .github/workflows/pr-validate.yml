@@ -3,6 +3,8 @@ name: PR validation
 # Enforces the Git conventions (docs/conventions/git/) on every pull request,
 # using the same git-guard validator the local pre-commit hooks run — so the
 # rules cannot drift between a developer's machine and CI.
+# Also lints markdown consistency with the same ruleset as the local hook.
+# Only raw evidence assets (.assets/) and generated/vendored files are excluded.
 
 on:
   pull_request:
@@ -51,3 +53,30 @@ jobs:
         run: |
           git fetch --no-tags --depth=100 origin "$BASE_REF"
           "$RUNNER_TEMP/git-guard" commit-range FETCH_HEAD HEAD
+
+  markdownlint:
+    name: Markdown consistency
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Lint markdown
+        run: |
+          npx --yes markdownlint-cli2@0.22.1 \
+            --config .markdownlint-cli2.jsonc \
+            "**/*.md" \
+            "#.devenv/**" \
+            "#.git/**" \
+            "#node_modules/**" \
+            "#.claude/**" \
+            "#.opencode/**" \
+            "#.codegraph/**" \
+            "#.worktrees/**" \
+            "#**/*.assets/**" \
+            "#CLAUDE.md"

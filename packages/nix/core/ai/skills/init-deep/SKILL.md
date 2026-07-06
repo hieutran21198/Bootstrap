@@ -73,6 +73,7 @@ that already have or are approved to get their own `AGENTS.md`). Root is always 
 | 0 | no file | RETIRE |
 
 **Overrides** (demote to no-file / MERGE-UP / RETIRE regardless of score):
+
 - Content is fully derivable from filenames, tree shape, or codegraph.
 - Content is mainly a procedure or runbook → belongs in a README or skill.
 - Content is only navigation → belongs in `ws-tree`/`treeInfos` or parent `WHERE TO LOOK`.
@@ -81,7 +82,7 @@ that already have or are approved to get their own `AGENTS.md`). Root is always 
 
 **Dry-run gate** (end of Phase 2, before any writes): present a table:
 
-```
+```text
 Directory | Existing? | S1..S5 | Score | Override? | Verdict | Action | Notes
 ```
 
@@ -107,6 +108,7 @@ parent anti-patterns; full ws-tree mirrors; runbook procedures owned by a README
 Budget: soft 30–80 lines, hard cap 100.
 
 **Earns-its-place** — drop a line, row, or section if ANY of these is true:
+
 1. An agent gets it right from normal language or framework knowledge.
 2. It duplicates parent, sibling, README, or `docs/` conventions.
 3. It is a procedure or runbook → move or link to README or a skill.

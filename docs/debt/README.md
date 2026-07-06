@@ -44,7 +44,7 @@ Rule of thumb: **if the same shape of pain hits twice, it earns a debt entry.**
 
 One debt item per file. Group by area when more than a handful exist.
 
-```
+```text
 docs/debt/
 ├── README.md                                # this file — Index and escalation rules
 ├── TEMPLATE.md                              # skeleton for one debt item
@@ -55,7 +55,7 @@ docs/debt/
 
 ## Naming
 
-```
+```text
 docs/debt/<topic>-<short-desc>.md             # top-level
 docs/debt/<area>/<topic>-<short-desc>.md      # grouped
 ```

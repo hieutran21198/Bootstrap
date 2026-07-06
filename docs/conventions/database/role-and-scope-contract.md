@@ -31,6 +31,7 @@
 **Examples.**
 
 ✓ Good:
+
 ```go
 // Command side: writer role DSN, organization scope bound transaction-locally.
 func (u *UnitOfWork) DoOrganizationTransaction(ctx context.Context, id organization.ID, handler command.TransactionalUnitOfWorkHandler) error {
@@ -49,6 +50,7 @@ func (u *UnitOfWork) DoOrganizationTransaction(ctx context.Context, id organizat
 ```
 
 ✗ Bad:
+
 ```go
 // Connects as admin (BYPASSRLS) and uses a session-level SET.
 // Every policy becomes a silent no-op, and the scope leaks to the next

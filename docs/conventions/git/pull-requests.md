@@ -45,6 +45,7 @@
 **Examples.**
 
 ✓ Good:
+
 ```text
 Title:  feat(portal): add tenant invitation flow
 
@@ -62,6 +63,7 @@ Closes #142
 ```
 
 ✗ Bad:
+
 ```text
 Title:  updates
 (empty body, no context, no tests noted, direct-to-main intent)

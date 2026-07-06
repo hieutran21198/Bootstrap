@@ -13,7 +13,7 @@ A convention without a decision is hearsay; a decision without a convention is a
 
 Conventions are organised **per topic, one rule per file**. Each topic is a directory with its own `README.md` (the topic index) and one `<rule>.md` per rule.
 
-```
+```text
 docs/conventions/
 ├── README.md                       # this file — workspace-level index of topics
 ├── TEMPLATE.md                     # skeleton for a single rule
@@ -28,7 +28,7 @@ docs/conventions/
 
 ## Naming
 
-```
+```text
 docs/conventions/<topic>/<rule>.md      # one rule
 docs/conventions/<topic>/README.md      # topic-level index (mirrors docs/adrs/README.md)
 ```

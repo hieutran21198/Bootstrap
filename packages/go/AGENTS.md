@@ -6,7 +6,7 @@ Shared Go library module (`bootstrap/packages/go`). SRP-stateful governance per 
 
 ## STRUCTURE
 
-```
+```text
 packages/go/
 ├── env/                # env-var loaders + typed parser (pre-governance, function-based)
 ├── errorsx/            # structured, transport-neutral error type (SRP-stateless; Code/Error/FieldError)

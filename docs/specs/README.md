@@ -24,7 +24,7 @@ The shape blends two canonical formats:
 
 One feature or subsystem per file. Group by area when more than a handful exist.
 
-```
+```text
 docs/specs/
 ├── README.md                  # this file — Index
 ├── TEMPLATE.md                # skeleton for one spec
@@ -34,7 +34,7 @@ docs/specs/
 
 ## Naming
 
-```
+```text
 docs/specs/<feature>.md             # top-level spec
 docs/specs/<area>/<feature>.md      # grouped under an area
 ```

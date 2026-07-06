@@ -6,7 +6,7 @@ Portal service. Clean Architecture + CQRS + DDD; canonical example of the worksp
 
 ## STRUCTURE
 
-```
+```text
 services/portal/
 ├── cmd/
 │   ├── http/

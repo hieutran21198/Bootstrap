@@ -13,7 +13,7 @@ Code style rules (file naming, doc comments, error handling, imports, interface 
 
 ## Layer layout
 
-```
+```text
 services/<svc>/
 ├── cmd/http/
 │   ├── command/main.go         # write-side HTTP binary
@@ -36,7 +36,7 @@ services/<svc>/
 
 ### Dependency rule
 
-```
+```text
 delivery ──▶ app ──▶ domain ◀── infra
 ```
 
