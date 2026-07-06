@@ -4,5 +4,6 @@
     ./go-pattern/default.nix
     ./rls-patterns/default.nix
     ./git-workflow/default.nix
+    ./prd-authoring/default.nix
   ];
 }

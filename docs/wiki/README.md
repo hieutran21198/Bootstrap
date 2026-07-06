@@ -24,6 +24,8 @@ track and link back.
   how humans and AI agents run the SDLC pipeline, from idea through learning.
 - [`jira-linear-sync.md`](jira-linear-sync.md) — operating model for how Project
   docs and the Jira/Linear tracker stay in sync as two sources of truth.
+- [`prd-authoring.md`](prd-authoring.md) — PRD principles and a plain-language
+  stakeholder intake form that feeds formal PRD authoring.
 
 ### Subfolders
 

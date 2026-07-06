@@ -22,7 +22,7 @@ The shape borrows from the [Google SRE blameless-postmortem tradition](https://s
 
 One investigation per file. Group by area when more than a handful exist.
 
-```
+```text
 docs/findings/
 ├── README.md                                # this file — Index
 ├── TEMPLATE.md                              # skeleton for one finding
@@ -33,7 +33,7 @@ docs/findings/
 
 If a finding produces heavy evidence (profiles, traces, raw logs, screenshots) that earns its space in the repo, commit the artifacts under a sibling directory:
 
-```
+```text
 docs/findings/
 ├── 2026-06-25-portal-token-leak.md
 └── 2026-06-25-portal-token-leak.assets/     # raw evidence
@@ -43,7 +43,7 @@ docs/findings/
 
 ## Naming
 
-```
+```text
 docs/findings/YYYY-MM-DD-<title>.md             # top-level finding
 docs/findings/<area>/YYYY-MM-DD-<title>.md      # grouped under an area
 ```
@@ -86,3 +86,4 @@ Heavy evidence (profiles, traces, raw logs) goes under `${DATE}-${TITLE}.assets/
 | 2026-06-26 | [claude-code-agent-configuration](2026-06-26-claude-code-agent-configuration.md) | Resolved | —        |
 | 2026-07-03 | [govulncheck-go-stdlib-vulns](2026-07-03-govulncheck-go-stdlib-vulns.md)         | Resolved | ADR-0015 |
 | 2026-07-05 | [selective-staging-destroyed-uncommitted-changes](2026-07-05-selective-staging-destroyed-uncommitted-changes.md) | Resolved | PR #22   |
+| 2026-07-06 | [prd-authoring-and-prd-template-best-practices](2026-07-06-prd-authoring-and-prd-template-best-practices.md) | Resolved | docs/prds/TEMPLATE.md, docs/wiki/prd-authoring.md, prd-authoring skill |
