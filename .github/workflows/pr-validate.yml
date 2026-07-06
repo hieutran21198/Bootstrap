@@ -4,7 +4,7 @@ name: PR validation
 # using the same git-guard validator the local pre-commit hooks run — so the
 # rules cannot drift between a developer's machine and CI.
 # Also lints markdown consistency with the same ruleset as the local hook.
-# Only raw evidence assets (.assets/) and generated/vendored files are excluded.
+# Only raw evidence assets (.assets/) and generated/vendored files excluded.
 
 on:
   pull_request:
@@ -94,7 +94,7 @@ jobs:
               "**/.opencode/",
               "**/.worktrees/",
               "**/node_modules/",
-              "**/*.assets/",
+              "**/*.assets/**",
               "CLAUDE.md"
             ]
           }

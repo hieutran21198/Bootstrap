@@ -41,7 +41,7 @@
           "**/.opencode/"
           "**/.worktrees/"
           "**/node_modules/"
-          "**/*.assets/"
+          "**/*.assets/**"
           "CLAUDE.md"
         ];
       };
