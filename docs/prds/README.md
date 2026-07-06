@@ -13,19 +13,37 @@ A PRD is the **single source of truth for a capability's requirements**. When a 
 
 ## Template
 
-[TEMPLATE.md](TEMPLATE.md) is the skeleton for **one PRD**: front matter (`Status`, `Authors`, `Last reviewed`, `Realized by`), then the sections — **Problem / Users & personas / Requirements / Non-goals / Domain intent / Alternatives considered / Open questions / Realized by / References**.
+[TEMPLATE.md](TEMPLATE.md) is the skeleton for **one PRD**: front matter (`Status`, `Authors`, `Last reviewed`, `Realized by`), then the required sections in order:
+
+1. Problem / Context
+2. Users & personas
+3. Success criteria / metrics
+4. Requirements
+5. Non-goals
+6. Scope (In / Out)
+7. Assumptions & Constraints
+8. Domain intent / ubiquitous language
+9. Alternatives considered
+10. Open questions
+11. Downstream Handoff
+12. Realized by
+13. References
 
 The shape blends established "intent-first" practice:
 
 - **What/why before how** mirrors Amazon [*Working Backwards* (PR-FAQ)](https://www.allthingsdistributed.com/2006/11/working-backwards.html) and Basecamp [Shape Up](https://basecamp.com/shapeup) pitches — requirements are written in problem-space, never solution-space.
-- **Requirements use [EARS](https://alistairmavin.com/ears/)** (Easy Approach to Requirements Syntax) — `WHEN <condition> THE SYSTEM SHALL <observable outcome>` — one line, testable, technology-free.
-- **`[NEEDS CLARIFICATION: …]` markers** (from [GitHub spec-kit](https://github.com/github/spec-kit)) make unknowns explicit and gate the `Draft → Accepted` transition, so downstream authors never guess.
+- **Success criteria are measurable, technology-agnostic outcomes** — user/business-facing metrics with a baseline/target where relevant, never internal implementation metrics.
+- **Requirements use stable IDs and [EARS](https://alistairmavin.com/ears/)** (Easy Approach to Requirements Syntax) where it fits — `WHEN <condition> THE SYSTEM SHALL <observable outcome>` — to stay testable, observable, singular, and technology-free.
+- **Scope, assumptions, and constraints are explicit** — readers can see what is in, what is out, and which reasonable defaults or binding facts downstream authors may rely on.
+- **`[NEEDS CLARIFICATION: …; recommended default: …]` markers** (from [GitHub spec-kit](https://github.com/github/spec-kit)) make unknowns explicit and gate the `Draft → Accepted` transition, so downstream authors never guess. Drafts should carry at most 3 markers; all must be resolved before acceptance.
+- **Downstream Handoff names decision candidates, not decisions** — it routes ADR/spec topics and the requirement IDs they serve without choosing technologies.
+- **The embedded review checklist** treats requirement quality like "unit tests for English": IDs present, wording measurable, scope bounded, no implementation leakage, and backlinks ready.
 
 ## Layout
 
 One capability per file. Group by area when more than a handful exist.
 
-```
+```text
 docs/prds/
 ├── README.md                  # this file — Index
 ├── TEMPLATE.md                # skeleton for one PRD
@@ -37,7 +55,7 @@ Two-tier: workspace-wide product intent lives here; product intent that dies wit
 
 ## Naming
 
-```
+```text
 docs/prds/<capability>.md            # top-level PRD
 docs/prds/<area>/<capability>.md     # grouped under an area
 ```
@@ -60,9 +78,17 @@ PRDs are **living per PRD**. `Status` transitions:
 
 1. an open `[NEEDS CLARIFICATION: …]` marker remains anywhere in the file;
 2. it names a technology, API, schema, or design (that is the "how" — move it to a spec/ADR);
-3. it uses a domain term that is neither defined in [`glossary/`](../glossary/) nor nominated under **Domain intent**.
+3. a success criterion is unmeasurable, technology-specific, or framed as an internal implementation metric;
+4. scope lacks explicit **In scope** and **Out of scope** boundaries;
+5. assumptions and constraints are missing, silent, or used to choose a design;
+6. **Downstream Handoff** names a chosen technology/design instead of a neutral ADR/spec candidate tied to requirement or success-criterion IDs;
+7. it uses a domain term that is neither defined in [`glossary/`](../glossary/) nor nominated under **Domain intent**.
 
 Move forward through statuses; bump `Last reviewed` on every material edit. After `Delivered`, a **material** intent change is captured by **superseding** with a new PRD (leave the old one, set `Status: Superseded by …`); a clarification is an in-place edit + `Last reviewed` bump.
+
+### Migration policy for ADR-0022
+
+[ADR-0022](../adrs/0022-expand-prd-required-sections.md) expanded the required section set. The expanded template applies to PRDs authored or materially edited after ADR-0022. Existing accepted PRDs (`identity-and-access.md`, `backoffice-and-portal.md`) are grandfathered and may be backfilled opportunistically during future material edits or a dedicated cleanup; they are not reopened solely because their historical section shape differs.
 
 ## Writing a new PRD
 
