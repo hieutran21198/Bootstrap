@@ -68,15 +68,35 @@ jobs:
 
       - name: Lint markdown
         run: |
-          npx --yes markdownlint-cli2@0.22.1 \
-            --config .markdownlint-cli2.jsonc \
-            "**/*.md" \
-            "#.devenv/**" \
-            "#.git/**" \
-            "#node_modules/**" \
-            "#.claude/**" \
-            "#.opencode/**" \
-            "#.codegraph/**" \
-            "#.worktrees/**" \
-            "#**/*.assets/**" \
-            "#CLAUDE.md"
+          cat > .markdownlint-cli2.jsonc << 'MARKDOWNLINT_EOF'
+          {
+            "config": {
+              "MD004": false,
+              "MD009": false,
+              "MD010": false,
+              "MD013": false,
+              "MD024": false,
+              "MD028": false,
+              "MD033": false,
+              "MD034": false,
+              "MD041": false,
+              "MD047": false,
+              "MD049": false,
+              "MD051": false,
+              "MD058": false,
+              "MD060": false
+            },
+            "ignores": [
+              "**/.claude/",
+              "**/.codegraph/",
+              "**/.devenv/",
+              "**/.git/",
+              "**/.opencode/",
+              "**/.worktrees/",
+              "**/node_modules/",
+              "**/*.assets/",
+              "CLAUDE.md"
+            ]
+          }
+          MARKDOWNLINT_EOF
+          npx --yes markdownlint-cli2@0.22.1 "**/*.md"
