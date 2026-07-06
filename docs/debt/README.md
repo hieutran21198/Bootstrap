@@ -143,3 +143,4 @@ When the debt bites you in real work:
 | [agent-roster-docs-drift.md](agent-roster-docs-drift.md)                     | Open   | Low      | 1    | unassigned |
 | [markdownlint-config-duplication.md](markdownlint-config-duplication.md)     | Open   | Medium   | 1    | unassigned |
 | [agent-permission-map-key-order.md](agent-permission-map-key-order.md)       | Open   | Low      | 1    | unassigned |
+| [database/schema-wide-grants-fail-open.md](database/schema-wide-grants-fail-open.md) | Open | Medium | 1 | unassigned |
