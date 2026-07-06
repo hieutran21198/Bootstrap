@@ -52,6 +52,7 @@ in
     ./mcps/default.nix
     ./commands/default.nix
     ./opencode/default.nix
+    ./utils/default.nix
     (lib.mkAliasOptionModule [ "core" "ai" "claude" ] [ "claude" "code" ])
   ];
 
