@@ -1,15 +1,15 @@
 # Product Requirement Documents
 
-PRDs capture **product and domain intent** — the problem, the people, and the outcomes a capability must deliver — *before* any decision or design. They are deliberately **solution-free**: no technology, no architecture, no "how". A PRD is the upstream source the [`adrs/`](../adrs/), [`specs/`](../specs/), and [`glossary/`](../glossary/) tracks flow from.
+PRDs capture **product and domain intent** — the problem, the people, and the outcomes a capability must deliver — _before_ any decision or design. They are deliberately **solution-free**: no technology, no architecture, no "how". A PRD is the upstream source the [`adrs/`](../adrs/), [`specs/`](../specs/), and [`glossary/`](../glossary/) tracks flow from.
 
-| Track                           | Question it answers              | Lifecycle             |
-| ------------------------------- | -------------------------------- | --------------------- |
-| prds/                           | *What must be true, and why?*    | Living per PRD        |
-| [adrs/](../adrs/)               | *Why did we choose this?*        | Append-only, dated    |
-| [specs/](../specs/)             | *How is this built?*             | Living per spec       |
-| [glossary/](../glossary/)       | *What does this term mean here?* | Living, edit-in-place |
+| Track                     | Question it answers              | Lifecycle             |
+| ------------------------- | -------------------------------- | --------------------- |
+| prds/                     | _What must be true, and why?_    | Living per PRD        |
+| [adrs/](../adrs/)         | _Why did we choose this?_        | Append-only, dated    |
+| [specs/](../specs/)       | _How is this built?_             | Living per spec       |
+| [glossary/](../glossary/) | _What does this term mean here?_ | Living, edit-in-place |
 
-A PRD is the **single source of truth for a capability's requirements**. When a new requirement appears, it is captured *here first*, then propagated downstream — edit the living spec, and write a new ADR when a *decision* changes. Downstream docs link **back** to the PRD via their `Tracks` field; the PRD lists them under `Realized by`. The PRD never restates a spec's design or an ADR's decision.
+A PRD is the **single source of truth for a capability's requirements**. When a new requirement appears, it is captured _here first_, then propagated downstream — edit the living spec, and write a new ADR when a _decision_ changes. Downstream docs link **back** to the PRD via their `Tracks` field; the PRD lists them under `Realized by`. The PRD never restates a spec's design or an ADR's decision.
 
 ## Template
 
@@ -31,7 +31,7 @@ A PRD is the **single source of truth for a capability's requirements**. When a 
 
 The shape blends established "intent-first" practice:
 
-- **What/why before how** mirrors Amazon [*Working Backwards* (PR-FAQ)](https://www.allthingsdistributed.com/2006/11/working-backwards.html) and Basecamp [Shape Up](https://basecamp.com/shapeup) pitches — requirements are written in problem-space, never solution-space.
+- **What/why before how** mirrors Amazon [_Working Backwards_ (PR-FAQ)](https://www.allthingsdistributed.com/2006/11/working-backwards.html) and Basecamp [Shape Up](https://basecamp.com/shapeup) pitches — requirements are written in problem-space, never solution-space.
 - **Success criteria are measurable, technology-agnostic outcomes** — user/business-facing metrics with a baseline/target where relevant, never internal implementation metrics.
 - **Requirements use stable IDs and [EARS](https://alistairmavin.com/ears/)** (Easy Approach to Requirements Syntax) where it fits — `WHEN <condition> THE SYSTEM SHALL <observable outcome>` — to stay testable, observable, singular, and technology-free.
 - **Scope, assumptions, and constraints are explicit** — readers can see what is in, what is out, and which reasonable defaults or binding facts downstream authors may rely on.
@@ -108,5 +108,3 @@ Then, as downstream docs are authored, keep the backlinks in sync: each ADR/spec
 
 | PRD | Status | Realized by |
 | --- | ------ | ----------- |
-| [backoffice-and-portal.md](backoffice-and-portal.md) | Accepted | ADR-0013 *(planned)*, portal & backoffice specs *(planned)* |
-| [identity-and-access.md](identity-and-access.md) | Accepted | ADR-0013 *(planned)*, `services/portal/docs/specs/identity-provisioning.md` *(planned)* |

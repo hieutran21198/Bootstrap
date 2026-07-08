@@ -68,12 +68,12 @@
             };
 
             backend-engineer = {
-              model = "openai/gpt-5.3-codex-spark";
-              variant = "high";
+              model = "openai/gpt-5.4";
+              variant = "medium";
             };
             frontend-engineer = {
-              model = "openai/gpt-5.3-codex-spark";
-              variant = "high";
+              model = "openai/gpt-5.4";
+              variant = "medium";
             };
 
             scribe = {
